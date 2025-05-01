@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-RocketTaskPlanner.Telegram-4299d7a4-dec9-479e-9f5c-bda52d717ce8</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.3" />
+    <PackageReference Include="PRTelegramBot" Version="0.7.9.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\core\RocketTaskPlanner.Presenters\RocketTaskPlanner.Presenters.csproj" />
+    <ProjectReference Include="..\..\time_recognition\RocketTaskPlanner.TimeRecognitionModule\RocketTaskPlanner.TimeRecognitionModule.csproj" />
+  </ItemGroup>
+</Project>

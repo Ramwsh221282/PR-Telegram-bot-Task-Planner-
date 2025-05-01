@@ -1,0 +1,3 @@
+﻿namespace RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChatTheme;
+
+public sealed record CreateTaskForChatThemeUseCaseResponse(string Information);
