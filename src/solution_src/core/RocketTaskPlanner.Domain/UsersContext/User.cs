@@ -28,4 +28,6 @@ public sealed class User
         _permissions.Add(permission);
         return Result.Success();
     }
+
+    public bool HasPermission(string permission) => _permissions.Any(p => p.Name == permission);
 }

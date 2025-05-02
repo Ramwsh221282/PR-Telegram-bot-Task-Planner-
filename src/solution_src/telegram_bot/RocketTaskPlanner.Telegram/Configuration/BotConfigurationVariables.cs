@@ -2,13 +2,9 @@ namespace RocketTaskPlanner.Telegram.Configuration;
 
 public static class BotConfigurationVariables
 {
-    public static readonly string ConfigurationFolder = Path.Combine(
-        AppDomain.CurrentDomain.BaseDirectory,
-        "Configuration"
+    private static readonly string ConfigurationFolder = Path.Combine(
+        AppDomain.CurrentDomain.BaseDirectory
     );
 
-    public static readonly string TelegramBotTokenConfigPath = Path.Combine(
-        ConfigurationFolder,
-        "TG_BOT_CONFIG.json"
-    );
+    public static readonly string EnvFilePath = Path.Combine(ConfigurationFolder, ".env");
 }

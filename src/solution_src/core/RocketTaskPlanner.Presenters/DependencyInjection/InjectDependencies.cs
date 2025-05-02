@@ -31,7 +31,7 @@ namespace RocketTaskPlanner.Presenters.DependencyInjection;
 
 public static class InjectDependencies
 {
-    public static void Inject(this IServiceCollection services)
+    public static void InjectApplicationDependencies(this IServiceCollection services)
     {
         services.InjectSqlite();
         services.InjectTimeZoneDb();

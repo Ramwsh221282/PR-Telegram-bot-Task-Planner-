@@ -2,6 +2,7 @@
 using CSharpFunctionalExtensions;
 using Dapper;
 using RocketTaskPlanner.Application.UsersContext.Contracts;
+using RocketTaskPlanner.Domain.PermissionsContext;
 using RocketTaskPlanner.Domain.UsersContext;
 using RocketTaskPlanner.Domain.UsersContext.ValueObjects;
 using RocketTaskPlanner.Infrastructure.Abstractions;
@@ -65,6 +66,21 @@ public sealed class UsersReadableRepository(IDbConnectionFactory connectionFacto
         UserEntity? entries = await connection.QueryFirstOrDefaultAsync<UserEntity>(command);
 
         return entries != null;
+    }
+
+    public async Task<bool> ContainsOwner(CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT u.id, u.name, p.id, p.user_id, p.name 
+            FROM users u
+            LEFT JOIN user_permissions p ON u.id = p.user_id
+            WHERE p.name = @name
+            """;
+        var parameters = new { name = PermissionNames.EditConfiguration };
+        CommandDefinition command = new(sql, parameters, cancellationToken: ct);
+        using IDbConnection connection = InstantiateConnection();
+        int count = await connection.ExecuteScalarAsync<int>(command);
+        return count != 0;
     }
 
     private IDbConnection InstantiateConnection() =>

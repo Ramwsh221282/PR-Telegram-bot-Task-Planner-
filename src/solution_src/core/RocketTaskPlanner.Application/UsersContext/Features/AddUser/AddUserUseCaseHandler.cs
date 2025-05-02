@@ -5,10 +5,14 @@ using RocketTaskPlanner.Domain.UsersContext.ValueObjects;
 
 namespace RocketTaskPlanner.Application.UsersContext.Features.AddUser;
 
-public sealed class AddUserUseCaseHandler(IUsersWritableRepository writableRepository)
-    : IUseCaseHandler<AddUserUseCase, User>
+public sealed class AddUserUseCaseHandler : IUseCaseHandler<AddUserUseCase, User>
 {
-    private readonly IUsersWritableRepository _writableRepository = writableRepository;
+    private readonly IUsersWritableRepository _writableRepository;
+
+    public AddUserUseCaseHandler(IUsersWritableRepository writableRepository)
+    {
+        _writableRepository = writableRepository;
+    }
 
     public async Task<Result<User>> Handle(AddUserUseCase useCase, CancellationToken ct = default)
     {

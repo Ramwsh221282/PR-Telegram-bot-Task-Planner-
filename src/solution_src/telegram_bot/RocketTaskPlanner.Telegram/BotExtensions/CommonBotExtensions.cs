@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using PRTelegramBot.Extensions;
+using RocketTaskPlanner.Telegram.BotAbstractions;
 using RocketTaskPlanner.Telegram.BotConstants;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -83,6 +84,26 @@ public static class CommonBotExtensions
         long chatId = message.Chat.Id;
         int messageId = message.MessageId;
         await client.DeleteMessage(chatId, messageId);
+    }
+
+    public static Result<TelegramBotUser> GetUser(this Update update)
+    {
+        var message = update.Message;
+        if (message == null)
+            return Result.Failure<TelegramBotUser>(
+                "Can't get user information from telegram bot update."
+            );
+
+        var userInfo = message.From;
+        if (userInfo == null)
+            return Result.Failure<TelegramBotUser>(
+                "Can't get user information from telegram bot update."
+            );
+
+        long id = userInfo.Id;
+        string name = userInfo.FirstName;
+        string? lastName = userInfo.LastName;
+        return new TelegramBotUser(id, name, lastName);
     }
 
     public static async Task SendOperationCancelledReply(

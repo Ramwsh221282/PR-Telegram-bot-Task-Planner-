@@ -8,7 +8,7 @@ public static class TestsServiceCollection
     public static IServiceCollection BuildServicesCollection()
     {
         ServiceCollection services = new ServiceCollection();
-        services.Inject();
+        services.InjectApplicationDependencies();
         return services;
     }
 }

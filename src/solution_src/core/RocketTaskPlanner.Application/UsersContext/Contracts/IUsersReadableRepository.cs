@@ -5,6 +5,7 @@ namespace RocketTaskPlanner.Application.UsersContext.Contracts;
 
 public interface IUsersReadableRepository
 {
-    public Task<Result<User>> GetById(UserId id, CancellationToken ct = default);
-    public Task<bool> Exists(UserId id, CancellationToken ct = default);
+    Task<Result<User>> GetById(UserId id, CancellationToken ct = default);
+    Task<bool> Exists(UserId id, CancellationToken ct = default);
+    Task<bool> ContainsOwner(CancellationToken ct = default);
 }
