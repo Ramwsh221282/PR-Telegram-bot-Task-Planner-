@@ -23,8 +23,6 @@ BotConfigurationOptions options = BotOptionsResolver.LoadTgBotOptions(
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddSingleton(new TelegramBotClientFactory(options));
-builder.Services.AddSingleton<TimeRecognitionFacade>();
-builder.Services.AddSingleton<TimeCalculationService>();
 builder.Services.Inject();
 builder.Services.AddTransientBotHandlers();
 builder.Services.AddHostedService<ApplicationTimeZonesUpdateService>();

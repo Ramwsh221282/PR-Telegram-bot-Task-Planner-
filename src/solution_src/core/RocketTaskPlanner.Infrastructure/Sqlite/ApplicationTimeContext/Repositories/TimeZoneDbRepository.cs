@@ -185,11 +185,7 @@ public sealed class TimeZoneDbRepository(IDbConnectionFactory factory, Serilog.I
         }
 
         string finalQuery = string.Format(InsertZonesSql, string.Join(", ", valueList));
-        CommandDefinition command = new CommandDefinition(
-            finalQuery,
-            parameters,
-            cancellationToken: ct
-        );
+        CommandDefinition command = new(finalQuery, parameters, cancellationToken: ct);
         await connection.ExecuteAsync(command);
     }
 

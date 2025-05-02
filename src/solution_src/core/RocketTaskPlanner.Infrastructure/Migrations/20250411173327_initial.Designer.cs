@@ -10,7 +10,7 @@ using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext;
 
 namespace RocketTaskPlanner.Infrastructure.Migrations
 {
-    [DbContext(typeof(NotificationContextDbContext))]
+    [DbContext(typeof(NotificationsDbContext))]
     [Migration("20250411173327_initial")]
     partial class initial
     {

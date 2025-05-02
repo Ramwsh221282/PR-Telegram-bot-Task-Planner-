@@ -9,7 +9,11 @@ public sealed class PermissionEntityTypeConfiguration : IEntityTypeConfiguration
     public void Configure(EntityTypeBuilder<Permission> builder)
     {
         builder.ToTable("permissions");
+
         builder.HasKey(p => p.Id);
-        builder.Property(p => p.Name).IsRequired();
+
+        builder.Property(p => p.Id).HasColumnName("id");
+
+        builder.Property(p => p.Name).HasColumnName("name").IsRequired();
     }
 }
