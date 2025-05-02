@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>dotnet-RocketTaskPlanner.Telegram-4299d7a4-dec9-479e-9f5c-bda52d717ce8</UserSecretsId>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +19,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\core\RocketTaskPlanner.Presenters\RocketTaskPlanner.Presenters.csproj" />
-    <ProjectReference Include="..\..\time_recognition\RocketTaskPlanner.TimeRecognitionModule\RocketTaskPlanner.TimeRecognitionModule.csproj" />
   </ItemGroup>
 </Project>

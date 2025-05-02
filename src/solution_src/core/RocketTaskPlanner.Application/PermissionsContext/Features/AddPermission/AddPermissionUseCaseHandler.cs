@@ -15,12 +15,14 @@ public sealed class AddPermissionUseCaseHandler(IPermissionsRepository repositor
     )
     {
         string name = useCase.PermissionName;
-        Guid id = Guid.NewGuid();
-        Result<Permission> existing = await _repository.GetByName(name, ct);
-        if (existing.IsSuccess)
+        bool containsPermission = await _repository.ReadableRepository.Contains(name, ct);
+        if (containsPermission)
             return Result.Failure<Permission>($"Права: {name} уже существуют.");
+
+        Guid id = Guid.NewGuid();
         Permission permission = new() { Id = id, Name = name };
-        await _repository.Add(permission, ct);
+        permission = await _repository.WritableRepository.Add(permission, ct);
+
         return permission;
     }
 }

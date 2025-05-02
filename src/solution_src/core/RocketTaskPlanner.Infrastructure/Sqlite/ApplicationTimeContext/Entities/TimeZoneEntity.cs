@@ -14,10 +14,10 @@ public sealed class TimeZoneEntity
 
     public ApplicationTimeZone ToTimeZone(TimeZoneDbProvider provider)
     {
-        Domain.ApplicationTimeContext.Entities.TimeZones.ValueObjects.TimeZoneId id = Domain
+        TimeZoneId id = Domain
             .ApplicationTimeContext.Entities.TimeZones.ValueObjects.TimeZoneId.Create(TimeZoneId)
             .Value;
-        Domain.ApplicationTimeContext.Entities.TimeZones.ValueObjects.TimeZoneName name = Domain
+        TimeZoneName name = Domain
             .ApplicationTimeContext.Entities.TimeZones.ValueObjects.TimeZoneName.Create(
                 TimeZoneName
             )

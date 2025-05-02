@@ -2,6 +2,7 @@
 using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext;
 using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext;
 using RocketTaskPlanner.Infrastructure.Sqlite.PermissionsContext;
+using RocketTaskPlanner.Infrastructure.Sqlite.UsersContext;
 
 namespace RocketTaskPlanner.Telegram.DatabaseSetup;
 
@@ -14,6 +15,7 @@ public static class DatabaseSetupExtensions
         await scope.ApplyApplicationTimeDbContext();
         await scope.ApplyNotificationDbContext();
         await scope.ApplyPermissionsDbContext();
+        await scope.ApplyUsersDbContext();
     }
 
     private static async Task ApplyApplicationTimeDbContext(this AsyncServiceScope scope)
@@ -30,8 +32,8 @@ public static class DatabaseSetupExtensions
 
     private static async Task ApplyNotificationDbContext(this AsyncServiceScope scope)
     {
-        await using NotificationContextDbContext context =
-            scope.ServiceProvider.GetRequiredService<NotificationContextDbContext>();
+        await using NotificationsDbContext context =
+            scope.ServiceProvider.GetRequiredService<NotificationsDbContext>();
         try
         {
             if (!await context.Database.EnsureCreatedAsync())
@@ -44,6 +46,18 @@ public static class DatabaseSetupExtensions
     {
         await using PermissionsDbContext context =
             scope.ServiceProvider.GetRequiredService<PermissionsDbContext>();
+        try
+        {
+            if (!await context.Database.EnsureCreatedAsync())
+                await context.Database.MigrateAsync();
+        }
+        catch { }
+    }
+
+    private static async Task ApplyUsersDbContext(this AsyncServiceScope scope)
+    {
+        await using UsersDbContext context =
+            scope.ServiceProvider.GetRequiredService<UsersDbContext>();
         try
         {
             if (!await context.Database.EnsureCreatedAsync())

@@ -10,7 +10,7 @@ using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext;
 
 namespace RocketTaskPlanner.Infrastructure.Migrations
 {
-    [DbContext(typeof(NotificationContextDbContext))]
+    [DbContext(typeof(NotificationsDbContext))]
     partial class NotificationContextDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

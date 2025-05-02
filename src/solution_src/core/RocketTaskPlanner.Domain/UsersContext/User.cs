@@ -7,7 +7,7 @@ public sealed class User
 {
     private readonly List<UserPermission> _permissions = [];
     public UserId Id { get; }
-    public UserName Name { get; }
+    public UserName Name { get; } = null!;
 
     public IReadOnlyCollection<UserPermission> Permissions => _permissions;
 

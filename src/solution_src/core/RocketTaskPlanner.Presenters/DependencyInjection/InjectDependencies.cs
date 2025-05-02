@@ -8,6 +8,7 @@ using RocketTaskPlanner.Application.PermissionsContext.Repository;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler.Decorators;
 using RocketTaskPlanner.Application.Shared.Validation;
+using RocketTaskPlanner.Application.UsersContext.Contracts;
 using RocketTaskPlanner.Infrastructure.Abstractions;
 using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext;
 using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Cache;
@@ -18,14 +19,19 @@ using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext;
 using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities.EntityMappings;
 using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Repositories;
 using RocketTaskPlanner.Infrastructure.Sqlite.PermissionsContext;
+using RocketTaskPlanner.Infrastructure.Sqlite.PermissionsContext.Entities.EntityMappings;
+using RocketTaskPlanner.Infrastructure.Sqlite.UsersContext;
+using RocketTaskPlanner.Infrastructure.Sqlite.UsersContext.Entities.EntityMappings;
 using RocketTaskPlanner.Infrastructure.TimeZoneDb;
+using RocketTaskPlanner.TimeRecognitionModule.TimeCalculation;
+using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Facade;
 using Serilog;
 
 namespace RocketTaskPlanner.Presenters.DependencyInjection;
 
 public static class InjectDependencies
 {
-    public static IServiceCollection Inject(this IServiceCollection services)
+    public static void Inject(this IServiceCollection services)
     {
         services.InjectSqlite();
         services.InjectTimeZoneDb();
@@ -33,50 +39,61 @@ public static class InjectDependencies
         services.InjectValidators();
         services.InjectUseCases();
         services.InjectQueries();
-
+        services.InjectRepositories();
+        services.InjectCaches();
+        services.InjectTimeRecognition();
         RegisterEntityMappings();
-
-        return services;
     }
 
-    private static IServiceCollection InjectLogger(this IServiceCollection services)
+    private static void InjectLogger(this IServiceCollection services)
     {
-        services.AddSingleton<Serilog.ILogger>(
+        services.AddSingleton<ILogger>(
             new LoggerConfiguration().WriteTo.Console().WriteTo.Debug().CreateLogger()
         );
-
-        return services;
     }
 
-    private static IServiceCollection InjectSqlite(this IServiceCollection services)
+    private static void InjectSqlite(this IServiceCollection services)
     {
         services.AddDbContextFactory<ApplicationTimeDbContext>();
-        services.AddDbContextFactory<NotificationContextDbContext>();
+        services.AddDbContextFactory<NotificationsDbContext>();
         services.AddDbContextFactory<PermissionsDbContext>();
-        services.AddScoped<ApplicationTimeDbContext>();
-        services.AddScoped<NotificationContextDbContext>();
-        services.AddScoped<PermissionsDbContext>();
+        services.AddDbContextFactory<UsersDbContext>();
 
+        services.AddScoped<ApplicationTimeDbContext>();
+        services.AddScoped<NotificationsDbContext>();
+        services.AddScoped<PermissionsDbContext>();
+        services.AddScoped<UsersDbContext>();
+    }
+
+    private static void InjectRepositories(this IServiceCollection services)
+    {
         services.AddTransient<
             INotificationReceiverRepository,
             NotificationReceiverSqliteRepository
         >();
-
-        services.AddSingleton<TimeZoneDbProviderCachedInstance>();
         services.AddTransient<TimeZoneDbCachedRepository>();
         services.AddTransient<
             IApplicationTimeRepository<TimeZoneDbProvider>,
             TimeZoneDbRepository
         >();
-        services.AddTransient<IPermissionsRepository, PermissionsRepository>();
         services.Decorate<
             IApplicationTimeRepository<TimeZoneDbProvider>,
             TimeZoneDbCachedRepository
         >();
-        return services;
+
+        services.AddTransient<IPermissionsWritableRepository, PermissionsWritableRepository>();
+        services.AddTransient<IPermissionsReadableRepository, PermissionsReadableRepository>();
+        services.AddTransient<IPermissionsRepository, PermissionsRepository>();
+
+        services.AddTransient<IUsersReadableRepository, UsersReadableRepository>();
+        services.AddTransient<IUsersWritableRepository, UsersWritableRepository>();
+        services.AddTransient<IUsersRepository, UsersRepository>();
     }
 
-    private static IServiceCollection InjectTimeZoneDb(this IServiceCollection services)
+    private static void InjectCaches(this IServiceCollection services) =>
+        services.AddSingleton<TimeZoneDbProviderCachedInstance>();
+
+    private static void InjectTimeZoneDb(this IServiceCollection services)
     {
         services.AddSingleton<IApplicationTimeProviderIdFactory, TimeZoneDbTokenFactory>();
         services.AddSingleton<IApplicationTimeProviderFactory, TimeZoneDbInstanceFactory>();
@@ -84,24 +101,21 @@ public static class InjectDependencies
             IUseCaseHandler<SaveTimeZoneDbApiKeyUseCase, TimeZoneDbProvider>,
             SaveTimeZoneDbApiKeyUseCaseHandler<TimeZoneDbProvider>
         >();
-
-        return services;
     }
 
-    private static IServiceCollection InjectValidators(this IServiceCollection services)
+    private static void InjectValidators(this IServiceCollection services)
     {
         Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
         services.Scan(scan =>
             scan.FromAssemblies(assemblies)
                 .AddClasses(classes => classes.AssignableTo(typeof(IValidator<>)))
                 .AsSelfWithInterfaces()
                 .WithTransientLifetime()
         );
-
-        return services;
     }
 
-    private static IServiceCollection InjectUseCases(this IServiceCollection services)
+    private static void InjectUseCases(this IServiceCollection services)
     {
         Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
@@ -113,20 +127,15 @@ public static class InjectDependencies
         );
 
         services.Decorate(typeof(IUseCaseHandler<,>), typeof(GenericValidationDecorator<,>));
-
         services.Decorate(
             typeof(IUseCaseHandler<,>),
             typeof(GenericExceptionSupressingDecorator<,>)
         );
-
         services.Decorate(typeof(IUseCaseHandler<,>), typeof(GenericLoggingDecorator<,>));
-
         services.Decorate(typeof(IUseCaseHandler<,>), typeof(GenericMetricsHandlerDecorator<,>));
-
-        return services;
     }
 
-    private static IServiceCollection InjectQueries(this IServiceCollection services)
+    private static void InjectQueries(this IServiceCollection services)
     {
         Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
@@ -138,8 +147,12 @@ public static class InjectDependencies
                 .AsSelfWithInterfaces()
                 .WithTransientLifetime()
         );
+    }
 
-        return services;
+    private static void InjectTimeRecognition(this IServiceCollection services)
+    {
+        services.AddSingleton<TimeRecognitionFacade>();
+        services.AddSingleton<TimeCalculationService>();
     }
 
     private static void RegisterEntityMappings()
@@ -152,6 +165,9 @@ public static class InjectDependencies
             config.AddMap(new ThemeChatSubjectEntityMap());
             config.AddMap(new TimeZoneDbProviderEntityMap());
             config.AddMap(new TimeZoneEntityMap());
+            config.AddMap(new UserEntityMap());
+            config.AddMap(new UserPermissionEntityMap());
+            config.AddMap(new PermissionEntityMap());
         });
     }
 }

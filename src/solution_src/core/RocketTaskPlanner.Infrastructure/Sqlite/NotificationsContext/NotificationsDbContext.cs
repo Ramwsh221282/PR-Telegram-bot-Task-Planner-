@@ -3,7 +3,7 @@ using RocketTaskPlanner.Domain.NotificationsContext;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext;
 
-public sealed class NotificationContextDbContext : DbContext
+public sealed class NotificationsDbContext : DbContext
 {
     public DbSet<NotificationReceiver> Receivers { get; set; } = null!;
 
@@ -15,7 +15,7 @@ public sealed class NotificationContextDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(
-            typeof(NotificationContextDbContext).Assembly,
+            typeof(NotificationsDbContext).Assembly,
             t => t.Namespace != null && t.Namespace.Contains("NotificationsContext")
         );
     }

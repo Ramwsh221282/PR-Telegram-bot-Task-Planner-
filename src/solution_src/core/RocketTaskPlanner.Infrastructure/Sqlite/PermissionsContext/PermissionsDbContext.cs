@@ -14,7 +14,7 @@ public sealed class PermissionsDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(
-            typeof(NotificationContextDbContext).Assembly,
+            typeof(NotificationsDbContext).Assembly,
             t => t.Namespace != null && t.Namespace.Contains("PermissionsContext")
         );
     }
