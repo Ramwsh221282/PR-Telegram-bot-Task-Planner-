@@ -2,8 +2,17 @@
 
 namespace RocketTaskPlanner.TimeRecognitionModule.TimeCalculation;
 
+/// <summary>
+/// Сервис расчета времени
+/// </summary>
 public sealed class TimeCalculationService
 {
+    /// <summary>
+    /// Расчет времени от текущего времени на основе распознаваний
+    /// </summary>
+    /// <param name="current">Текущее время</param>
+    /// <param name="result">Результат распознаваний времени</param>
+    /// <returns></returns>
     public TimeCalculationItem AddOffset(TimeCalculationItem current, TimeRecognitionResult result)
     {
         RecognitionMetadataCollection metadata = result.Metadata;
@@ -12,6 +21,12 @@ public sealed class TimeCalculationService
         return temp;
     }
 
+    /// <summary>
+    /// Применение модификаторов даты к текущей дате и времени
+    /// </summary>
+    /// <param name="item">Текущее дата и время</param>
+    /// <param name="collection">Коллекция метаданных распознавания</param>
+    /// <returns>дата и время, сдвинутое от текущего, в зависимости от метаданных</returns>
     private static TimeCalculationItem AdjustDateOffsets(
         TimeCalculationItem item,
         RecognitionMetadataCollection collection
@@ -26,6 +41,12 @@ public sealed class TimeCalculationService
         );
     }
 
+    /// <summary>
+    /// Применение модификаторов времени к текущей дате и времени
+    /// </summary>
+    /// <param name="item">Текущее дата и время</param>
+    /// <param name="collection">Коллекция метаданных распознавания</param>
+    /// <returns>дата и время, сдвинутое от текущего, в зависимости от метаданных</returns>
     private static TimeCalculationItem AdjustTimeOffset(
         TimeCalculationItem item,
         RecognitionMetadataCollection collection

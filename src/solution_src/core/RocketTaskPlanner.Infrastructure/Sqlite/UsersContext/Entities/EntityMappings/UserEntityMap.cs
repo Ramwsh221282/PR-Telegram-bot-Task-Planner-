@@ -2,6 +2,9 @@
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.UsersContext.Entities.EntityMappings;
 
+/// <summary>
+/// Маппинг в Dao пользователя из БД при запросах через Dapper.
+/// </summary>
 public sealed class UserEntityMap : EntityMap<UserEntity>
 {
     public UserEntityMap()

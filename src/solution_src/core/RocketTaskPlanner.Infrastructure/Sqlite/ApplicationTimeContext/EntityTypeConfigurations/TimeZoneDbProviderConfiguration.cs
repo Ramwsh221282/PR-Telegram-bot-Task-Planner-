@@ -4,6 +4,9 @@ using RocketTaskPlanner.Infrastructure.TimeZoneDb;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.EntityTypeConfigurations;
 
+/// <summary>
+/// Конфигурация модели таблицы провайдера временной зоны в БД
+/// </summary>
 public sealed class TimeZoneDbProviderConfiguration : IEntityTypeConfiguration<TimeZoneDbProvider>
 {
     public void Configure(EntityTypeBuilder<TimeZoneDbProvider> builder)

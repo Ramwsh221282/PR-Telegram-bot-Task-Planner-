@@ -2,6 +2,9 @@
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.PermissionsContext.Entities;
 
+/// <summary>
+/// Dao модель прав
+/// </summary>
 public sealed class PermissionEntity
 {
     public string Id { get; set; } = string.Empty;

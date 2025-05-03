@@ -2,6 +2,9 @@ using PRTelegramBot.Attributes;
 
 namespace RocketTaskPlanner.Telegram.BotEndpoints.AddThisChatEndpoint.Handlers.AddGeneralChat;
 
+/// <summary>
+/// Перечисление для хранения индексов кнопок меню выбора временной зоны
+/// </summary>
 [InlineCommand]
 public enum AddGeneralChatCitiesEnum
 {

@@ -1,0 +1,44 @@
+﻿using RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChat;
+using RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChatTheme;
+using RocketTaskPlanner.Application.NotificationsContext.Features.RegisterChat;
+using RocketTaskPlanner.Application.NotificationsContext.Features.RegisterTheme;
+
+namespace RocketTaskPlanner.Application.NotificationsContext.Visitor;
+
+/// <summary>
+/// Интерфейс посетителя для выполнения бизнес-логики в контексте чатов и уведомлений
+/// </summary>
+public interface INotificationUseCaseVisitor
+{
+    /// <summary>
+    /// Создать задачу для чата
+    /// </summary>
+    /// <param name="useCase">Dto</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Result Success или Failure</returns>
+    Task<Result> Visit(CreateTaskForChatUseCase useCase, CancellationToken ct = default);
+
+    /// <summary>
+    /// Создать задачу для темы чата
+    /// </summary>
+    /// <param name="useCase">Dto</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Result Success или Failure</returns>
+    Task<Result> Visit(CreateTaskForChatThemeUseCase useCase, CancellationToken ct = default);
+
+    /// <summary>
+    /// Создать чат
+    /// </summary>
+    /// <param name="useCase">Dto</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Result Success или Failure</returns>
+    Task<Result> Visit(RegisterChatUseCase useCase, CancellationToken ct = default);
+
+    /// <summary>
+    /// Создать тему чата
+    /// </summary>
+    /// <param name="useCase">Dto</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Result Success или Failure</returns>
+    Task<Result> Visit(RegisterThemeUseCase useCase, CancellationToken ct = default);
+}

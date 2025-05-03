@@ -2,6 +2,10 @@ using RocketTaskPlanner.Domain.ApplicationTimeContext;
 
 namespace RocketTaskPlanner.Application.ApplicationTimeContext.Repository;
 
+/// <summary>
+/// Контракт взаимодействия с БД в контексте провайдера временной зоны
+/// </summary>
+/// <typeparam name="TProvider">Тип провайдера</typeparam>
 public interface IApplicationTimeRepository<TProvider>
     where TProvider : IApplicationTimeProvider
 {

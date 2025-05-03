@@ -2,6 +2,9 @@
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities.EntityMappings;
 
+/// <summary>
+/// Маппинг записи таблицы основного чата в Dao модель основного чата при запросах через Dapper
+/// </summary>
 public sealed class NotificationReceiverEntityMap : EntityMap<NotificationReceiverEntity>
 {
     public NotificationReceiverEntityMap()

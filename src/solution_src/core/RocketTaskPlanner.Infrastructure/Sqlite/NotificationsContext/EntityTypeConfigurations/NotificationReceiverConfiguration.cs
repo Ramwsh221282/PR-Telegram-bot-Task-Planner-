@@ -5,6 +5,9 @@ using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.EntityTypeConfigurations;
 
+/// <summary>
+/// Настройка таблицы для модели основного чата
+/// </summary>
 public sealed class NotificationReceiverConfiguration
     : IEntityTypeConfiguration<NotificationReceiver>
 {

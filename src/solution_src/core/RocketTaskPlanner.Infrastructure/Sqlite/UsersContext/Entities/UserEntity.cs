@@ -5,6 +5,9 @@ using RocketTaskPlanner.Domain.UsersContext.ValueObjects;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.UsersContext.Entities;
 
+/// <summary>
+/// Dao модель пользователя
+/// </summary>
 public sealed class UserEntity
 {
     public long Id { get; set; }

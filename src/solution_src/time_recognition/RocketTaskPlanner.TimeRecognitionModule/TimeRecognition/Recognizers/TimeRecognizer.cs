@@ -5,6 +5,9 @@ using RocketTaskPlanner.Utilities.StringUtilities;
 
 namespace RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognizers;
 
+/// <summary>
+/// Класс для распознавания времени в ЧЧ.ММ или ЧЧ ММ или Ч ММ. Использует только Regex.
+/// </summary>
 public sealed partial class TimeRecognizer : ITimeRecognizer
 {
     public async Task<Recognitions.TimeRecognition> TryRecognize(string input)

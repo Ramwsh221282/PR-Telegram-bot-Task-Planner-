@@ -3,15 +3,20 @@ using RocketTaskPlanner.Infrastructure.TimeZoneDb;
 
 namespace RocketTaskPlanner.Telegram.BotEndpoints.AddThisChatEndpoint.Handlers.AddGeneralChat;
 
+/// <summary>
+/// Кеш для хранения данных команды /add_this_chat
+/// </summary>
+/// <param name="provider">Инстанс провайдера временных зон</param>
+/// <param name="chatId">Ид чата</param>
+/// <param name="chatName">Название чата</param>
 public sealed class GeneralChatCache(TimeZoneDbProvider provider, long chatId, string chatName)
     : ITelegramCache
 {
-    private readonly TimeZoneDbProvider _provider = provider;
-    private readonly long _chatId = chatId;
-    private readonly string _chatName = chatName;
-    public long ChatId => _chatId;
-    public string ChatName => _chatName;
-    public TimeZoneDbProvider Provider => _provider;
+    public long ChatId { get; } = chatId;
+
+    public string ChatName { get; } = chatName;
+
+    public TimeZoneDbProvider Provider { get; } = provider;
 
     public bool ClearData() => true;
 }

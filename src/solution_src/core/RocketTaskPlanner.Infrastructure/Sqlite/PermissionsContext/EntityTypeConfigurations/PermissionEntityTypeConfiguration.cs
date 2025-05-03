@@ -4,6 +4,9 @@ using RocketTaskPlanner.Domain.PermissionsContext;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.PermissionsContext.EntityTypeConfigurations;
 
+/// <summary>
+/// Настройка таблицы прав
+/// </summary>
 public sealed class PermissionEntityTypeConfiguration : IEntityTypeConfiguration<Permission>
 {
     public void Configure(EntityTypeBuilder<Permission> builder)

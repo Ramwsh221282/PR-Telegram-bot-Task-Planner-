@@ -2,6 +2,9 @@
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities.EntityMappings;
 
+/// <summary>
+/// Маппинг записи таблицы темы чата в Dao модель темы чата при запросах через Dapper
+/// </summary>
 public sealed class ReceiverThemeEntityMap : EntityMap<ReceiverThemeEntity>
 {
     public ReceiverThemeEntityMap()

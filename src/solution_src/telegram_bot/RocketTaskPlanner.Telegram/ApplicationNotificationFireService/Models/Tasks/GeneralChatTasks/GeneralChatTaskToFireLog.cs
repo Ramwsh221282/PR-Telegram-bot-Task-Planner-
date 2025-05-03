@@ -1,5 +1,8 @@
 ﻿namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Tasks.GeneralChatTasks;
 
+/// <summary>
+/// Логирующий декоратор для сообщения основного чата
+/// </summary>
 public sealed class GeneralChatTaskToFireLog : IGeneralChatTaskToFire
 {
     private readonly Serilog.ILogger _logger;

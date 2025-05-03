@@ -4,6 +4,10 @@ using RocketTaskPlanner.Infrastructure.Abstractions;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.HasNotificationReceiver;
 
+/// <summary>
+/// Проверка на существование записи основного чата в БД
+/// </summary>
+/// <param name="factory">Фабрика соединения с БД</param>
 public sealed class HasNotificationReceiverQueryHandler(IDbConnectionFactory factory)
     : IQueryHandler<HasNotificationReceiverQuery, bool>
 {
@@ -19,11 +23,7 @@ public sealed class HasNotificationReceiverQueryHandler(IDbConnectionFactory fac
     )
     {
         long receiverId = query.ReceiverId;
-        CommandDefinition command = new CommandDefinition(
-            SQL,
-            new { id = receiverId },
-            cancellationToken: ct
-        );
+        CommandDefinition command = new(SQL, new { id = receiverId }, cancellationToken: ct);
         using IDbConnection connection = _factory.Create(
             SqliteConstants.NotificationsConnectionString
         );

@@ -9,6 +9,9 @@ using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognitions;
 
 namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Tasks.GeneralChatTasks;
 
+/// <summary>
+/// Декоратор для работы с базой данных
+/// </summary>
 public sealed class GeneralChatTaskToFireSqlSpeaking : IGeneralChatTaskToFire
 {
     private const string _deleteSql = """
@@ -36,6 +39,8 @@ public sealed class GeneralChatTaskToFireSqlSpeaking : IGeneralChatTaskToFire
     public async Task<ITaskToFire> Fire()
     {
         bool isPeriodic = IsPeriodic();
+
+        // удаление сообщения, либо его продление, если периодичное.
         Task sqlOperation = isPeriodic switch
         {
             true => UpdateRecord(),
@@ -76,6 +81,10 @@ public sealed class GeneralChatTaskToFireSqlSpeaking : IGeneralChatTaskToFire
         await connection.ExecuteAsync(_updateSql, parameters);
     }
 
+    /// <summary>
+    /// Расчет следующего времени уведомления, через повторное распознавание времени на основе текста сообщения.
+    /// </summary>
+    /// <returns>Дата следующего уведомления</returns>
     private async Task<DateTime> NextNotifyDate()
     {
         DateTime notified = Notified();

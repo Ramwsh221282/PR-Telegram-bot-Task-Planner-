@@ -3,6 +3,10 @@ using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognizers;
 
 namespace RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Facade.Services;
 
+/// <summary>
+/// Сервис для хранения распознавателей и стратегии распознавания.
+/// Нужен для долгого хранения объектов-распознавателей, вместо их повторного создания
+/// </summary>
 public sealed class TimeRecognitionRecognizersService
 {
     private readonly Dictionary<Type, ITimeRecognizer> _recognizers = [];

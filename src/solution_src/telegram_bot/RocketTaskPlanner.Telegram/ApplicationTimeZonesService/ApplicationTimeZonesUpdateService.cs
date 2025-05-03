@@ -5,11 +5,15 @@ using RocketTaskPlanner.Infrastructure.TimeZoneDb;
 
 namespace RocketTaskPlanner.Telegram.ApplicationTimeZonesService;
 
+/// <summary>
+/// Background процесс для обновления временных зон в кеше.
+/// </summary>
 public sealed class ApplicationTimeZonesUpdateService : BackgroundService
 {
     private readonly TimeZoneDbProviderCachedInstance _instance;
     private readonly IApplicationTimeRepository<TimeZoneDbProvider> _repository;
     private readonly Serilog.ILogger _logger;
+    private const string CONTEXT = nameof(ApplicationTimeZonesUpdateService);
 
     public ApplicationTimeZonesUpdateService(
         TimeZoneDbProviderCachedInstance cachedInstance,
@@ -18,28 +22,23 @@ public sealed class ApplicationTimeZonesUpdateService : BackgroundService
     )
     {
         _logger = logger;
-        _logger.Information(
-            "{Context} initializng cached instance.",
-            nameof(ApplicationTimeZonesUpdateService)
-        );
+        _logger.Information("{Context} initializng cached instance.", CONTEXT);
         Result<TimeZoneDbProvider> instanceFromDb = repository.Get().Result;
+
         if (instanceFromDb.IsFailure)
         {
             _instance = cachedInstance;
             _instance.SetNull();
             _logger.Information(
                 "{Context} Time Zone Db Provider configuration does not exist. Initialing as none value.",
-                nameof(ApplicationTimeZonesUpdateService)
+                CONTEXT
             );
         }
         else
         {
             _instance = cachedInstance;
             _instance.InitializeOrUpdate(instanceFromDb.Value);
-            _logger.Information(
-                "{Context} Time Zone Db Provider instance initialized.",
-                nameof(ApplicationTimeZonesUpdateService)
-            );
+            _logger.Information("{Context} Time Zone Db Provider instance initialized.", CONTEXT);
         }
         _repository = repository;
     }
@@ -48,26 +47,22 @@ public sealed class ApplicationTimeZonesUpdateService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _logger.Information(
-                "{Context}. Updating time zone db cached instance...",
-                nameof(ApplicationTimeZonesUpdateService)
-            );
+            _logger.Information("{Context}. Updating time zone db cached instance...", CONTEXT);
+
             await UpdateApplicationTimeZones(stoppingToken);
-            _logger.Information(
-                "{Context}. Time Zone Db Instance has been updated...",
-                nameof(ApplicationTimeZonesUpdateService)
-            );
+
+            _logger.Information("{Context}. Time Zone Db Instance has been updated...", CONTEXT);
+
             await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
         }
-        _logger.Information(
-            "{Context} shut down called.",
-            nameof(ApplicationTimeZonesUpdateService)
-        );
+
+        _logger.Information("{Context} shut down called.", CONTEXT);
     }
 
     private async Task UpdateApplicationTimeZones(CancellationToken cancellationToken)
     {
         TimeZoneDbProvider? provider = _instance.Instance;
+
         if (provider != null)
         {
             await provider.ProvideTimeZones();

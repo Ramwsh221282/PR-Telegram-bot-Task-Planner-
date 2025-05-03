@@ -2,6 +2,9 @@
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Entities.EntityMappings;
 
+/// <summary>
+/// Маппинг модели таблицы из БД в модель Провайдера временной зоны при запросах через Dapper
+/// </summary>
 public sealed class TimeZoneDbProviderEntityMap : EntityMap<TimeZoneDbProviderEntity>
 {
     public TimeZoneDbProviderEntityMap()

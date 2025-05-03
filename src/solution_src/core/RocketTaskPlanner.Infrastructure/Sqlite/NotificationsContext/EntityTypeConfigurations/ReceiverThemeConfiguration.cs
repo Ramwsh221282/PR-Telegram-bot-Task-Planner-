@@ -5,6 +5,9 @@ using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverThemes.Valu
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.EntityTypeConfigurations;
 
+/// <summary>
+/// Настройка таблицы для модели темы чата
+/// </summary>
 public sealed class ReceiverThemeConfiguration : IEntityTypeConfiguration<ReceiverTheme>
 {
     public void Configure(EntityTypeBuilder<ReceiverTheme> builder)

@@ -7,6 +7,9 @@ using RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Recei
 
 namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Times.Decorators.Times;
 
+/// <summary>
+/// Декоратор временной зоны для общения с БД (инициализацией получателей)
+/// </summary>
 public sealed class SqlSpeakingTimeZoneOfCurrentTime : ITimeZoneOfCurrentTime
 {
     private readonly IDbConnectionFactory _connectionFactory;

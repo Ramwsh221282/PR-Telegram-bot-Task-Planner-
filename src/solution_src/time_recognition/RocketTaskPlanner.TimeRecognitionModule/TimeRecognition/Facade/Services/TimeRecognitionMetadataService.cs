@@ -5,6 +5,10 @@ using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognizers;
 
 namespace RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Facade.Services;
 
+/// <summary>
+/// Сервис для сбора метаданных распознавания времени
+/// </summary>
+/// <param name="recognizers">Сервис распознавателей</param>
 public sealed class TimeRecognitionMetadataService(TimeRecognitionRecognizersService recognizers)
 {
     private readonly TimeRecognitionRecognizersService _recognizers = recognizers;
@@ -14,8 +18,13 @@ public sealed class TimeRecognitionMetadataService(TimeRecognitionRecognizersSer
     ) =>
         ticket switch
         {
+            // если ticket с нераспознанным временем, возврат пустой коллекции метаданных
             UnknownTimeRecognitionTicket => FromUnknownTimeTicket(),
+
+            // возврат коллекции метаданных на основе периодичного времени
             PeriodicTimeRecognitionTicket t => await FromPeriodic(t),
+
+            // возврат коллекции метаданных на основе не периодичного времени
             SingleTimeRecognitionTicket t => await FromSingle(t),
             _ => FromUnknownTimeTicket(),
         };

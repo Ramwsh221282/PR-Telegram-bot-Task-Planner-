@@ -3,6 +3,9 @@ using RocketTaskPlanner.Domain.UsersContext.Entities;
 
 namespace RocketTaskPlanner.Application.UsersContext.Contracts;
 
+/// <summary>
+/// Контракт взаимодействия с БД (запись)
+/// </summary>
 public interface IUsersWritableRepository
 {
     public void BeginTransaction();
@@ -13,6 +16,9 @@ public interface IUsersWritableRepository
         UserPermission permission,
         CancellationToken ct = default
     );
+
+    public Result<User> RemoveUser(User user, CancellationToken ct = default);
+    public Result<long> RemoveUser(long userId, CancellationToken ct = default);
 
     public Task<Result> Save();
 }

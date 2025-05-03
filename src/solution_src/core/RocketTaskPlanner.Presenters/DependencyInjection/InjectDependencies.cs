@@ -1,14 +1,17 @@
 using System.Reflection;
 using Dapper.FluentMap;
 using Microsoft.Extensions.DependencyInjection;
+using RocketTaskPlanner.Application.ApplicationTimeContext.Features.Contracts;
 using RocketTaskPlanner.Application.ApplicationTimeContext.Features.SaveTimeZoneDbApiKey;
 using RocketTaskPlanner.Application.ApplicationTimeContext.Repository;
 using RocketTaskPlanner.Application.NotificationsContext.Repository;
+using RocketTaskPlanner.Application.NotificationsContext.Visitor;
 using RocketTaskPlanner.Application.PermissionsContext.Repository;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler.Decorators;
 using RocketTaskPlanner.Application.Shared.Validation;
 using RocketTaskPlanner.Application.UsersContext.Contracts;
+using RocketTaskPlanner.Application.UsersContext.Visitor;
 using RocketTaskPlanner.Infrastructure.Abstractions;
 using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext;
 using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Cache;
@@ -31,6 +34,7 @@ namespace RocketTaskPlanner.Presenters.DependencyInjection;
 
 public static class InjectDependencies
 {
+    // инъекция зависимостей приложения (из core и time_recognition)
     public static void InjectApplicationDependencies(this IServiceCollection services)
     {
         services.InjectSqlite();
@@ -42,9 +46,11 @@ public static class InjectDependencies
         services.InjectRepositories();
         services.InjectCaches();
         services.InjectTimeRecognition();
+        services.InjectUseCaseVisitors();
         RegisterEntityMappings();
     }
 
+    // инъекция логгера
     private static void InjectLogger(this IServiceCollection services)
     {
         services.AddSingleton<ILogger>(
@@ -52,6 +58,7 @@ public static class InjectDependencies
         );
     }
 
+    // инъекция зависимостей EntityFramework Core для работы с БД.
     private static void InjectSqlite(this IServiceCollection services)
     {
         services.AddDbContextFactory<ApplicationTimeDbContext>();
@@ -65,11 +72,12 @@ public static class InjectDependencies
         services.AddScoped<UsersDbContext>();
     }
 
+    // Инъекция контрактов и реализаций для работы с хранилищами (БД).
     private static void InjectRepositories(this IServiceCollection services)
     {
         services.AddTransient<
-            INotificationReceiverRepository,
-            NotificationReceiverSqliteRepository
+            INotificationReceiverWritableRepository,
+            NotificationReceiverWritableSqliteRepository
         >();
         services.AddTransient<TimeZoneDbCachedRepository>();
         services.AddTransient<
@@ -90,9 +98,11 @@ public static class InjectDependencies
         services.AddTransient<IUsersRepository, UsersRepository>();
     }
 
+    // инъекция кешей
     private static void InjectCaches(this IServiceCollection services) =>
         services.AddSingleton<TimeZoneDbProviderCachedInstance>();
 
+    // инъекция зависимостей Time Zone Db провайдера
     private static void InjectTimeZoneDb(this IServiceCollection services)
     {
         services.AddSingleton<IApplicationTimeProviderIdFactory, TimeZoneDbTokenFactory>();
@@ -103,6 +113,7 @@ public static class InjectDependencies
         >();
     }
 
+    // инъекция валидации
     private static void InjectValidators(this IServiceCollection services)
     {
         Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -115,6 +126,7 @@ public static class InjectDependencies
         );
     }
 
+    // инъекция обработчиков бизнес-логики
     private static void InjectUseCases(this IServiceCollection services)
     {
         Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -135,6 +147,7 @@ public static class InjectDependencies
         services.Decorate(typeof(IUseCaseHandler<,>), typeof(GenericMetricsHandlerDecorator<,>));
     }
 
+    // инъекция обработчиков запросов
     private static void InjectQueries(this IServiceCollection services)
     {
         Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -149,12 +162,14 @@ public static class InjectDependencies
         );
     }
 
+    // инъекция логики для распознавания времени в тексте
     private static void InjectTimeRecognition(this IServiceCollection services)
     {
         services.AddSingleton<TimeRecognitionFacade>();
         services.AddSingleton<TimeCalculationService>();
     }
 
+    // регистрация маппинга из моделей таблиц в Dao модели приложения при запросах через Dapper
     private static void RegisterEntityMappings()
     {
         FluentMapper.Initialize(config =>
@@ -169,5 +184,12 @@ public static class InjectDependencies
             config.AddMap(new UserPermissionEntityMap());
             config.AddMap(new PermissionEntityMap());
         });
+    }
+
+    // инъекция посетителей запросов бизнес-логики
+    private static void InjectUseCaseVisitors(this IServiceCollection services)
+    {
+        services.AddTransient<IUsersUseCaseVisitor, UsersUseCaseVisitor>();
+        services.AddTransient<INotificationUseCaseVisitor, NotificationUseCaseVisitor>();
     }
 }

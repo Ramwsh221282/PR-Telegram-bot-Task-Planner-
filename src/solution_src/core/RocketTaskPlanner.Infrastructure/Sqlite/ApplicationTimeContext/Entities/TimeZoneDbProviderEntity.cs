@@ -3,6 +3,9 @@ using RocketTaskPlanner.Infrastructure.TimeZoneDb;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Entities;
 
+/// <summary>
+/// Dao модель провайдера временной зоны
+/// </summary>
 public sealed class TimeZoneDbProviderEntity
 {
     public string TimeZoneDbProviderId { get; set; } = string.Empty;

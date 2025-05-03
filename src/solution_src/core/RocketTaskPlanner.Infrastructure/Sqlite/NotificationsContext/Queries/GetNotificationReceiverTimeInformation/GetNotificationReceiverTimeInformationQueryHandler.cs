@@ -9,6 +9,11 @@ using RocketTaskPlanner.Infrastructure.TimeZoneDb;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetNotificationReceiverTimeInformation;
 
+/// <summary>
+/// Обработчик запроса на получение информации об основном чате по Id с обновленным временем из Time Zone Db провайдера
+/// </summary>
+/// <param name="factory">Фабрика соединения</param>
+/// <param name="repository">Контракт взаимодействия с БД временных зон</param>
 public sealed class GetNotificationReceiverTimeInformationQueryHandler(
     IDbConnectionFactory factory,
     IApplicationTimeRepository<TimeZoneDbProvider> repository

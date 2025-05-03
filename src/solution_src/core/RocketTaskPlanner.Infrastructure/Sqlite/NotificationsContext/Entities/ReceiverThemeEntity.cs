@@ -4,6 +4,9 @@ using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverThemes.Valu
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities;
 
+/// <summary>
+/// Dao модель темы основного чата
+/// </summary>
 public sealed class ReceiverThemeEntity
 {
     public long ThemeId { get; set; }

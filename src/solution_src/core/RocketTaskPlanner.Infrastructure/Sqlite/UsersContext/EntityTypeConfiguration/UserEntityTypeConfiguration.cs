@@ -5,6 +5,9 @@ using RocketTaskPlanner.Domain.UsersContext.ValueObjects;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.UsersContext.EntityTypeConfiguration;
 
+/// <summary>
+/// Конфигурация таблицы users (пользователей)
+/// </summary>
 public sealed class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)

@@ -1,5 +1,9 @@
 namespace RocketTaskPlanner.Application.Shared.Validation;
 
+/// <summary>
+/// Класс для валидации объекта TValidatee
+/// </summary>
+/// <typeparam name="TValidatee">Объект для валидации</typeparam>
 public abstract class AbstractValidator<TValidatee> : IValidator<TValidatee>
 {
     private readonly Dictionary<Func<TValidatee, bool>, string> _validationRules = [];
@@ -18,6 +22,11 @@ public abstract class AbstractValidator<TValidatee> : IValidator<TValidatee>
             : ValidationResult.NoValid(_validationErrors);
     }
 
+    /// <summary>
+    /// Создание валидирующего делегата
+    /// </summary>
+    /// <param name="validationRuleFactory">Делегат</param>
+    /// <param name="errorMessage">Сообщение при ошибке</param>
     public void AddValidationRule(
         Func<TValidatee, bool> validationRuleFactory,
         string errorMessage

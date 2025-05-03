@@ -4,6 +4,9 @@ using RocketTaskPlanner.Utilities.StringUtilities;
 
 namespace RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.RecognitionStrategies;
 
+/// <summary>
+/// Стратегия обработки текста при распознавании, когда текст представляется в виде массива слов, и каждое слово обходится в цикле и распознается
+/// </summary>
 public sealed class ChunkRecognitionStrategy : IRecognitionStrategy
 {
     public async Task<Recognitions.TimeRecognition> Recognize(

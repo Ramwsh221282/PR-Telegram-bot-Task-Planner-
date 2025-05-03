@@ -5,6 +5,9 @@ using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities;
 
+/// <summary>
+/// Dao модель основного чата
+/// </summary>
 public sealed class NotificationReceiverEntity
 {
     public long ReceiverId { get; set; }

@@ -8,10 +8,16 @@ using RocketTaskPlanner.Utilities.DateExtensions;
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChatTheme;
 
-public sealed class CreateTaskForChatThemeUseCaseHandler(INotificationReceiverRepository repository)
-    : IUseCaseHandler<CreateTaskForChatThemeUseCase, CreateTaskForChatThemeUseCaseResponse>
+/// <summary>
+/// Создание уведомления для темы чата
+/// </summary>
+/// <param name="writableRepository">Контракт взаимодействия с БД (операции записи)</param>
+public sealed class CreateTaskForChatThemeUseCaseHandler(
+    INotificationReceiverWritableRepository writableRepository
+) : IUseCaseHandler<CreateTaskForChatThemeUseCase, CreateTaskForChatThemeUseCaseResponse>
 {
-    private readonly INotificationReceiverRepository _repository = repository;
+    private readonly INotificationReceiverWritableRepository _writableRepository =
+        writableRepository;
 
     public async Task<Result<CreateTaskForChatThemeUseCaseResponse>> Handle(
         CreateTaskForChatThemeUseCase useCase,
@@ -22,7 +28,10 @@ public sealed class CreateTaskForChatThemeUseCaseHandler(INotificationReceiverRe
             return Result.Failure<CreateTaskForChatThemeUseCaseResponse>(
                 "Дата вызова меньше даты создания."
             );
-        Result<NotificationReceiver> receiver = await _repository.GetById(useCase.ChatId, ct);
+        Result<NotificationReceiver> receiver = await _writableRepository.GetById(
+            useCase.ChatId,
+            ct
+        );
         if (receiver.IsFailure)
             return Result.Failure<CreateTaskForChatThemeUseCaseResponse>(receiver.Error);
 
@@ -40,7 +49,7 @@ public sealed class CreateTaskForChatThemeUseCaseHandler(INotificationReceiverRe
         ReceiverSubjectMessage message = ReceiverSubjectMessage.Create(useCase.Message).Value;
         ReceiverSubjectPeriodInfo periodInfo = new(useCase.isPeriodic);
         ThemeChatSubject subject = theme.AddSubject(id, time, periodInfo, message);
-        Result inserting = await _repository.AddSubject(subject, ct);
+        Result inserting = await _writableRepository.AddSubject(subject, ct);
         return inserting.IsFailure
             ? Result.Failure<CreateTaskForChatThemeUseCaseResponse>(receiver.Error)
             : CreateResponse(subject);

@@ -2,16 +2,16 @@
 
 namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Tasks.ThemeChatTasks;
 
+/// <summary>
+/// Сообщение темы чата которое нужно отправить
+/// </summary>
 public sealed class ThemeChatTaskToFire : IThemeChatTaskToFire
 {
     private readonly ThemeChatSubjectEntity _subject;
     private readonly long _chatId;
 
-    public ThemeChatTaskToFire(ThemeChatSubjectEntity subject, long chatId)
-    {
-        _subject = subject;
-        _chatId = chatId;
-    }
+    public ThemeChatTaskToFire(ThemeChatSubjectEntity subject, long chatId) =>
+        (_subject, _chatId) = (subject, chatId);
 
     public async Task<ITaskToFire> Fire() => await Task.FromResult(this);
 

@@ -5,6 +5,9 @@ using Telegram.Bot;
 
 namespace RocketTaskPlanner.Telegram.Configuration;
 
+/// <summary>
+/// Utility класс для инъекции зависимостей telegram бота
+/// </summary>
 public static class TelegramBotInjection
 {
     public static void InjectTelegramBot(this HostApplicationBuilder builder)

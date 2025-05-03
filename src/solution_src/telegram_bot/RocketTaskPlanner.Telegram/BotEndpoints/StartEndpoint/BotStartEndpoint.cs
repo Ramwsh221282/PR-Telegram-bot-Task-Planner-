@@ -1,12 +1,8 @@
 using PRTelegramBot.Attributes;
 using PRTelegramBot.Models.Enums;
 using RocketTaskPlanner.Application.ApplicationTimeContext.Features.SaveTimeZoneDbApiKey;
-using RocketTaskPlanner.Application.PermissionsContext.Repository;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler;
-using RocketTaskPlanner.Application.UsersContext.Contracts;
-using RocketTaskPlanner.Application.UsersContext.Features.AddUser;
-using RocketTaskPlanner.Application.UsersContext.Features.AddUserPermission;
-using RocketTaskPlanner.Domain.UsersContext.Entities;
+using RocketTaskPlanner.Application.UsersContext.Visitor;
 using RocketTaskPlanner.Infrastructure.Abstractions;
 using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Queries.HasTimeZoneDbToken;
 using RocketTaskPlanner.Infrastructure.TimeZoneDb;
@@ -28,17 +24,14 @@ public sealed class BotStartEndpoint
 {
     /// <summary>
     /// Контекст исполнения обработок при вызове команды /start.
-    /// Здесь содержаться обработчики шагов этапа создания Time Zone Db ключа.
+    /// Здесь содержаться обработчики шагов этапа создания Time Zone Db ключа и первичной конфигурации приложения.
     /// </summary>
     private readonly TelegramBotExecutionContext _context;
 
     /// <summary>
     /// Конструктор класса TimeZoneDbApiKeySetupEndpoint.
     /// </summary>
-    /// <param name="addOwnerUseCase">Обработчик для создания обладателя бота.</param>
-    /// <param name="addOwnerPermissionsUseCase">Обработчик для добавление обладателю прав.</param>
-    /// <param name="permissionsRepository">Репозиторий прав.</param>
-    /// <param name="usersRepository">Репозиторий пользователей.</param>
+    /// <param name="userUseCases">Посетитель для обработчиков логики с пользователями.</param>
     /// <param name="saveTimeZoneKeyUseCaseHandler">Обработчик сохранения Time Zone Db ключа.</param>
     /// <param name="hasTimeZoneQueryHandler">Обработчик проверки на существование Time Zone Db ключа.</param>
     public BotStartEndpoint(
@@ -50,26 +43,24 @@ public sealed class BotStartEndpoint
             HasTimeZoneDbTokenQuery,
             HasTimeZoneDbTokenQueryResponse
         > hasTimeZoneQueryHandler,
-        IUseCaseHandler<AddUserPermissionUseCase, UserPermission> addOwnerPermissionsUseCase,
-        IUseCaseHandler<AddUserUseCase, RocketTaskPlanner.Domain.UsersContext.User> addOwnerUseCase,
-        IPermissionsRepository permissionsRepository,
-        IUsersRepository usersRepository
+        IUsersUseCaseVisitor userUseCases
     )
     {
+        // создание контекста обработки команды /start
         _context = new TelegramBotExecutionContext();
+
+        // обработчик сохранения time zone db ключа.
         OnTimeZoneDbTokenReplyHandler replyHandler = new(
             _context,
             saveTimeZoneKeyUseCaseHandler,
-            addOwnerUseCase,
-            addOwnerPermissionsUseCase,
-            permissionsRepository
+            userUseCases
         );
+
+        // обработчик кнопок меню - "продолжить", "отмена"
         OnTimeZoneDbTokenContinueHandler continueHandler = new(_context);
-        OnTimeZoneDbTokenKeyStartHandler entryPoint = new(
-            _context,
-            hasTimeZoneQueryHandler,
-            usersRepository
-        );
+
+        // обработчик точка-входа в контекст обработки
+        OnTimeZoneDbTokenKeyStartHandler entryPoint = new(_context, hasTimeZoneQueryHandler);
 
         _context = _context
             .SetEntryPointHandler(entryPoint)

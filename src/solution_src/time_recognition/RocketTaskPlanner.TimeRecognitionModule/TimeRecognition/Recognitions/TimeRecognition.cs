@@ -10,6 +10,9 @@ public abstract record TimeRecognition : ITimeCalculation
     public abstract TimeCalculationItem Modify(TimeCalculationItem item);
 }
 
+/// <summary>
+/// Нераспознанное время
+/// </summary>
 public record UnrecognizedTime : TimeRecognition
 {
     public override TimeCalculationItem Calculate(TimeCalculationItem item) => item;
@@ -17,6 +20,10 @@ public record UnrecognizedTime : TimeRecognition
     public override TimeCalculationItem Modify(TimeCalculationItem item) => item;
 }
 
+/// <summary>
+/// Распознанный день недели
+/// </summary>
+/// <param name="DayOfWeek">день недели</param>
 public sealed record DayOfWeekRecognition(string DayOfWeek) : TimeRecognition
 {
     public static readonly DayOfWeekRecognition Monday = new("Понедельник");
@@ -56,6 +63,11 @@ public sealed record DayOfWeekRecognition(string DayOfWeek) : TimeRecognition
     }
 }
 
+/// <summary>
+/// Распознанный день и день месяца
+/// </summary>
+/// <param name="Month">Месяц</param>
+/// <param name="MonthDay">День месяца</param>
 public sealed record MonthRecognition(int Month, int MonthDay) : TimeRecognition
 {
     public override TimeCalculationItem Modify(TimeCalculationItem item) => Calculate(item);
@@ -73,6 +85,10 @@ public sealed record MonthRecognition(int Month, int MonthDay) : TimeRecognition
 
 public abstract record PeriodicRecognition : TimeRecognition;
 
+/// <summary>
+/// Периодичное время в днях недели
+/// </summary>
+/// <param name="DayOfWeek">Распознавание дня недели</param>
 public sealed record PeriodicWeekDayRecognition(DayOfWeekRecognition DayOfWeek)
     : PeriodicRecognition
 {
@@ -82,6 +98,10 @@ public sealed record PeriodicWeekDayRecognition(DayOfWeekRecognition DayOfWeek)
     public override TimeCalculationItem Modify(TimeCalculationItem time) => Calculate(time);
 }
 
+/// <summary>
+/// Периодичное время в относительной дате
+/// </summary>
+/// <param name="Relative">Распознавание относительной даты</param>
 public sealed record PeriodicEveryDayRecognition(RelativeRecognition Relative) : PeriodicRecognition
 {
     public override TimeCalculationItem Calculate(TimeCalculationItem calculation) =>
@@ -90,6 +110,10 @@ public sealed record PeriodicEveryDayRecognition(RelativeRecognition Relative) :
     public override TimeCalculationItem Modify(TimeCalculationItem time) => Calculate(time);
 }
 
+/// <summary>
+/// Периодичное время каждый час или X часов
+/// </summary>
+/// <param name="Specific">Распознавание периодичного времени</param>
 public sealed record PeriodicEveryHourRecognition(SpecificTimeRecognition Specific)
     : PeriodicRecognition
 {
@@ -103,6 +127,10 @@ public sealed record PeriodicEveryHourRecognition(SpecificTimeRecognition Specif
     public override TimeCalculationItem Modify(TimeCalculationItem time) => Calculate(time);
 }
 
+/// <summary>
+/// Периодичное время каждую минуту или Х минут
+/// </summary>
+/// <param name="Specific">Распознавание периодичного времени</param>
 public sealed record PeriodicEveryMinuteRecognition(SpecificTimeRecognition Specific)
     : PeriodicRecognition
 {
@@ -116,6 +144,10 @@ public sealed record PeriodicEveryMinuteRecognition(SpecificTimeRecognition Spec
     public override TimeCalculationItem Modify(TimeCalculationItem time) => Calculate(time);
 }
 
+/// <summary>
+/// Распознавание относительной даты
+/// </summary>
+/// <param name="DaysOffset">Смещение в днях</param>
 public sealed record RelativeRecognition(int DaysOffset) : TimeRecognition
 {
     public override TimeCalculationItem Calculate(TimeCalculationItem calculation)
@@ -136,6 +168,11 @@ public sealed record RelativeRecognition(int DaysOffset) : TimeRecognition
     public override TimeCalculationItem Modify(TimeCalculationItem time) => Calculate(time);
 }
 
+/// <summary>
+/// Распознавание конкретного времени в ЧЧ.ММ ЧЧ ММ Ч ММ
+/// </summary>
+/// <param name="Hours">Часы</param>
+/// <param name="Minutes">Минуты</param>
 public sealed record SpecificTimeRecognition(int Hours, int Minutes) : TimeRecognition
 {
     public override TimeCalculationItem Calculate(TimeCalculationItem calculation)

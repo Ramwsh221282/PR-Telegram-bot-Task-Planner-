@@ -7,6 +7,10 @@ using RocketTaskPlanner.Infrastructure.Abstractions;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.PermissionsContext;
 
+/// <summary>
+/// Абстракция для работы с БД Прав
+/// </summary>
+/// <param name="connectionFactory">Фабрика для создания соединений</param>
 public sealed class PermissionsWritableRepository(IDbConnectionFactory connectionFactory)
     : IPermissionsWritableRepository
 {
@@ -18,9 +22,9 @@ public sealed class PermissionsWritableRepository(IDbConnectionFactory connectio
     )
     {
         const string sql = """
-INSERT INTO Permissions(Id, Name)
-VALUES(@id, @name)
-""";
+            INSERT INTO Permissions(Id, Name)
+            VALUES(@id, @name)
+            """;
         var parameters = new { id = permission.Id, name = permission.Name };
         CommandDefinition command = new(sql, parameters, cancellationToken: cancellationToken);
         using IDbConnection connection = _connectionFactory.Create(

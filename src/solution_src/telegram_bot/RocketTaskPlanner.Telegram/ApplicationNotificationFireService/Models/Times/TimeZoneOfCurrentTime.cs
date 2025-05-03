@@ -3,6 +3,9 @@ using RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Recei
 
 namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Times;
 
+/// <summary>
+/// Временная зона текущего времени
+/// </summary>
 public sealed class TimeZoneOfCurrentTime : ITimeZoneOfCurrentTime
 {
     private readonly ApplicationTimeZone _timeZone;
@@ -16,7 +19,8 @@ public sealed class TimeZoneOfCurrentTime : ITimeZoneOfCurrentTime
 
     public string Id() => _timeZone.Id.Id;
 
-    public async Task<GeneralChatReceiverOfCurrentTimeZone[]> Receivers() => _receivers;
+    public async Task<GeneralChatReceiverOfCurrentTimeZone[]> Receivers() =>
+        await Task.FromResult(_receivers);
 
     public ITimeZoneOfCurrentTime WithReceivers(GeneralChatReceiverOfCurrentTimeZone[] receivers) =>
         new TimeZoneOfCurrentTime(_timeZone) { _receivers = receivers };

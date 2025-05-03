@@ -2,6 +2,9 @@
 
 namespace RocketTaskPlanner.Application.PermissionsContext.Repository;
 
+/// <summary>
+/// Контракт взаимодействия с БД (чтение)
+/// </summary>
 public interface IPermissionsReadableRepository
 {
     Task<Result<Permission>> GetByName(string permissionName, CancellationToken ct = default);

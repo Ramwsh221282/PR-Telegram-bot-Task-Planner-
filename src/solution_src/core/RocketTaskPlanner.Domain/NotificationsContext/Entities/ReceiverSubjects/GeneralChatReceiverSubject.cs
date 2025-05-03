@@ -3,8 +3,14 @@ using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 
 namespace RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverSubjects;
 
+/// <summary>
+/// Уведомление основного чата
+/// </summary>
 public sealed class GeneralChatReceiverSubject : ReceiverSubject
 {
+    /// <summary>
+    /// Чат-обладатель сообщения
+    /// </summary>
     public NotificationReceiver Receiver { get; } = null!;
     public NotificationReceiverId GeneralChatId { get; } = default!;
 

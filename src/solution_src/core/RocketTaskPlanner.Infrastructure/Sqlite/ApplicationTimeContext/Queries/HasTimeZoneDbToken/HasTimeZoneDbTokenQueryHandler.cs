@@ -4,6 +4,10 @@ using RocketTaskPlanner.Infrastructure.Abstractions;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Queries.HasTimeZoneDbToken;
 
+/// <summary>
+/// Обработчик для проверки наличия записи провайдера временных зон в БД.
+/// </summary>
+/// <param name="factory">Фабрика создания временных зон</param>
 public sealed class HasTimeZoneDbTokenQueryHandler(IDbConnectionFactory factory)
     : IQueryHandler<HasTimeZoneDbTokenQuery, HasTimeZoneDbTokenQueryResponse>
 {

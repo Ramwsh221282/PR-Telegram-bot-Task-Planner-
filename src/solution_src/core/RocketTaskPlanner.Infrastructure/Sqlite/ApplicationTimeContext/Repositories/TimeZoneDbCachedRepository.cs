@@ -5,6 +5,11 @@ using RocketTaskPlanner.Infrastructure.TimeZoneDb;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Repositories;
 
+/// <summary>
+/// Абстракция работы с хранилищем провайдера временных зон через инстанс кеша
+/// </summary>
+/// <param name="repository">Абстракция работы с хранилищем временных зон (БД)</param>
+/// <param name="instance">Кешированный инстанс провайдера временных зон</param>
 public sealed class TimeZoneDbCachedRepository(
     IApplicationTimeRepository<TimeZoneDbProvider> repository,
     TimeZoneDbProviderCachedInstance instance

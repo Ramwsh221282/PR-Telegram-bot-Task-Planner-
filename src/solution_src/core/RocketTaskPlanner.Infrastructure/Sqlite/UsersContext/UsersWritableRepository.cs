@@ -63,10 +63,29 @@ public sealed class UsersWritableRepository(IDbConnectionFactory connectionFacto
         return permission;
     }
 
+    public Result<User> RemoveUser(User user, CancellationToken ct = default)
+    {
+        long userId = user.Id.Value;
+        RemoveUser(userId, ct);
+
+        return user;
+    }
+
+    public Result<long> RemoveUser(long userId, CancellationToken ct = default)
+    {
+        const string sql = "DELETE FROM users where id @id; ";
+
+        var parameters = new { id = userId };
+        CommandDefinition command = new(sql, parameters, cancellationToken: ct);
+        AddComandInExecutionOrder(command);
+
+        return userId;
+    }
+
     public async Task<Result> Save()
     {
         if (_transaction == null || _connection == null)
-            return Result.Failure<UserPermission>("Транзакция не была начата");
+            return Result.Failure("Транзакция не была начата");
 
         try
         {

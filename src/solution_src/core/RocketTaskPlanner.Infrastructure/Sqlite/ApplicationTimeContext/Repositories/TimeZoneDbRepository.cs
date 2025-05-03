@@ -9,6 +9,11 @@ using RocketTaskPlanner.Infrastructure.TimeZoneDb;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Repositories;
 
+/// <summary>
+/// Абстракция для работы с БД провайдера временных зон
+/// </summary>
+/// <param name="factory">Фабрика создания соединений с БД</param>
+/// <param name="logger">Логгер</param>
 public sealed class TimeZoneDbRepository(IDbConnectionFactory factory, Serilog.ILogger logger)
     : IApplicationTimeRepository<TimeZoneDbProvider>
 {

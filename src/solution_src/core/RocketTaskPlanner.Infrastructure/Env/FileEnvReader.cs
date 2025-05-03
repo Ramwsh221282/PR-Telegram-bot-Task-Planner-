@@ -1,5 +1,8 @@
 ﻿namespace RocketTaskPlanner.Infrastructure.Env;
 
+/// <summary>
+/// Читатель переменных окружения через файл
+/// </summary>
 public sealed class FileEnvReader : BasicEnvReader
 {
     private readonly string _filePath;
@@ -16,6 +19,9 @@ public sealed class FileEnvReader : BasicEnvReader
         Load();
     }
 
+    /// <summary>
+    /// Загрузка переменных окружения
+    /// </summary>
     private void Load()
     {
         foreach (var line in File.ReadAllLines(_filePath))

@@ -2,6 +2,9 @@
 
 namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Tasks.GeneralChatTasks;
 
+/// <summary>
+/// Декоратор для отправки уведомления в телеграм.
+/// </summary>
 public sealed class GeneralChatTaskToFireTelegramSpeaking : IGeneralChatTaskToFire
 {
     private readonly IGeneralChatTaskToFire _taskToFire;

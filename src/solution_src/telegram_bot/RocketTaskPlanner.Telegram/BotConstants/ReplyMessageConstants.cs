@@ -1,6 +1,9 @@
 namespace RocketTaskPlanner.Telegram.BotConstants;
 
-public class ReplyMessageConstants
+/// <summary>
+/// Общие отвветы от бота
+/// </summary>
+public static class ReplyMessageConstants
 {
     public const string OperationCanceled = "Операция отменена";
 }

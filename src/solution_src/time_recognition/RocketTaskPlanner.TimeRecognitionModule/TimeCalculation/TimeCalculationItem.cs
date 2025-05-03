@@ -2,6 +2,9 @@
 
 namespace RocketTaskPlanner.TimeRecognitionModule.TimeCalculation;
 
+/// <summary>
+/// Класс для хранения данных о времени.
+/// </summary>
 public sealed class TimeCalculationItem
 {
     public long TimeStamp { get; }

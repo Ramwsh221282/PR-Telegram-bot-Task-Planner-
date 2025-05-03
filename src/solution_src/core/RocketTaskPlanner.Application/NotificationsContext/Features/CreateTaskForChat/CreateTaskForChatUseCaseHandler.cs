@@ -7,10 +7,16 @@ using RocketTaskPlanner.Utilities.DateExtensions;
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChat;
 
-public sealed class CreateTaskForChatUseCaseHandler(INotificationReceiverRepository repository)
-    : IUseCaseHandler<CreateTaskForChatUseCase, CreateTaskForChatUseCaseResponse>
+/// <summary>
+/// Создание уведомления для основного чата
+/// </summary>
+/// <param name="writableRepository">Контракт взаимодействия с БД (операции записи)</param>
+public sealed class CreateTaskForChatUseCaseHandler(
+    INotificationReceiverWritableRepository writableRepository
+) : IUseCaseHandler<CreateTaskForChatUseCase, CreateTaskForChatUseCaseResponse>
 {
-    private readonly INotificationReceiverRepository _repository = repository;
+    private readonly INotificationReceiverWritableRepository _writableRepository =
+        writableRepository;
 
     public async Task<Result<CreateTaskForChatUseCaseResponse>> Handle(
         CreateTaskForChatUseCase useCase,
@@ -21,7 +27,10 @@ public sealed class CreateTaskForChatUseCaseHandler(INotificationReceiverReposit
             return Result.Failure<CreateTaskForChatUseCaseResponse>(
                 "Дата вызова меньше даты создания."
             );
-        Result<NotificationReceiver> receiver = await _repository.GetById(useCase.ChatId, ct);
+        Result<NotificationReceiver> receiver = await _writableRepository.GetById(
+            useCase.ChatId,
+            ct
+        );
         if (receiver.IsFailure)
             return Result.Failure<CreateTaskForChatUseCaseResponse>(receiver.Error);
 
@@ -38,7 +47,7 @@ public sealed class CreateTaskForChatUseCaseHandler(INotificationReceiverReposit
             periodInfo,
             message
         );
-        Result inserting = await _repository.AddSubject(subject, ct);
+        Result inserting = await _writableRepository.AddSubject(subject, ct);
         return inserting.IsFailure
             ? Result.Failure<CreateTaskForChatUseCaseResponse>(receiver.Error)
             : CreateResponse(subject);

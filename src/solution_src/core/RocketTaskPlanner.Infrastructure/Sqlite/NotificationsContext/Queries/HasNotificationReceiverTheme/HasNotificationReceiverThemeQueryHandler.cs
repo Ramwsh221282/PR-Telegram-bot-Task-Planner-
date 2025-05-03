@@ -4,6 +4,10 @@ using RocketTaskPlanner.Infrastructure.Abstractions;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.HasNotificationReceiverTheme;
 
+/// <summary>
+/// Обработчик на проверку существования записи темы чата по Id темы и Id чата
+/// </summary>
+/// <param name="factory">Фабрика создания соединения с БД</param>
 public sealed class HasNotificationReceiverThemeQueryHandler(IDbConnectionFactory factory)
     : IQueryHandler<HasNotificationReceiverThemeQuery, bool>
 {
@@ -21,7 +25,7 @@ public sealed class HasNotificationReceiverThemeQueryHandler(IDbConnectionFactor
     {
         long receiverId = query.ReceiverId;
         long themeId = query.ThemeId;
-        CommandDefinition command = new CommandDefinition(
+        CommandDefinition command = new(
             SQL,
             new { theme_id = themeId, receiver_id = receiverId },
             cancellationToken: ct

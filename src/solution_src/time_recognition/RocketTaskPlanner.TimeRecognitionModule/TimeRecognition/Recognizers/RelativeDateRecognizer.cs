@@ -5,6 +5,9 @@ using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognitions;
 
 namespace RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognizers;
 
+/// <summary>
+/// Класс для распознавания относительных дат
+/// </summary>
 public sealed class RelativeDateRecognizer : BasicVectorRecognizer
 {
     public RelativeDateRecognizer()

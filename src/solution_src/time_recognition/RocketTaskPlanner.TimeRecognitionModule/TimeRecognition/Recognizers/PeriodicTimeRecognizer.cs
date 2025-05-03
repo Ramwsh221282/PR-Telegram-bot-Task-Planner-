@@ -6,6 +6,9 @@ using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognitions;
 
 namespace RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognizers;
 
+/// <summary>
+/// Класс для распознавания периодичности во времени
+/// </summary>
 public sealed partial class PeriodicTimeRecognizer : BasicVectorRecognizer
 {
     public PeriodicTimeRecognizer()
@@ -49,6 +52,7 @@ public sealed partial class PeriodicTimeRecognizer : BasicVectorRecognizer
         return new UnrecognizedTime();
     }
 
+    // Распознавание периода в каждый день через Regex
     private static Result<PeriodicEveryDayRecognition> EveryDayFromRegex(string input)
     {
         Result<string> matchedString = FromRegexMatch(EveryDayRegex(), input);
@@ -59,6 +63,7 @@ public sealed partial class PeriodicTimeRecognizer : BasicVectorRecognizer
             );
     }
 
+    // Распознавание периода в каждую минуту через Regex
     private static Result<PeriodicEveryMinuteRecognition> EveryMinuteFromRegex(string input)
     {
         Result<string> matchedString = FromRegexMatch(EveryMinuteRegex(), input);
@@ -69,6 +74,7 @@ public sealed partial class PeriodicTimeRecognizer : BasicVectorRecognizer
             );
     }
 
+    // Распознавание периода в каждый час через Regex
     private static Result<PeriodicEveryHourRecognition> FromEveryHourRegex(string input)
     {
         Result<string> matchedString = FromRegexMatch(EveryHourRegex(), input);
@@ -79,6 +85,11 @@ public sealed partial class PeriodicTimeRecognizer : BasicVectorRecognizer
             );
     }
 
+    /// <summary>
+    /// Распознавание периода в каждый час через Regex, если не указан конкретный час. (например каждый час, а не каждые 2 часа).
+    /// </summary>
+    /// <param name="input">Текст</param>
+    /// <returns>Результат распознавания</returns>
     private static Result<PeriodicEveryHourRecognition> FromEveryHourUnspecifiedRegex(string input)
     {
         Match match = EveryHourNotSpecifiedRegex().Match(input);
@@ -89,6 +100,11 @@ public sealed partial class PeriodicTimeRecognizer : BasicVectorRecognizer
             : new PeriodicEveryHourRecognition(new SpecificTimeRecognition(1, 0));
     }
 
+    /// <summary>
+    /// Распознавание периода в каждую минуту через Regex, если не указана конкретная минута. (например каждая минута, а не каждые 3 минуты).
+    /// </summary>
+    /// <param name="input">Текст</param>
+    /// <returns>Результат распознавания</returns>
     private static Result<PeriodicEveryMinuteRecognition> FromEveryMinuteUnspecifiedRegex(
         string input
     )
@@ -109,6 +125,12 @@ public sealed partial class PeriodicTimeRecognizer : BasicVectorRecognizer
         return match.Groups[0].Value;
     }
 
+    /// <summary>
+    /// Маппинг из метки векторной БД в класс метаданных.
+    /// </summary>
+    /// <param name="metadata">Метка</param>
+    /// <returns>Класс метаданных</returns>
+    /// <exception cref="UnreachableException">Исключение, если для метки нет типа метаданных</exception>
     private static Recognitions.TimeRecognition FromMetadata(string metadata) =>
         metadata switch
         {

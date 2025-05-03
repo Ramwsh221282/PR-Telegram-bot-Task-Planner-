@@ -4,8 +4,14 @@ using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverThemes.Valu
 
 namespace RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverSubjects;
 
+/// <summary>
+/// Уведомление темы
+/// </summary>
 public sealed class ThemeChatSubject : ReceiverSubject
 {
+    /// <summary>
+    /// Тема-обладатель уведомления
+    /// </summary>
     public ReceiverTheme Theme { get; } = null!;
     public ReceiverThemeId ThemeId { get; } = default!;
 

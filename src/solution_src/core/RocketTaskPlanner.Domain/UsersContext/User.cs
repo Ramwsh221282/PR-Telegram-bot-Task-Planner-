@@ -3,8 +3,14 @@ using RocketTaskPlanner.Domain.UsersContext.ValueObjects;
 
 namespace RocketTaskPlanner.Domain.UsersContext;
 
+/// <summary>
+/// Модель пользователя
+/// </summary>
 public sealed class User
 {
+    /// <summary>
+    /// Права пользователя
+    /// </summary>
     private readonly List<UserPermission> _permissions = [];
     public UserId Id { get; }
     public UserName Name { get; } = null!;
@@ -19,6 +25,11 @@ public sealed class User
         Name = name;
     }
 
+    /// <summary>
+    /// Добавление прав пользователю.
+    /// </summary>
+    /// <param name="permission">Права.</param>
+    /// <returns>Success если право было добавлено. Failure если не было добавлено.</returns>
     public Result AddPermission(UserPermission permission)
     {
         if (_permissions.Any(p => p.Id == permission.Id))
@@ -29,5 +40,10 @@ public sealed class User
         return Result.Success();
     }
 
+    /// <summary>
+    /// Проверка на наличие права
+    /// </summary>
+    /// <param name="permission">Право</param>
+    /// <returns>True если право есть, False если права нет</returns>
     public bool HasPermission(string permission) => _permissions.Any(p => p.Name == permission);
 }

@@ -2,6 +2,9 @@
 
 namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Tasks.GeneralChatTasks;
 
+/// <summary>
+/// Сообщение основного чата, которое нужно отправить
+/// </summary>
 public sealed class GeneralChatTaskToFire : IGeneralChatTaskToFire
 {
     private readonly GeneralChatSubjectEntity _subject;

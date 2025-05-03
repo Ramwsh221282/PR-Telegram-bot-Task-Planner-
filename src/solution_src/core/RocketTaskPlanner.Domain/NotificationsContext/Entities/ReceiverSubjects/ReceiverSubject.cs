@@ -2,10 +2,28 @@ using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverSubjects.Va
 
 namespace RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverSubjects;
 
+/// <summary>
+/// Уведомление
+/// </summary>
 public abstract class ReceiverSubject
 {
-    public ReceiverSubjectId Id { get; protected set; } = default!;
-    public ReceiverSubjectTimeInfo TimeInfo { get; protected set; } = default!;
-    public ReceiverSubjectMessage Message { get; protected set; } = default!;
-    public ReceiverSubjectPeriodInfo Period { get; protected set; } = default!;
+    /// <summary>
+    /// Id
+    /// </summary>
+    public ReceiverSubjectId Id { get; protected set; }
+
+    /// <summary>
+    /// Информация о времени
+    /// </summary>
+    public ReceiverSubjectTimeInfo TimeInfo { get; protected set; }
+
+    /// <summary>
+    /// Текст сообщения
+    /// </summary>
+    public ReceiverSubjectMessage Message { get; protected set; } = null!;
+
+    /// <summary>
+    /// Информация о периодичности
+    /// </summary>
+    public ReceiverSubjectPeriodInfo Period { get; protected set; }
 }

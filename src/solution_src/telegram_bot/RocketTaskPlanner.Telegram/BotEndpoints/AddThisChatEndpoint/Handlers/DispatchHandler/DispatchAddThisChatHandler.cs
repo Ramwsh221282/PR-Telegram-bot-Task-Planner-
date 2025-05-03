@@ -1,7 +1,6 @@
 using CSharpFunctionalExtensions;
 using RocketTaskPlanner.Application.ApplicationTimeContext.Repository;
 using RocketTaskPlanner.Infrastructure.Abstractions;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries;
 using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.HasNotificationReceiver;
 using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.HasNotificationReceiverTheme;
 using RocketTaskPlanner.Infrastructure.TimeZoneDb;
@@ -14,6 +13,13 @@ using Telegram.Bot.Types;
 
 namespace RocketTaskPlanner.Telegram.BotEndpoints.AddThisChatEndpoint.Handlers.DispatchHandler;
 
+/// <summary>
+/// Обработчик для распознавания какой чат добавлять (тему или основной чат)
+/// </summary>
+/// <param name="context">Контекст выполнения обработки команды /add_this_chata</param>
+/// <param name="repository">Репозиторий провайдера времени Time Zone Db</param>
+/// <param name="hasReceiverHandler">Обработчик для проверки на существование чата</param>
+/// <param name="hasReceiverThemeHandler">Обработчик для проверки на существование темы</param>
 public sealed class DispatchAddThisChatHandler(
     TelegramBotExecutionContext context,
     IApplicationTimeRepository<TimeZoneDbProvider> repository,
@@ -47,27 +53,33 @@ public sealed class DispatchAddThisChatHandler(
         int? messageThreadId = message.MessageThreadId;
         bool isTopicMessage = message.IsTopicMessage;
         long chatId = message.Chat.Id;
-        if (messageThreadId != null && isTopicMessage)
+        if (messageThreadId != null && isTopicMessage) // если тема
         {
+            // если тема уже подписана, то ошибка
             if (await HasReceiverThemeSubscribed(chatId, messageThreadId.Value))
             {
                 await ReplyReceiverThemeAlreadySubscribed(client, chatId, messageThreadId.Value);
                 return;
             }
+
             ThemeChatCache cache = new(chatId, messageThreadId.Value);
             ITelegramBotHandler nextHandler = _context.GetRequiredHandler(
                 AddThisChatEndpointConstants.ThemeChatHandler
             );
             _context.AssignNextStep(update, nextHandler, cache);
+
+            // вызов следующего обработчика и немедленное выполнение.
             await _context.AssignAndRun(client, update, nextHandler, cache);
         }
         else
         {
+            // если чат уже подписан, то ошибка
             if (await HasReceiverSubscribed(chatId))
             {
                 await ReplyReceiverAlreadySubscribed(client, chatId);
                 return;
             }
+
             string chatName = string.IsNullOrWhiteSpace(message.Chat.Title)
                 ? "Unknown Chat Name"
                 : message.Chat.Title;
@@ -75,6 +87,8 @@ public sealed class DispatchAddThisChatHandler(
             ITelegramBotHandler nextHandler = _context.GetRequiredHandler(
                 AddThisChatEndpointConstants.DispatchAddThisChatHandler
             );
+
+            // вызов следующего обработчика для выбора временных зон.
             await _context.AssignAndRun(client, update, nextHandler, cache);
         }
     }

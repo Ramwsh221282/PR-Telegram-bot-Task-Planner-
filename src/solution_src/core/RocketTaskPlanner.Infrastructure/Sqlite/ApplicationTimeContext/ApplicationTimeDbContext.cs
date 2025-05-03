@@ -3,6 +3,9 @@ using RocketTaskPlanner.Infrastructure.TimeZoneDb;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext;
 
+/// <summary>
+/// Db context для работы с БД в контексте временных зон и провайдера времени
+/// </summary>
 public sealed class ApplicationTimeDbContext : DbContext
 {
     public DbSet<TimeZoneDbProvider> Providers { get; set; } = null!;

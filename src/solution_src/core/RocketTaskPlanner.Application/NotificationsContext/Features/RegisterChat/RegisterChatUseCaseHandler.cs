@@ -5,10 +5,16 @@ using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.RegisterChat;
 
-public sealed class RegisterChatUseCaseHandler(INotificationReceiverRepository repository)
-    : IUseCaseHandler<RegisterChatUseCase, RegisterChatUseCaseResponse>
+/// <summary>
+/// Создание основного чата
+/// </summary>
+/// <param name="writableRepository">Контракт взаимодействия с БД (операции записи)</param>
+public sealed class RegisterChatUseCaseHandler(
+    INotificationReceiverWritableRepository writableRepository
+) : IUseCaseHandler<RegisterChatUseCase, RegisterChatUseCaseResponse>
 {
-    private readonly INotificationReceiverRepository _repository = repository;
+    private readonly INotificationReceiverWritableRepository _writableRepository =
+        writableRepository;
 
     public async Task<Result<RegisterChatUseCaseResponse>> Handle(
         RegisterChatUseCase useCase,
@@ -28,10 +34,10 @@ public sealed class RegisterChatUseCaseHandler(INotificationReceiverRepository r
             TimeZone = time,
         };
 
-        Result saving = await _repository.Add(receiver, ct);
-        if (saving.IsFailure)
-            return Result.Failure<RegisterChatUseCaseResponse>(saving.Error);
+        Result saving = await _writableRepository.Add(receiver, ct);
 
-        return new RegisterChatUseCaseResponse(id.Id, name.Name);
+        return saving.IsFailure
+            ? Result.Failure<RegisterChatUseCaseResponse>(saving.Error)
+            : new RegisterChatUseCaseResponse(id.Id, name.Name);
     }
 }

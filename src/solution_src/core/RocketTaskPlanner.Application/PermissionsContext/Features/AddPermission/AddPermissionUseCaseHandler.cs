@@ -4,6 +4,10 @@ using RocketTaskPlanner.Domain.PermissionsContext;
 
 namespace RocketTaskPlanner.Application.PermissionsContext.Features.AddPermission;
 
+/// <summary>
+/// Создание права
+/// </summary>
+/// <param name="repository">Контракт взаимодействия с БД</param>
 public sealed class AddPermissionUseCaseHandler(IPermissionsRepository repository)
     : IUseCaseHandler<AddPermissionUseCase, Permission>
 {

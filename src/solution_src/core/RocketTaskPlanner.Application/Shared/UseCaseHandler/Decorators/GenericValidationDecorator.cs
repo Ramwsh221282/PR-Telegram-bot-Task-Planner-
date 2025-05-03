@@ -4,11 +4,11 @@ namespace RocketTaskPlanner.Application.Shared.UseCaseHandler.Decorators;
 
 public sealed class GenericValidationDecorator<TUseCase, TUseCaseResult>(
     IUseCaseHandler<TUseCase, TUseCaseResult> handler,
-    IValidator<TUseCase> validator
+    IEnumerable<IValidator<TUseCase>> validators
 ) : IValidatingUseCaseDecorator<TUseCase, TUseCaseResult>
     where TUseCase : IUseCase
 {
-    private readonly IValidator<TUseCase> _validator = validator;
+    private readonly IEnumerable<IValidator<TUseCase>> _validators = validators;
     private readonly IUseCaseHandler<TUseCase, TUseCaseResult> _handler = handler;
 
     public async Task<Result<TUseCaseResult>> Handle(
@@ -16,9 +16,12 @@ public sealed class GenericValidationDecorator<TUseCase, TUseCaseResult>(
         CancellationToken ct = default
     )
     {
-        ValidationResult validation = _validator.Validate(useCase);
-        return validation.IsValid == false
-            ? Result.Failure<TUseCaseResult>(validation.JoinedErrors())
-            : await _handler.Handle(useCase, ct);
+        foreach (var validator in _validators)
+        {
+            ValidationResult validation = validator.Validate(useCase);
+            if (validation.IsValid == false)
+                return Result.Failure<TUseCaseResult>(validation.JoinedErrors());
+        }
+        return await _handler.Handle(useCase, ct);
     }
 }

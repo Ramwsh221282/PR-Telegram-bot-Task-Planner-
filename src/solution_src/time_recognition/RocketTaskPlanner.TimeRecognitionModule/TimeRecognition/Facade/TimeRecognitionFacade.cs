@@ -18,16 +18,25 @@ public sealed class TimeRecognitionFacade : ITimeRecognitionFacade
 
     public async Task<Result<TimeRecognitionResult>> RecognizeTime(string? input)
     {
+        // создание Dto модели для распознавания времени
         Result<TimeRecognitionTicket> ticket = await CreateTicket(input);
         if (ticket.IsFailure)
             return Result.Failure<TimeRecognitionResult>(ticket.Error);
+
+        // сбор метаданных (непосредственно распознавание)
         Result<RecognitionMetadataCollection> metadata = await CollectMetadata(ticket.Value);
         if (metadata.IsFailure)
             return Result.Failure<TimeRecognitionResult>(metadata.Error);
+
         return ticket.Value switch
         {
+            // если время не периодичное
             SingleTimeRecognitionTicket => new TimeRecognitionResult(metadata.Value, false),
+
+            // если время периодичное
             PeriodicTimeRecognitionTicket => new TimeRecognitionResult(metadata.Value, true),
+
+            // если распознаваний нет
             _ => Result.Failure<TimeRecognitionResult>("Unknown time recognition ticket"),
         };
     }

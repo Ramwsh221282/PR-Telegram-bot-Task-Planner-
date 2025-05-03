@@ -2,6 +2,9 @@
 
 namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Tasks.ThemeChatTasks;
 
+/// <summary>
+/// Декоратор для отправки сообщения в телеграм
+/// </summary>
 public sealed class ThemeChatTaskToFireTelegramSpeaking : IThemeChatTaskToFire
 {
     private readonly IThemeChatTaskToFire _task;
@@ -15,6 +18,7 @@ public sealed class ThemeChatTaskToFireTelegramSpeaking : IThemeChatTaskToFire
 
     public async Task<ITaskToFire> Fire()
     {
+        // отправка сообщения в телеграм (в тему чата)
         await SendTelegramMessage();
         return await _task.Fire();
     }

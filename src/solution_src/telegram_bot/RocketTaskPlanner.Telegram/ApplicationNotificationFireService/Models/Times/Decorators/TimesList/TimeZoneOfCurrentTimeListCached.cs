@@ -3,6 +3,9 @@ using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Cache;
 
 namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Times.Decorators.TimesList;
 
+/// <summary>
+/// Декоратор списка текущих временных зон с кешем от Time Zone Db для инициализации временных зон.
+/// </summary>
 public sealed class TimeZoneOfCurrentTimeListCached : ITimeZoneOfCurrentTimeList
 {
     private readonly ITimeZoneOfCurrentTimeList _list;

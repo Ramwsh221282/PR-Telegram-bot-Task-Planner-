@@ -6,6 +6,9 @@ using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognitions;
 
 namespace RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognizers;
 
+/// <summary>
+/// Класс для распознавания месяца и дня месяца.
+/// </summary>
 public sealed partial class MonthRecognizer : BasicVectorRecognizer
 {
     public MonthRecognizer()
@@ -107,6 +110,11 @@ public sealed partial class MonthRecognizer : BasicVectorRecognizer
     )]
     private static partial Regex DayBeforeMonthRegex();
 
+    /// <summary>
+    /// Получение дня месяца через Regex
+    /// </summary>
+    /// <param name="input">Текст</param>
+    /// <returns>Success с днем месяца или Failure</returns>
     private static Result<int> GetDayBeforeMonth(string input)
     {
         Match match = DayBeforeMonthRegex().Match(input);

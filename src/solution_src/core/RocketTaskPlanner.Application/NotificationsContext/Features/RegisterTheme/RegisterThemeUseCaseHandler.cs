@@ -6,17 +6,26 @@ using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverThemes.Valu
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.RegisterTheme;
 
-public sealed class RegisterThemeUseCaseHandler(INotificationReceiverRepository repository)
-    : IUseCaseHandler<RegisterThemeUseCase, RegisterThemeResponse>
+/// <summary>
+/// Добавление темы чата в основной чат
+/// </summary>
+/// <param name="writableRepository">Контракт взаимодействия с БД (операции записи)</param>
+public sealed class RegisterThemeUseCaseHandler(
+    INotificationReceiverWritableRepository writableRepository
+) : IUseCaseHandler<RegisterThemeUseCase, RegisterThemeResponse>
 {
-    private readonly INotificationReceiverRepository _repository = repository;
+    private readonly INotificationReceiverWritableRepository _writableRepository =
+        writableRepository;
 
     public async Task<Result<RegisterThemeResponse>> Handle(
         RegisterThemeUseCase useCase,
         CancellationToken ct = default
     )
     {
-        Result<NotificationReceiver> receiver = await _repository.GetById(useCase.ChatId, ct);
+        Result<NotificationReceiver> receiver = await _writableRepository.GetById(
+            useCase.ChatId,
+            ct
+        );
         if (receiver.IsFailure)
             return Result.Failure<RegisterThemeResponse>(receiver.Error);
 
@@ -25,7 +34,7 @@ public sealed class RegisterThemeUseCaseHandler(INotificationReceiverRepository 
         if (theme.IsFailure)
             return Result.Failure<RegisterThemeResponse>(theme.Error);
 
-        await _repository.AddTheme(theme.Value, ct);
+        await _writableRepository.AddTheme(theme.Value, ct);
         return new RegisterThemeResponse(useCase.ChatId, receiver.Value.Name.Name, id.Id);
     }
 }

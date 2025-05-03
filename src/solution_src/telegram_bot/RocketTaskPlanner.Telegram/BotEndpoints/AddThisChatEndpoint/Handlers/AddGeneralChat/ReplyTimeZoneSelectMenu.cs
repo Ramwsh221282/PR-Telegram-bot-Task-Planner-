@@ -4,8 +4,6 @@ using PRTelegramBot.Models;
 using PRTelegramBot.Models.CallbackCommands;
 using PRTelegramBot.Models.InlineButtons;
 using PRTelegramBot.Utils;
-using RocketTaskPlanner.Application.NotificationsContext.Features.RegisterChat;
-using RocketTaskPlanner.Application.Shared.UseCaseHandler;
 using RocketTaskPlanner.Domain.ApplicationTimeContext.Entities.TimeZones;
 using RocketTaskPlanner.Infrastructure.TimeZoneDb;
 using RocketTaskPlanner.Telegram.BotAbstractions;
@@ -17,14 +15,14 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace RocketTaskPlanner.Telegram.BotEndpoints.AddThisChatEndpoint.Handlers.AddGeneralChat;
 
-public sealed class AddGeneralChatHandler(
-    TelegramBotExecutionContext context,
-    IUseCaseHandler<RegisterChatUseCase, RegisterChatUseCaseResponse> handler
-) : ITelegramBotHandler
+/// <summary>
+/// Обработчик для отправки меню с выбором временной зоны
+/// </summary>
+/// <param name="context">Контекст выполнения команды /add_this_chat</param>
+public sealed class ReplyTimeZoneSelectMenu(TelegramBotExecutionContext context)
+    : ITelegramBotHandler
 {
     private readonly TelegramBotExecutionContext _context = context;
-    private readonly IUseCaseHandler<RegisterChatUseCase, RegisterChatUseCaseResponse> _handler =
-        handler;
     public string Command => AddThisChatEndpointConstants.DispatchAddThisChatHandler;
 
     public async Task Handle(ITelegramBotClient client, Update update)
@@ -37,7 +35,7 @@ public sealed class AddGeneralChatHandler(
         long chatId = cache.Value.ChatId;
         TimeZoneDbProvider provider = cache.Value.Provider;
 
-        Result<IReadOnlyList<ApplicationTimeZone>> zones = await LoadTimeZones(
+        Result<IReadOnlyList<ApplicationTimeZone>> zones = await LoadTimeZones( // получение временных зон
             provider,
             client,
             chatId
@@ -49,8 +47,8 @@ public sealed class AddGeneralChatHandler(
             return;
         }
 
-        InlineKeyboardMarkup menu = BuildTimeZoneMenu(zones.Value, chatId, chatName);
-        await SendSelectTimeZoneMessage(client, update, menu);
+        InlineKeyboardMarkup menu = BuildTimeZoneMenu(zones.Value, chatId, chatName); // создание меню выбора временной зоны
+        await SendSelectTimeZoneMessage(client, update, menu); // отправка меню выбора временных зон
     }
 
     private static async Task<Result<IReadOnlyList<ApplicationTimeZone>>> LoadTimeZones(
@@ -93,6 +91,7 @@ public sealed class AddGeneralChatHandler(
         buttons.Add(cancelButton1);
         buttons.Add(cancelButton2);
 
+        // добавление кнопок выбора временных зон на основе перечисления.
         AddGeneralChatCitiesEnum[] array = Enum.GetValues<AddGeneralChatCitiesEnum>();
         for (int i = 0; i < timeZones.Count; i++)
         {

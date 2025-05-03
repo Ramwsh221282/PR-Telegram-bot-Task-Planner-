@@ -6,6 +6,9 @@ using RocketTaskPlanner.Domain.UsersContext.ValueObjects;
 
 namespace RocketTaskPlanner.Application.UsersContext.Features.AddUserPermission;
 
+/// <summary>
+/// Добавление прав пользователю
+/// </summary>
 public sealed class AddUserPermissionUseCaseHandler
     : IUseCaseHandler<AddUserPermissionUseCase, UserPermission>
 {
@@ -36,7 +39,11 @@ public sealed class AddUserPermissionUseCaseHandler
         Result saving = await _repository.WritableRepository.Save();
 
         return saving.IsFailure
-            ? await Task.FromResult(Result.Failure<UserPermission>(saving.Error))
+            ? await Task.FromResult(
+                Result.Failure<UserPermission>(
+                    $"Не удалось добавить права: {permissionName} пользователю: {user.Id.Value} {user.Name.Value}"
+                )
+            )
             : await Task.FromResult(permission);
     }
 }

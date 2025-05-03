@@ -12,6 +12,13 @@ using Telegram.Bot;
 
 namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService;
 
+/// <summary>
+/// Background процесс для отправки уведомлений
+/// </summary>
+/// <param name="timeCache">Кеш временных зон</param>
+/// <param name="logger">Логгер</param>
+/// <param name="connectionFactory">Фабрика для создания соединения с БД</param>
+/// <param name="botFactory">Фабрика для создания экземпляра бота</param>
 public sealed class NotificationsFireService(
     TimeZoneDbProviderCachedInstance timeCache,
     Serilog.ILogger logger,

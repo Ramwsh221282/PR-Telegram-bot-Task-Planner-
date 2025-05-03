@@ -2,6 +2,9 @@
 
 namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Times.Decorators.TimesList;
 
+/// <summary>
+/// Список временных зон текущего времени
+/// </summary>
 public sealed class TimeZoneOfCurrentTimeListLoggable : ITimeZoneOfCurrentTimeList
 {
     private readonly Serilog.ILogger _logger;

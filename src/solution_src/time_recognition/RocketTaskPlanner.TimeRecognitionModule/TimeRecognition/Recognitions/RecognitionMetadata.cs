@@ -2,8 +2,15 @@
 
 namespace RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognitions;
 
+/// <summary>
+/// Метаданные распознавания
+/// </summary>
+/// <param name="Recognition">Результат распознавания</param>
 public record RecognitionMetadata(TimeRecognition Recognition);
 
+/// <summary>
+/// Коллекция метаданных распознавания
+/// </summary>
 public record RecognitionMetadataCollection : IEnumerable<RecognitionMetadata>
 {
     private readonly List<RecognitionMetadata> _metadata;

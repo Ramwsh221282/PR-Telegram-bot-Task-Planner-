@@ -4,6 +4,9 @@ using RocketTaskPlanner.Domain.PermissionsContext;
 
 namespace RocketTaskPlanner.Telegram.PermissionsSetup;
 
+/// <summary>
+/// Utility класс для добавление прав ConfigEditor и CreateTask
+/// </summary>
 public static class PermissionsSetupExtensions
 {
     public static async Task RegisterBasicPermissions(this IHost host)

@@ -10,10 +10,15 @@ using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Repositories;
 
-public sealed class NotificationReceiverSqliteRepository(
+/// <summary>
+/// Абстракция для работы с БД чатов, тем чатов и их сообщений
+/// </summary>
+/// <param name="factory">Фабрика соединения с БД</param>
+/// <param name="logger">Логгер</param>
+public sealed class NotificationReceiverWritableSqliteRepository(
     IDbConnectionFactory factory,
     Serilog.ILogger logger
-) : INotificationReceiverRepository
+) : INotificationReceiverWritableRepository
 {
     private readonly IDbConnectionFactory _factory = factory;
     private readonly Serilog.ILogger _logger = logger;
@@ -56,7 +61,7 @@ public sealed class NotificationReceiverSqliteRepository(
             transaction.Rollback();
             _logger.Fatal(
                 "{Context}. {Operation}. Exception: {Ex}.",
-                nameof(NotificationReceiverSqliteRepository),
+                nameof(NotificationReceiverWritableSqliteRepository),
                 nameof(Add),
                 ex.Message
             );
@@ -90,7 +95,7 @@ public sealed class NotificationReceiverSqliteRepository(
             transaction.Rollback();
             _logger.Fatal(
                 "{Context}. {Operation}. Exception: {Ex}.",
-                nameof(NotificationReceiverSqliteRepository),
+                nameof(NotificationReceiverWritableSqliteRepository),
                 nameof(AddTheme),
                 ex.Message
             );
@@ -128,7 +133,7 @@ public sealed class NotificationReceiverSqliteRepository(
             transaction.Rollback();
             _logger.Fatal(
                 "{Context}. {Operation}. Exception: {Ex}.",
-                nameof(NotificationReceiverSqliteRepository),
+                nameof(NotificationReceiverWritableSqliteRepository),
                 nameof(AddTheme),
                 ex.Message
             );
@@ -169,7 +174,7 @@ public sealed class NotificationReceiverSqliteRepository(
             transaction.Rollback();
             _logger.Fatal(
                 "{Context}. {Operation}. Exception: {Ex}.",
-                nameof(NotificationReceiverSqliteRepository),
+                nameof(NotificationReceiverWritableSqliteRepository),
                 nameof(AddTheme),
                 ex.Message
             );
@@ -299,7 +304,7 @@ public sealed class NotificationReceiverSqliteRepository(
             transaction.Rollback();
             _logger.Fatal(
                 "{Context}. {Operation}. Exception: {Ex}.",
-                nameof(NotificationReceiverSqliteRepository),
+                nameof(NotificationReceiverWritableSqliteRepository),
                 nameof(Remove),
                 ex.Message
             );

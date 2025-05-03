@@ -1,3 +1,6 @@
 namespace RocketTaskPlanner.Application.Shared.UseCaseHandler;
 
-public interface IUseCase { }
+/// <summary>
+/// Интерфейс команды (CQRS)
+/// </summary>
+public interface IUseCase;

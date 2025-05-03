@@ -5,6 +5,9 @@ using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognitions;
 
 namespace RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognizers;
 
+/// <summary>
+/// Класс для распознавания дней недели в тексте
+/// </summary>
 public sealed class DayOfWeekRecognizer : BasicVectorRecognizer
 {
     public DayOfWeekRecognizer()

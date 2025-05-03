@@ -1,18 +1,30 @@
-﻿using PRTelegramBot.Attributes;
+﻿using CSharpFunctionalExtensions;
+using PRTelegramBot.Attributes;
 using PRTelegramBot.Models.Enums;
+using RocketTaskPlanner.Application.UsersContext.Features.EnsureUserHasPermissions;
+using RocketTaskPlanner.Application.UsersContext.Visitor;
+using RocketTaskPlanner.Domain.PermissionsContext;
 using RocketTaskPlanner.Infrastructure.Abstractions;
 using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetNotificationReceiverTimeInformation;
+using RocketTaskPlanner.Telegram.BotAbstractions;
+using RocketTaskPlanner.Telegram.BotExtensions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace RocketTaskPlanner.Telegram.BotEndpoints.GetChatTime;
 
+/// <summary>
+/// Endpoint обработки команды /bot_chat_time
+/// </summary>
+/// <param name="usersUseCases">Посетитель обработчиков бизнес логики.</param>
+/// <param name="handler">Обработчик запроса на получение информации времени о чате, из которого вызывается команда</param>
 [BotHandler]
 public sealed class GetChatTimeEndpoint(
     IQueryHandler<
         GetNotificationReceiverTimeInformationQuery,
         GetNotificationReceiverTimeInformationQueryResponse
-    > handler
+    > handler,
+    IUsersUseCaseVisitor usersUseCases
 )
 {
     private readonly IQueryHandler<
@@ -20,13 +32,39 @@ public sealed class GetChatTimeEndpoint(
         GetNotificationReceiverTimeInformationQueryResponse
     > _handler = handler;
 
+    private readonly IUsersUseCaseVisitor _userUseCases = usersUseCases;
+
+    /// <summary>
+    /// Обработчик endpoint'а
+    /// </summary>
+    /// <param name="client">Telegram bot клиент для общения с telegram</param>
+    /// <param name="update">Последнее событие (в данном случае вызов endpoint)</param>
     [ReplyMenuHandler(
         CommandComparison.Contains,
         StringComparison.OrdinalIgnoreCase,
-        ["/chat_time"]
+        ["/bot_chat_time"]
     )]
     public async Task GetChatTime(ITelegramBotClient client, Update update)
     {
+        Result<TelegramBotUser> telegramBotUserResult = update.GetUser();
+        if (telegramBotUserResult.IsFailure)
+        {
+            await telegramBotUserResult.SendError(client, update);
+            return;
+        }
+
+        TelegramBotUser user = telegramBotUserResult.Value;
+        EnsureUserHasPermissionsUseCase hasPermissionUseCase = new(
+            user.Id,
+            [PermissionNames.CreateTasks]
+        );
+        Result hasPermission = await _userUseCases.Visit(hasPermissionUseCase);
+        if (!hasPermission.IsFailure)
+        {
+            await telegramBotUserResult.SendError(client, update);
+            return;
+        }
+
         Message? message = update.Message;
         if (message == null)
             return;
@@ -34,7 +72,7 @@ public sealed class GetChatTimeEndpoint(
         int? messageThreadId = message.MessageThreadId;
         long chatId = message.Chat.Id;
 
-        if (messageThreadId != null)
+        if (messageThreadId != null) // если вызывается из темы, отправка ответа в тему.
         {
             await ReplyInProcess(client, chatId, messageThreadId);
             string information = await GetChatTimeHandle(chatId);
@@ -44,7 +82,7 @@ public sealed class GetChatTimeEndpoint(
                 messageThreadId: messageThreadId.Value
             );
         }
-        else
+        else // если вызывается из основного чата, отправка ответа в основной чат.
         {
             await ReplyInProcess(client, chatId, messageThreadId);
             string information = await GetChatTimeHandle(chatId);
@@ -52,6 +90,11 @@ public sealed class GetChatTimeEndpoint(
         }
     }
 
+    /// <summary>
+    /// Запрашивание информации о времени чата.
+    /// </summary>
+    /// <param name="chatId">Id чата</param>
+    /// <returns>Информация о времени чата.</returns>
     private async Task<string> GetChatTimeHandle(long chatId)
     {
         GetNotificationReceiverTimeInformationQuery informationQuery = new(chatId);
@@ -61,6 +104,12 @@ public sealed class GetChatTimeEndpoint(
         return response.Information;
     }
 
+    /// <summary>
+    /// Отправка ответа об ожидании
+    /// </summary>
+    /// <param name="client">Telegram bot клиент для общения с telegram</param>
+    /// <param name="chatId">Id чата</param>
+    /// <param name="messageThreadId">Id темы чата</param>
     private static async Task ReplyInProcess(
         ITelegramBotClient client,
         long chatId,

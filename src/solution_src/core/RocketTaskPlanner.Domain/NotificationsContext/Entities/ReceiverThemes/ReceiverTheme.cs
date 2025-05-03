@@ -5,12 +5,22 @@ using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 
 namespace RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverThemes;
 
+/// <summary>
+/// Тема основного чата
+/// </summary>
 public sealed class ReceiverTheme
 {
+    /// <summary>
+    /// Уведомления темы чата
+    /// </summary>
     private readonly List<ThemeChatSubject> _subjects = [];
-    public ReceiverThemeId Id { get; } = default!;
+    public ReceiverThemeId Id { get; }
+
+    /// <summary>
+    /// Чат-обладатель темы (основной чат)
+    /// </summary>
     public NotificationReceiver NotificationReceiver { get; } = null!;
-    public NotificationReceiverId NotificationReceiverId { get; } = default!;
+    public NotificationReceiverId NotificationReceiverId { get; }
     public IReadOnlyList<ThemeChatSubject> Subjects => _subjects;
 
     private ReceiverTheme() { } // ef core
@@ -22,6 +32,14 @@ public sealed class ReceiverTheme
         NotificationReceiverId = receiver.Id;
     }
 
+    /// <summary>
+    /// Добавление уведомления в тему чата
+    /// </summary>
+    /// <param name="id">Id уведомления</param>
+    /// <param name="time">Информация о времени</param>
+    /// <param name="period">Информация о периодичностии</param>
+    /// <param name="message">Текст сообщения</param>
+    /// <returns>Уведомление темы чата</returns>
     public ThemeChatSubject AddSubject(
         ReceiverSubjectId id,
         ReceiverSubjectTimeInfo time,
@@ -33,7 +51,4 @@ public sealed class ReceiverTheme
         _subjects.Add(subject);
         return subject;
     }
-
-    public ReceiverSubject[] GetSubjects(Func<ReceiverSubject, bool> predicate) =>
-        [.. _subjects.Where(predicate)];
 }

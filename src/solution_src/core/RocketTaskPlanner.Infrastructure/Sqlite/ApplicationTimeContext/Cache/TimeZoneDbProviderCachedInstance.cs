@@ -2,6 +2,9 @@ using RocketTaskPlanner.Infrastructure.TimeZoneDb;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Cache;
 
+/// <summary>
+/// Кеш для хранения экземпляра провайдера временных зон.
+/// </summary>
 public sealed class TimeZoneDbProviderCachedInstance
 {
     private TimeZoneDbProvider? _instance = null;

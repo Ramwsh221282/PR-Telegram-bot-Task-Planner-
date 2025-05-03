@@ -2,6 +2,9 @@
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.UsersContext.Entities.EntityMappings;
 
+/// <summary>
+/// Маппинг в Dao права пользователя через запросы Dapper
+/// </summary>
 public sealed class UserPermissionEntityMap : EntityMap<UserPermissionEntity>
 {
     public UserPermissionEntityMap()

@@ -4,10 +4,19 @@ using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognizers;
 
 namespace RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Facade.Services;
 
+/// <summary>
+/// Сервис для определения периодичное время или нет
+/// </summary>
+/// <param name="recognizers">Сервис с распознавателями</param>
 public sealed class TimeRecognitionTicketService(TimeRecognitionRecognizersService recognizers)
 {
     private readonly TimeRecognitionRecognizersService _recognizers = recognizers;
 
+    /// <summary>
+    /// Метод для конкретизации типа времени (периодичное или нет)
+    /// </summary>
+    /// <param name="message">Текст</param>
+    /// <returns>Dto модель для дальнейшего распознавания</returns>
     public async Task<TimeRecognitionTicket> CreateRecognitionTicket(string? message)
     {
         if (string.IsNullOrWhiteSpace(message))
@@ -18,9 +27,16 @@ public sealed class TimeRecognitionTicketService(TimeRecognitionRecognizersServi
 
         return hasTime switch
         {
+            // если время не распознано и задача не периодичная, то нет распознаваний
             false when !isPeriodic => new UnknownTimeRecognitionTicket(),
+
+            // если время не распознано, но задача периодичная, то создание ticket о периодичном распознавании
             false when isPeriodic => new PeriodicTimeRecognitionTicket(message),
+
+            // если время распознано, но задача не периодичная, то создание ticket о непериодичном распознавании
             true when !isPeriodic => new SingleTimeRecognitionTicket(message),
+
+            // если время распознано, и периодично, то создание ticket о периодичном распознавании
             true when isPeriodic => new PeriodicTimeRecognitionTicket(message),
             _ => new UnknownTimeRecognitionTicket(),
         };

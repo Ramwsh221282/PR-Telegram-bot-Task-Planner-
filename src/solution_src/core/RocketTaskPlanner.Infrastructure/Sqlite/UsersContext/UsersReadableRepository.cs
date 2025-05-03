@@ -10,6 +10,10 @@ using RocketTaskPlanner.Infrastructure.Sqlite.UsersContext.Entities;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.UsersContext;
 
+/// <summary>
+/// Репозиторий для операций чтения контекста пользователей и прав пользователей
+/// </summary>
+/// <param name="connectionFactory">Фабрика для создания соединения</param>
 public sealed class UsersReadableRepository(IDbConnectionFactory connectionFactory)
     : IUsersReadableRepository
 {

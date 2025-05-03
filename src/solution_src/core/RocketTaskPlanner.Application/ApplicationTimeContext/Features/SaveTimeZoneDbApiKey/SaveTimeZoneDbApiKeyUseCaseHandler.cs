@@ -1,3 +1,4 @@
+using RocketTaskPlanner.Application.ApplicationTimeContext.Features.Contracts;
 using RocketTaskPlanner.Application.ApplicationTimeContext.Repository;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler;
 using RocketTaskPlanner.Domain.ApplicationTimeContext;
@@ -5,6 +6,13 @@ using RocketTaskPlanner.Domain.ApplicationTimeContext.ValueObjects;
 
 namespace RocketTaskPlanner.Application.ApplicationTimeContext.Features.SaveTimeZoneDbApiKey;
 
+/// <summary>
+/// Создание провайдера временной зоны
+/// </summary>
+/// <param name="repository">Контракт взаимодействия с БД.</param>
+/// <param name="idFactory">Фабрика создания Id.</param>
+/// <param name="providerFactory">Фабрика создания провайдера временной зоны</param>
+/// <typeparam name="TProvider">Тип провайдера временной зоны</typeparam>
 public sealed class SaveTimeZoneDbApiKeyUseCaseHandler<TProvider>(
     IApplicationTimeRepository<TProvider> repository,
     IApplicationTimeProviderIdFactory idFactory,
@@ -26,8 +34,6 @@ public sealed class SaveTimeZoneDbApiKeyUseCaseHandler<TProvider>(
         TProvider provider = (TProvider)_providerFactory.Create(id);
         Result adding = await _repository.Add(provider, ct);
 
-        return adding.IsFailure
-            ? Result.Failure<TProvider>(adding.Error)
-            : (Result<TProvider>)provider;
+        return adding.IsFailure ? Result.Failure<TProvider>(adding.Error) : provider;
     }
 }

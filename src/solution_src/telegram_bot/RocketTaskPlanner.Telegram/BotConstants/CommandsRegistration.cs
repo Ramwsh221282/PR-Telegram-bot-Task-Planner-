@@ -1,85 +1,32 @@
-using RocketTaskPlanner.Telegram.BotAbstractions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace RocketTaskPlanner.Telegram.BotConstants;
 
+/// <summary>
+/// Extension методы для работы с командами (меню команд)
+/// </summary>
 public static class CommandRegistration
 {
-    public static async Task RegisterBotStartCommands(this ITelegramBotClient client)
+    /// <summary>
+    /// Регистрация отображения команд в боте
+    /// </summary>
+    /// <param name="client">Telegram bot клиент для общения с телеграм</param>
+    public static async Task RegisterBotCommands(this ITelegramBotClient client)
     {
-        await client.RegisterCommandIfNotExists("/add_this_chat", "Подписывание текущего чата.");
-    }
-
-    public static async Task RegisterBotOwnerCommands(this ITelegramBotClient client, ChatId chatId)
-    {
-        BotCommandScopeChat scope = BotCommandScope.Chat(chatId);
-        await client.RegisterCommandIfNotExists(
-            "/tz_api_configure",
-            "Управление ключом time zone db api.",
-            scope
-        );
-        await client.RegisterCommandIfNotExists(
-            "/add_this_chat",
-            "Подписывание текущего чата.",
-            scope
-        );
-        await client.RegisterCommandIfNotExists("/bot_time", "Время текущего чата.", scope);
-        await client.RegisterCommandIfNotExists(
-            "/task_create",
-            "Создание уведомления для текущего чата.",
-            scope
-        );
-        await client.RegisterCommandIfNotExists(
-            "/time_config",
-            "Управление временем текущего чата.",
-            scope
-        );
-    }
-
-    private static async Task RegisterBotCommandsForChatOwner(
-        this ITelegramBotClient client,
-        ChatId chatId,
-        TelegramBotUser user
-    )
-    {
-        BotCommandScopeChatMember scope = BotCommandScope.ChatMember(chatId, user.Id);
-        await client.RegisterCommandIfNotExists(
-            "/add_this_chat",
-            "Подписывание текущего чата.",
-            scope
-        );
-        await client.RegisterCommandIfNotExists("/bot_time", "Время текущего чата.", scope);
-        await client.RegisterCommandIfNotExists(
-            "/task_create",
-            "Создание уведомления для текущего чата.",
-            scope
-        );
-        await client.RegisterCommandIfNotExists(
-            "/time_config",
-            "Управление временем текущего чата.",
-            scope
-        );
-    }
-
-    private static async Task RegisterCommandIfNotExists(
-        this ITelegramBotClient client,
-        string command,
-        string description,
-        BotCommandScope? scope = null
-    )
-    {
-        List<BotCommand> commands = [.. await client.GetMyCommands()];
-        if (!commands.Any(c => c.Command == command))
-        {
-            commands.Add(new BotCommand() { Command = command, Description = description });
-
-            if (scope != null)
-            {
-                await client.SetMyCommands(commands, scope);
-                return;
-            }
-            await client.SetMyCommands(commands);
-        }
+        await client.DeleteMyCommands();
+        BotCommand[] commands =
+        [
+            new("/add_this_chat", "Добавление чата в бота. Используется не в чате с ботом."),
+            new("/remove_this_chat", "Удаление чата из бота. Используется не в чате с ботом."),
+            new("/bot_chat_time", "Узнать временную зону чата. Используется не в чате с ботом."),
+            new(
+                "/reconfigure_bot_chat_time",
+                "Изменить временную зону чата. Используется не в чате с ботом."
+            ),
+            new("/tc", "Создать задачу /tc <Текст задачи>. Используется не в чате с ботом."),
+            new("/info", "Справка."),
+        ];
+        await client.SetMyCommands(commands);
     }
 }

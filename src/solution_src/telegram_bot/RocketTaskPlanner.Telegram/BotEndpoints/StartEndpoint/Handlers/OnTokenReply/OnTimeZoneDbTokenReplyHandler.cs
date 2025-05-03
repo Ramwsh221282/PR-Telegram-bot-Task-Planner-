@@ -2,12 +2,10 @@ using CSharpFunctionalExtensions;
 using PRTelegramBot.Extensions;
 using PRTelegramBot.Models;
 using RocketTaskPlanner.Application.ApplicationTimeContext.Features.SaveTimeZoneDbApiKey;
-using RocketTaskPlanner.Application.PermissionsContext.Repository;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler;
-using RocketTaskPlanner.Application.UsersContext.Features.AddUser;
-using RocketTaskPlanner.Application.UsersContext.Features.AddUserPermission;
+using RocketTaskPlanner.Application.UsersContext.Features.AddUserWithPermissions;
+using RocketTaskPlanner.Application.UsersContext.Visitor;
 using RocketTaskPlanner.Domain.PermissionsContext;
-using RocketTaskPlanner.Domain.UsersContext.Entities;
 using RocketTaskPlanner.Infrastructure.TimeZoneDb;
 using RocketTaskPlanner.Telegram.BotAbstractions;
 using RocketTaskPlanner.Telegram.BotConstants;
@@ -17,12 +15,16 @@ using Telegram.Bot.Types;
 
 namespace RocketTaskPlanner.Telegram.BotEndpoints.StartEndpoint.Handlers.OnTokenReply;
 
+/// <summary>
+/// Обработчик ответа на ввод ключа Time Zone Db.
+/// </summary>
+/// <param name="context">Контекст обработчиков команды /start</param>
+/// <param name="saveTokenHandler">Обработчик для сохранения ключа time zone db.</param>
+/// <param name="userUseCases">Посетитель для обработки команд связанных с контекстом пользователей.</param>
 public sealed class OnTimeZoneDbTokenReplyHandler(
     TelegramBotExecutionContext context,
-    IUseCaseHandler<SaveTimeZoneDbApiKeyUseCase, TimeZoneDbProvider> useCaseHandler,
-    IUseCaseHandler<AddUserUseCase, Domain.UsersContext.User> addUserHandler,
-    IUseCaseHandler<AddUserPermissionUseCase, UserPermission> addPermisionHandler,
-    IPermissionsRepository permissionsRepository
+    IUseCaseHandler<SaveTimeZoneDbApiKeyUseCase, TimeZoneDbProvider> saveTokenHandler,
+    IUsersUseCaseVisitor userUseCases
 ) : ITelegramBotHandler
 {
     private readonly TelegramBotExecutionContext _context = context;
@@ -30,18 +32,9 @@ public sealed class OnTimeZoneDbTokenReplyHandler(
     private readonly IUseCaseHandler<
         SaveTimeZoneDbApiKeyUseCase,
         TimeZoneDbProvider
-    > _useCaseHandler = useCaseHandler;
+    > _saveTokenHandler = saveTokenHandler;
 
-    private readonly IUseCaseHandler<AddUserUseCase, Domain.UsersContext.User> _addUserHandler =
-        addUserHandler;
-
-    private readonly IUseCaseHandler<
-        AddUserPermissionUseCase,
-        UserPermission
-    > _addPermisionHandler = addPermisionHandler;
-
-    private readonly IPermissionsRepository _permissionsRepository = permissionsRepository;
-
+    private readonly IUsersUseCaseVisitor _userUseCases = userUseCases;
     public string Command => TimeZoneDbApiKeyManagementConstants.TokenReplyCommand;
 
     public async Task Handle(ITelegramBotClient client, Update update)
@@ -58,6 +51,7 @@ public sealed class OnTimeZoneDbTokenReplyHandler(
         if (previous == null)
             return;
 
+        // получение информации о пользователе из события telegram.
         Result<TelegramBotUser> userResult = update.GetUser();
         if (userResult.IsFailure)
         {
@@ -66,20 +60,15 @@ public sealed class OnTimeZoneDbTokenReplyHandler(
         }
         TelegramBotUser user = userResult.Value;
 
-        Result addingUser = await AddFirstUser(user);
-        if (addingUser.IsFailure)
+        // создание первого пользователя с правами edit configuration и create tasks.
+        Result ownerRegistration = await AddOwner(user);
+        if (ownerRegistration.IsFailure)
         {
-            await addingUser.SendError(client, update);
+            await ownerRegistration.SendError(client, update);
             return;
         }
 
-        Result addingPermissions = await AddFirstUserOwnerPermissions(user);
-        if (addingPermissions.IsFailure)
-        {
-            await addingPermissions.SendError(client, update);
-            return;
-        }
-
+        // сохранение ключа time zone db.
         Result savingTimeZoneApiKey = await SaveTimeZoneDbApiKey(message.Value);
         if (savingTimeZoneApiKey.IsFailure)
         {
@@ -87,7 +76,6 @@ public sealed class OnTimeZoneDbTokenReplyHandler(
             return;
         }
 
-        await client.RegisterBotOwnerCommands(update.GetChatId());
         _context.ClearHandlers(update);
         _context.ClearCacheData(update);
         OptionMessage replyMessageOption = new() { ClearMenu = true };
@@ -97,63 +85,22 @@ public sealed class OnTimeZoneDbTokenReplyHandler(
             TimeZoneDbApiKeyManagementConstants.ReplyMessageOnSuccess,
             replyMessageOption
         );
+        await client.RegisterBotCommands();
     }
 
     private async Task<Result> SaveTimeZoneDbApiKey(string message)
     {
         SaveTimeZoneDbApiKeyUseCase useCase = new(message);
-        Result<TimeZoneDbProvider> provider = await _useCaseHandler.Handle(useCase);
+        Result<TimeZoneDbProvider> provider = await _saveTokenHandler.Handle(useCase);
         return provider;
     }
 
-    private async Task<Result> AddFirstUser(TelegramBotUser user)
+    private async Task<Result> AddOwner(TelegramBotUser user)
     {
-        long id = user.Id;
-        string name = user.CombineNamesAsNickname();
-        AddUserUseCase useCase = new(id, name);
-        Result<Domain.UsersContext.User> useCaseResult = await _addUserHandler.Handle(useCase);
-        return useCaseResult;
-    }
-
-    private async Task<Result> AddFirstUserOwnerPermissions(TelegramBotUser user)
-    {
-        Result<Permission> permissionEditorResult =
-            await _permissionsRepository.ReadableRepository.GetByName(
-                PermissionNames.EditConfiguration
-            );
-        if (permissionEditorResult.IsFailure)
-            return permissionEditorResult;
-
-        Result<Permission> permissionCreateTasksResult =
-            await _permissionsRepository.ReadableRepository.GetByName(PermissionNames.CreateTasks);
-        if (permissionCreateTasksResult.IsFailure)
-            return permissionCreateTasksResult;
-
         long userId = user.Id;
-        Permission permissionEditor = permissionEditorResult.Value;
-        Permission permissionCreateTasks = permissionCreateTasksResult.Value;
-
-        AddUserPermissionUseCase useCaseEditor = new(
-            userId,
-            permissionEditor.Id,
-            permissionEditor.Name
-        );
-        AddUserPermissionUseCase addUseCaseCreateTasks = new(
-            userId,
-            permissionCreateTasks.Id,
-            permissionCreateTasks.Name
-        );
-
-        Result<UserPermission> editorResult = await _addPermisionHandler.Handle(useCaseEditor);
-        if (editorResult.IsFailure)
-            return editorResult;
-
-        Result<UserPermission> createTasksResult = await _addPermisionHandler.Handle(
-            addUseCaseCreateTasks
-        );
-        if (createTasksResult.IsFailure)
-            return createTasksResult;
-
-        return Result.Success();
+        string userName = user.CombineNamesAsNickname();
+        string[] permissions = [PermissionNames.EditConfiguration, PermissionNames.CreateTasks];
+        AddUserWithPermissionsUseCase useCase = new(userId, userName, permissions);
+        return await _userUseCases.Visit(useCase);
     }
 }

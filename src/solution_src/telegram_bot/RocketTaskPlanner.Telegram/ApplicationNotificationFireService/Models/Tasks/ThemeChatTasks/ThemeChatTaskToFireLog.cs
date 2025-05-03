@@ -1,5 +1,8 @@
 ﻿namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Tasks.ThemeChatTasks;
 
+/// <summary>
+/// Логирующий декоратор для сообщения темы чата
+/// </summary>
 public sealed class ThemeChatTaskToFireLog : IThemeChatTaskToFire
 {
     private readonly IThemeChatTaskToFire _task;

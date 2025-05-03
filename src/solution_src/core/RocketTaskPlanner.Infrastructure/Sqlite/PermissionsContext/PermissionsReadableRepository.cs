@@ -8,6 +8,9 @@ using RocketTaskPlanner.Infrastructure.Sqlite.PermissionsContext.Entities;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.PermissionsContext;
 
+/// <summary>
+/// Абстракция для работы с БД прав (чтение).
+/// </summary>
 public sealed class PermissionsReadableRepository : IPermissionsReadableRepository
 {
     private readonly IDbConnectionFactory _connectionFactory;

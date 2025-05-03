@@ -1,4 +1,4 @@
-using RocketTaskPlanner.Application.Shared.UseCaseHandler;
+using RocketTaskPlanner.Application.NotificationsContext.Visitor;
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.RegisterChat;
 
@@ -7,4 +7,10 @@ public sealed record RegisterChatUseCase(
     string ChatName,
     string ZoneName,
     long TimeStamp
-) : IUseCase;
+) : INotificationVisitableUseCase
+{
+    public async Task<Result> Accept(
+        INotificationUseCaseVisitor visitor,
+        CancellationToken ct = default
+    ) => await visitor.Visit(this, ct);
+}

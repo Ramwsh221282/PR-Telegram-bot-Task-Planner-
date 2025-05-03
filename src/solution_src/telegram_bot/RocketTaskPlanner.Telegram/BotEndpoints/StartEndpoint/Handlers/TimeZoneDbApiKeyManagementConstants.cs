@@ -1,6 +1,6 @@
 namespace RocketTaskPlanner.Telegram.BotEndpoints.StartEndpoint.Handlers;
 
-public class TimeZoneDbApiKeyManagementConstants
+public static class TimeZoneDbApiKeyManagementConstants
 {
     public const string ReplyMessageOnStart = """
         Вас приветствует телеграм-бот планировщик задач 👋.
@@ -15,16 +15,6 @@ public class TimeZoneDbApiKeyManagementConstants
         Либо воспользуйтесь кнопкой Отменить в меню 🛑.
 
         Когда Вы зарегистрируетесь нажмите Продолжить ➡️
-        """;
-
-    public const string ReplyMessageOnUpdateKey = """
-        Вы попали в опцию изменения токена Time Zone Db 👋.
-
-        Для изменения токена, Вы должны быть зарегистрированы на платформе:
-
-        https://timezonedb.com
-
-        Если вы зарегистрированы на платформе, нажмите Продолжить ➡️.
         """;
 
     public const string ReplyMessageOnContinue = """
@@ -48,9 +38,12 @@ public class TimeZoneDbApiKeyManagementConstants
         Для этого вызовите команду /update_time_api_key
         """;
 
-    public const string UpdateCommand = "/update_time_api_key";
     public const string StartCommand = "/start";
     public const string ContinueCommand = "/continue_tz_token_configuration";
     public const string CancelCommand = "/stop_config";
     public const string TokenReplyCommand = "/tz_token_reply";
+    public const string ReplyOnTimeZoneDbConfigured = """
+        Добро пожаловать назад в бот планировщик задач.
+        Информацию можно узнать с помощью команды /bot_info
+        """;
 }

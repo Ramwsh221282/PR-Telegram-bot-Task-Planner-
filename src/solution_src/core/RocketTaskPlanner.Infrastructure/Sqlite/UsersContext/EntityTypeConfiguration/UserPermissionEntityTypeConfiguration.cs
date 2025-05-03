@@ -5,6 +5,9 @@ using RocketTaskPlanner.Domain.UsersContext.ValueObjects;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.UsersContext.EntityTypeConfiguration;
 
+/// <summary>
+/// Конфигурация таблицы user_permissions (права пользователей)
+/// </summary>
 public sealed class UserPermissionEntityTypeConfiguration : IEntityTypeConfiguration<UserPermission>
 {
     public void Configure(EntityTypeBuilder<UserPermission> builder)

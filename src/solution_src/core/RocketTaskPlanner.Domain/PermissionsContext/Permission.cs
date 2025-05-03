@@ -1,5 +1,8 @@
 ﻿namespace RocketTaskPlanner.Domain.PermissionsContext;
 
+/// <summary>
+/// Права
+/// </summary>
 public sealed class Permission
 {
     public required Guid Id { get; set; }

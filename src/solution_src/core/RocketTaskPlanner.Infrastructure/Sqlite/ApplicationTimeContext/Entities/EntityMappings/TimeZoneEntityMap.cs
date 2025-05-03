@@ -2,6 +2,9 @@
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Entities.EntityMappings;
 
+/// <summary>
+/// Маппинг модели таблицы из БД в Dao модель временной зоны при запросах через Dapper
+/// </summary>
 public sealed class TimeZoneEntityMap : EntityMap<TimeZoneEntity>
 {
     public TimeZoneEntityMap()
