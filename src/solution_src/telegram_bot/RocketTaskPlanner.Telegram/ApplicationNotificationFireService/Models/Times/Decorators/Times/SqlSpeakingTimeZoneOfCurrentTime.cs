@@ -71,7 +71,6 @@ public sealed class SqlSpeakingTimeZoneOfCurrentTime : ITimeZoneOfCurrentTime
             SELECT 
             nr.receiver_id, 
             nr.receiver_name, 
-            nr.receiver_zone_time_stamp, 
             nr.receiver_zone_name
             FROM notification_receivers nr
             WHERE nr.receiver_zone_name = @zoneName

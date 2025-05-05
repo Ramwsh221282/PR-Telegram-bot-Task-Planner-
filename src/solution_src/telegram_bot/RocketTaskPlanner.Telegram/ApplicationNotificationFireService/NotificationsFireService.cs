@@ -40,7 +40,7 @@ public sealed class NotificationsFireService(
             GeneralChatReceiverOfCurrentTimeZone[] receivers = await Receivers(times); // Получение списка получателей на основе временных зон.
             IThemeChatTaskToFire[] themeChatTasksToFire = ThemeChatTasks(receivers); // Получение списка тем, куда нужно отправить сообщения.
             IGeneralChatTaskToFire[] generalChatTasksToFire = GeneralChatTasks(receivers); // Получение списка чатов, куда нужно отправить сообщения.
-            int fired = await FiredTasksCount(themeChatTasksToFire, generalChatTasksToFire); // Отправка сообщений.
+            int fired = await HandleTasksToFire(themeChatTasksToFire, generalChatTasksToFire); // Отправка сообщений.
             _logger.Information("{Context} fired: {Count} tasks", CONTEXT, fired);
             await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
         }
@@ -100,22 +100,32 @@ public sealed class NotificationsFireService(
         return tasks;
     }
 
-    private static async Task<int> FiredTasksCount(
+    private async Task<int> HandleTasksToFire(
         IThemeChatTaskToFire[] themeChatTasks,
         IGeneralChatTaskToFire[] generalChatTasks
     )
     {
+        List<TaskFromRemovedChat> unfired = [];
         int count = 0;
+
         foreach (IGeneralChatTaskToFire task in generalChatTasks)
         {
-            await task.Fire();
+            ITaskToFire processed = await task.Fire();
+            if (processed is TaskFromRemovedChat removed)
+                unfired.Add(removed);
             count++;
         }
+
         foreach (IThemeChatTaskToFire task in themeChatTasks)
         {
-            await task.Fire();
+            ITaskToFire processed = await task.Fire();
+            if (processed is TaskFromRemovedChat removed)
+                unfired.Add(removed);
             count++;
         }
+
+        foreach (TaskFromRemovedChat removed in unfired)
+            await removed.HandleTaskFromRemovedChat(_connectionFactory);
 
         return count;
     }

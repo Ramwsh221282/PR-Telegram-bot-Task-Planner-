@@ -21,11 +21,7 @@ public sealed class DropTimeZoneDbApiKeyUseCaseHandler<TProvider>(
         CancellationToken ct = default
     )
     {
-        string id = useCase.Message;
-        Result removing = await _repository.Remove(id, ct);
-
-        return removing.IsFailure
-            ? Result.Failure<string>($"Не удается удалить ключ time zone db.")
-            : id;
+        await _repository.Remove(ct);
+        return Result.Success<string>("OK");
     }
 }

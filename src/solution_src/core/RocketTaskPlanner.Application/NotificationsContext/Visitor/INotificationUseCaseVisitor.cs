@@ -2,6 +2,8 @@
 using RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChatTheme;
 using RocketTaskPlanner.Application.NotificationsContext.Features.RegisterChat;
 using RocketTaskPlanner.Application.NotificationsContext.Features.RegisterTheme;
+using RocketTaskPlanner.Application.NotificationsContext.Features.RemoveChat;
+using RocketTaskPlanner.Application.NotificationsContext.Features.RemoveTheme;
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Visitor;
 
@@ -41,4 +43,20 @@ public interface INotificationUseCaseVisitor
     /// <param name="ct">Токен отмены</param>
     /// <returns>Result Success или Failure</returns>
     Task<Result> Visit(RegisterThemeUseCase useCase, CancellationToken ct = default);
+
+    /// <summary>
+    /// Удалить тему чата
+    /// </summary>
+    /// <param name="useCase">Dto</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Result Success или Failure</returns>
+    Task<Result> Visit(RemoveThemeUseCase useCase, CancellationToken ct = default);
+
+    /// <summary>
+    /// Удалить чат получателя
+    /// </summary>
+    /// <param name="useCase">Dto</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Result Success или Failure</returns>
+    Task<Result> Visit(RemoveChatUseCase useCase, CancellationToken ct = default);
 }

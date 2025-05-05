@@ -12,7 +12,6 @@ public sealed class NotificationReceiverEntity
 {
     public long ReceiverId { get; set; }
     public string ReceiverName { get; set; } = string.Empty;
-    public long ReceiverZoneTimeStamp { get; set; }
     public string ReceiverZoneName { get; set; } = string.Empty;
 
     public List<ReceiverThemeEntity> ReceiverThemes { get; set; } = [];
@@ -24,7 +23,6 @@ public sealed class NotificationReceiverEntity
     {
         ReceiverId = entity.ReceiverId;
         ReceiverName = entity.ReceiverName;
-        ReceiverZoneTimeStamp = entity.ReceiverZoneTimeStamp;
         ReceiverZoneName = entity.ReceiverZoneName;
         ReceiverThemes = entity.ReceiverThemes;
         ReceiverSubjects = entity.ReceiverSubjects;
@@ -55,9 +53,9 @@ public sealed class NotificationReceiverEntity
         NotificationReceiverId id = NotificationReceiverId.Create(ReceiverId).Value;
         NotificationReceiverName name = NotificationReceiverName.Create(ReceiverName).Value;
         NotificationReceiverTimeZone time = NotificationReceiverTimeZone
-            .Create(ReceiverZoneName, ReceiverZoneTimeStamp)
+            .Create(ReceiverZoneName)
             .Value;
-        NotificationReceiver receiver = new NotificationReceiver()
+        NotificationReceiver receiver = new()
         {
             Id = id,
             Name = name,

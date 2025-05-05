@@ -88,7 +88,6 @@ public sealed class GetNotificationReceiverTimeInformationQueryHandler(
             ReceiverSubjects = entity.ReceiverSubjects,
             ReceiverThemes = entity.ReceiverThemes,
             ReceiverZoneName = entity.ReceiverZoneName,
-            ReceiverZoneTimeStamp = timeZone.TimeInfo.TimeStamp,
         };
 
         return new GetNotificationReceiverTimeInformationQueryResponse(

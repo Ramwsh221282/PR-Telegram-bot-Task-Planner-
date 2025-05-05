@@ -1,4 +1,5 @@
 using RocketTaskPlanner.Application.NotificationsContext.Repository;
+using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler;
 using RocketTaskPlanner.Domain.NotificationsContext;
 using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverThemes;
@@ -7,34 +8,38 @@ using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverThemes.Valu
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.RegisterTheme;
 
 /// <summary>
-/// Добавление темы чата в основной чат
+/// Добавление темы чата для уведомлений
 /// </summary>
-/// <param name="writableRepository">Контракт взаимодействия с БД (операции записи)</param>
-public sealed class RegisterThemeUseCaseHandler(
-    INotificationReceiverWritableRepository writableRepository
-) : IUseCaseHandler<RegisterThemeUseCase, RegisterThemeResponse>
+public sealed class RegisterThemeUseCaseHandler
+    : IUseCaseHandler<RegisterThemeUseCase, RegisterThemeResponse>
 {
-    private readonly INotificationReceiverWritableRepository _writableRepository =
-        writableRepository;
+    private readonly INotificationRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public RegisterThemeUseCaseHandler(INotificationRepository repository, IUnitOfWork unitOfWork)
+    {
+        _repository = repository;
+        _unitOfWork = unitOfWork;
+    }
 
     public async Task<Result<RegisterThemeResponse>> Handle(
         RegisterThemeUseCase useCase,
         CancellationToken ct = default
     )
     {
-        Result<NotificationReceiver> receiver = await _writableRepository.GetById(
-            useCase.ChatId,
-            ct
-        );
+        var receiver = await _repository.Readable.GetById(useCase.ChatId, ct);
         if (receiver.IsFailure)
             return Result.Failure<RegisterThemeResponse>(receiver.Error);
 
-        ReceiverThemeId id = ReceiverThemeId.Create(useCase.ThemeId).Value;
-        Result<ReceiverTheme> theme = receiver.Value.AddTheme(id);
+        var id = ReceiverThemeId.Create(useCase.ThemeId).Value;
+        var theme = receiver.Value.AddTheme(id);
         if (theme.IsFailure)
             return Result.Failure<RegisterThemeResponse>(theme.Error);
 
-        await _writableRepository.AddTheme(theme.Value, ct);
-        return new RegisterThemeResponse(useCase.ChatId, receiver.Value.Name.Name, id.Id);
+        var result = _repository.Writable.AddTheme(theme.Value, _unitOfWork, ct);
+
+        return result.IsFailure
+            ? Result.Failure<RegisterThemeResponse>(result.Error)
+            : new RegisterThemeResponse(useCase.ChatId, receiver.Value.Name.Name, id.Id);
     }
 }

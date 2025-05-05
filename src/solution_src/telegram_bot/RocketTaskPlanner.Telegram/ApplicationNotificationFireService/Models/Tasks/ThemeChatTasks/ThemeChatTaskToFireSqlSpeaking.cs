@@ -116,9 +116,10 @@ public sealed class ThemeChatTaskToFireSqlSpeaking : IThemeChatTaskToFire
         Result<TimeRecognitionResult> recognizedTimeResult = await timeRecognition.RecognizeTime(
             message
         );
+
         TimeRecognitionResult recognizedTime = recognizedTimeResult.Value;
         TimeCalculationService timeCalculation = new();
-        TimeCalculationItem current = new(0, notified, true);
+        TimeCalculationItem current = new(notified, true);
         TimeCalculationItem updatedTime = timeCalculation.AddOffset(current, recognizedTime);
         return updatedTime.CalculationDateTime;
     }

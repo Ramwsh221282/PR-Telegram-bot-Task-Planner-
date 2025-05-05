@@ -23,12 +23,28 @@ public static class CommonBotExtensions
         if (result.IsSuccess)
             return;
 
+        long chatId = update.GetChatId();
+        int? themeId = update.Message?.MessageThreadId;
         string text = $"""
             Ошибка:
             {result.Error}
             """;
 
-        await PRTelegramBot.Helpers.Message.Send(client, update, text);
+        await client.SendError(chatId, themeId, text);
+    }
+
+    private static async Task SendError(
+        this ITelegramBotClient client,
+        long chatId,
+        int? themeId,
+        string text
+    )
+    {
+        Task handling =
+            themeId == null
+                ? client.SendMessage(chatId: chatId, text: text)
+                : client.SendMessage(chatId: chatId, text: text, messageThreadId: themeId.Value);
+        await handling;
     }
 
     /// <summary>

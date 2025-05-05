@@ -15,7 +15,7 @@ public sealed class RegisterChatUseCaseValidator
                 bool idSuccess = NotificationReceiverId.Create(useCase.ChatId).IsSuccess;
                 bool chatNameSuccess = NotificationReceiverName.Create(useCase.ChatName).IsSuccess;
                 bool timeZoneSuccess = NotificationReceiverTimeZone
-                    .Create(useCase.ZoneName, useCase.TimeStamp)
+                    .Create(useCase.ZoneName)
                     .IsSuccess;
                 return idSuccess && chatNameSuccess && timeZoneSuccess;
             },

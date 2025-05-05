@@ -20,7 +20,7 @@ public sealed class GeneralChatSubjectEntity
     {
         ReceiverSubjectId id = ReceiverSubjectId.Create(GeneralChatSubjectId).Value;
         ReceiverSubjectDateCreated created = new(SubjectCreated);
-        ReceiverSubjectDateNotify notify = new ReceiverSubjectDateNotify(SubjectNotify);
+        ReceiverSubjectDateNotify notify = new(SubjectNotify);
         ReceiverSubjectPeriodInfo period = CreatePeriodInfo(created, notify);
         ReceiverSubjectTimeInfo time = new(created, notify);
         ReceiverSubjectMessage message = ReceiverSubjectMessage.Create(SubjectMessage).Value;

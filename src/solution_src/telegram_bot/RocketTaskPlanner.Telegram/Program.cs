@@ -4,8 +4,8 @@ using RocketTaskPlanner.Presenters.DependencyInjection;
 using RocketTaskPlanner.Telegram.ApplicationNotificationFireService;
 using RocketTaskPlanner.Telegram.ApplicationTimeZonesService;
 using RocketTaskPlanner.Telegram.Configuration;
-using RocketTaskPlanner.Telegram.DatabaseSetup;
-using RocketTaskPlanner.Telegram.PermissionsSetup;
+using RocketTaskPlanner.Telegram.StartupExtensions.DatabaseSetup;
+using RocketTaskPlanner.Telegram.StartupExtensions.TimeZoneDbSetup;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
@@ -20,7 +20,11 @@ builder.Services.AddHostedService<NotificationsFireService>(); // инъекци
 IHost host = builder.Build();
 
 host.ApplyMigrations().Wait(); // применение миграций БД.
-host.RegisterBasicPermissions().Wait(); // добавление базовых прав (edit, create tasks).
+
+if (builder.Environment.IsDevelopment())
+    host.SetupTimeZoneDbProviderUsingEnvFile(BotConfigurationVariables.EnvFilePath).Wait(); // установка провайдера временных зон из .env файла
+else
+    host.SetupTimeZoneDbProviderUsingEnvVariables().Wait(); // установка провайдера временных зон из переменных окружения
 
 PRBotBase bot = host.GetBotInstance();
 await bot.Start(); // запуск бота.

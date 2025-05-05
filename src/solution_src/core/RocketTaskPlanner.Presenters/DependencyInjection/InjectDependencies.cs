@@ -4,27 +4,29 @@ using Microsoft.Extensions.DependencyInjection;
 using RocketTaskPlanner.Application.ApplicationTimeContext.Features.Contracts;
 using RocketTaskPlanner.Application.ApplicationTimeContext.Features.SaveTimeZoneDbApiKey;
 using RocketTaskPlanner.Application.ApplicationTimeContext.Repository;
+using RocketTaskPlanner.Application.ExternalChatsManagementContext.Repository;
+using RocketTaskPlanner.Application.ExternalChatsManagementContext.Visitors;
+using RocketTaskPlanner.Application.Facades;
 using RocketTaskPlanner.Application.NotificationsContext.Repository;
 using RocketTaskPlanner.Application.NotificationsContext.Visitor;
-using RocketTaskPlanner.Application.PermissionsContext.Repository;
+using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler.Decorators;
 using RocketTaskPlanner.Application.Shared.Validation;
-using RocketTaskPlanner.Application.UsersContext.Contracts;
-using RocketTaskPlanner.Application.UsersContext.Visitor;
 using RocketTaskPlanner.Infrastructure.Abstractions;
 using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext;
 using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Cache;
 using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Entities.EntityMappings;
 using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Repositories;
 using RocketTaskPlanner.Infrastructure.Sqlite.DbConnectionFactory;
+using RocketTaskPlanner.Infrastructure.Sqlite.ExternalChatsManagementContext;
+using RocketTaskPlanner.Infrastructure.Sqlite.ExternalChatsManagementContext.Entities;
+using RocketTaskPlanner.Infrastructure.Sqlite.ExternalChatsManagementContext.Entities.EntityMappings;
+using RocketTaskPlanner.Infrastructure.Sqlite.ExternalChatsManagementContext.Repositories;
 using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext;
 using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities.EntityMappings;
 using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Repositories;
-using RocketTaskPlanner.Infrastructure.Sqlite.PermissionsContext;
-using RocketTaskPlanner.Infrastructure.Sqlite.PermissionsContext.Entities.EntityMappings;
-using RocketTaskPlanner.Infrastructure.Sqlite.UsersContext;
-using RocketTaskPlanner.Infrastructure.Sqlite.UsersContext.Entities.EntityMappings;
+using RocketTaskPlanner.Infrastructure.Sqlite.UnitOfWorks;
 using RocketTaskPlanner.Infrastructure.TimeZoneDb;
 using RocketTaskPlanner.TimeRecognitionModule.TimeCalculation;
 using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Facade;
@@ -47,6 +49,7 @@ public static class InjectDependencies
         services.InjectCaches();
         services.InjectTimeRecognition();
         services.InjectUseCaseVisitors();
+        services.InjectFacades();
         RegisterEntityMappings();
     }
 
@@ -63,22 +66,23 @@ public static class InjectDependencies
     {
         services.AddDbContextFactory<ApplicationTimeDbContext>();
         services.AddDbContextFactory<NotificationsDbContext>();
-        services.AddDbContextFactory<PermissionsDbContext>();
-        services.AddDbContextFactory<UsersDbContext>();
+        services.AddDbContextFactory<ExternalChatsDbContext>();
+
+        services.AddSingleton<IDbConnectionFactory, SqliteConnectionFactory>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<ApplicationTimeDbContext>();
         services.AddScoped<NotificationsDbContext>();
-        services.AddScoped<PermissionsDbContext>();
-        services.AddScoped<UsersDbContext>();
+        services.AddScoped<ExternalChatsDbContext>();
     }
 
     // Инъекция контрактов и реализаций для работы с хранилищами (БД).
     private static void InjectRepositories(this IServiceCollection services)
     {
-        services.AddTransient<
-            INotificationReceiverWritableRepository,
-            NotificationReceiverWritableSqliteRepository
-        >();
+        services.AddTransient<INotificationsWritableRepository, NotificationsWritableRepository>();
+        services.AddScoped<INotificationsReadableRepository, NotificationsReadableRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+
         services.AddTransient<TimeZoneDbCachedRepository>();
         services.AddTransient<
             IApplicationTimeRepository<TimeZoneDbProvider>,
@@ -89,13 +93,9 @@ public static class InjectDependencies
             TimeZoneDbCachedRepository
         >();
 
-        services.AddTransient<IPermissionsWritableRepository, PermissionsWritableRepository>();
-        services.AddTransient<IPermissionsReadableRepository, PermissionsReadableRepository>();
-        services.AddTransient<IPermissionsRepository, PermissionsRepository>();
-
-        services.AddTransient<IUsersReadableRepository, UsersReadableRepository>();
-        services.AddTransient<IUsersWritableRepository, UsersWritableRepository>();
-        services.AddTransient<IUsersRepository, UsersRepository>();
+        services.AddScoped<IExternalChatsRepository, ExternalChatsRepository>();
+        services.AddScoped<IExternalChatsReadableRepository, ExternalChatsReadableRepository>();
+        services.AddScoped<IExternalChatsWritableRepository, ExternalChatsWritableRepository>();
     }
 
     // инъекция кешей
@@ -135,7 +135,7 @@ public static class InjectDependencies
             scan.FromAssemblies(assemblies)
                 .AddClasses(classes => classes.AssignableTo(typeof(IUseCaseHandler<,>)))
                 .AsSelfWithInterfaces()
-                .WithTransientLifetime()
+                .WithScopedLifetime()
         );
 
         services.Decorate(typeof(IUseCaseHandler<,>), typeof(GenericValidationDecorator<,>));
@@ -152,13 +152,11 @@ public static class InjectDependencies
     {
         Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-        services.AddSingleton<IDbConnectionFactory, SqliteConnectionFactory>();
-
         services.Scan(scan =>
             scan.FromAssemblies(assemblies)
                 .AddClasses(classes => classes.AssignableTo(typeof(IQueryHandler<,>)))
                 .AsSelfWithInterfaces()
-                .WithTransientLifetime()
+                .WithScopedLifetime()
         );
     }
 
@@ -180,16 +178,24 @@ public static class InjectDependencies
             config.AddMap(new ThemeChatSubjectEntityMap());
             config.AddMap(new TimeZoneDbProviderEntityMap());
             config.AddMap(new TimeZoneEntityMap());
-            config.AddMap(new UserEntityMap());
-            config.AddMap(new UserPermissionEntityMap());
-            config.AddMap(new PermissionEntityMap());
+            config.AddMap(new ExternalChatEntityMap());
+            config.AddMap(new ExternalChatOwnerMap());
         });
     }
 
     // инъекция посетителей запросов бизнес-логики
     private static void InjectUseCaseVisitors(this IServiceCollection services)
     {
-        services.AddTransient<IUsersUseCaseVisitor, UsersUseCaseVisitor>();
-        services.AddTransient<INotificationUseCaseVisitor, NotificationUseCaseVisitor>();
+        services.AddScoped<INotificationUseCaseVisitor, NotificationUseCaseVisitor>();
+        services.AddScoped<IExternalChatUseCasesVisitor, ExternalChatUseCasesVisitor>();
+    }
+
+    private static void InjectFacades(this IServiceCollection services)
+    {
+        services.AddScoped<FirstUserChatRegistrationFacade>();
+        services.AddScoped<UserChatRegistrationFacade>();
+        services.AddScoped<UserThemeRegistrationFacade>();
+        services.AddScoped<RemoveThemeChatFacade>();
+        services.AddScoped<RemoveOwnerChatFacade>();
     }
 }

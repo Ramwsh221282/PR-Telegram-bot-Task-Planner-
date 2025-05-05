@@ -26,7 +26,7 @@ public static class TelegramBotInjection
             TelegramBotClient client = new(options.Token);
             return client;
         });
-        builder.Services.AddTransientBotHandlers();
+        builder.Services.AddScopedBotHandlers();
     }
 
     public static PRBotBase GetBotInstance(this IHost host)

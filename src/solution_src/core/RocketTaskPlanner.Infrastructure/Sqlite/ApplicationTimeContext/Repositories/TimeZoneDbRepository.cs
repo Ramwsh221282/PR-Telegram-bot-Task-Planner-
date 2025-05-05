@@ -115,39 +115,13 @@ public sealed class TimeZoneDbRepository(IDbConnectionFactory factory, Serilog.I
             : dictionary.Values.First().ToTimeZoneDbProvider();
     }
 
-    private const string RemoveSql = """
-        DELETE FROM time_zone_db_providers
-        WHERE time_zone_db_provider_id = @time_zone_db_provider_id
-        """;
+    private const string RemoveSql = "DELETE FROM time_zone_db_providers";
 
-    public async Task<Result> Remove(string? id, CancellationToken ct = default)
+    public async Task Remove(CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            return Result.Failure("Time Zone Db Provider не найден.");
-
-        var parameters = new { time_zone_db_provider_id = id };
-        CommandDefinition command = new(RemoveSql, parameters);
+        CommandDefinition command = new(RemoveSql, cancellationToken: ct);
         using IDbConnection connection = CreateConnection();
-        using IDbTransaction transaction = CreateTransaction(connection);
-        try
-        {
-            int removedCount = await connection.ExecuteAsync(command);
-            if (removedCount == 0)
-                return Result.Failure("Time Zone Db Provider не найден.");
-            transaction.Commit();
-            return Result.Success();
-        }
-        catch (Exception ex)
-        {
-            transaction.Rollback();
-            _logger.Fatal(
-                "{Context}. {Action}. Exception: {Ex}.",
-                nameof(TimeZoneDbRepository),
-                nameof(Remove),
-                ex.Message
-            );
-            return Result.Failure("Не удалось удалить конфигурацию провайдера Time Zone Db.");
-        }
+        await connection.ExecuteAsync(command);
     }
 
     private const string InsertZonesSql = """

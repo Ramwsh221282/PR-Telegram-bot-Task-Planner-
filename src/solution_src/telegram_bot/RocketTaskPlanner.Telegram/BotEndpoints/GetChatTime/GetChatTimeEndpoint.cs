@@ -1,9 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using PRTelegramBot.Attributes;
 using PRTelegramBot.Models.Enums;
-using RocketTaskPlanner.Application.UsersContext.Features.EnsureUserHasPermissions;
-using RocketTaskPlanner.Application.UsersContext.Visitor;
-using RocketTaskPlanner.Domain.PermissionsContext;
 using RocketTaskPlanner.Infrastructure.Abstractions;
 using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetNotificationReceiverTimeInformation;
 using RocketTaskPlanner.Telegram.BotAbstractions;
@@ -16,23 +13,19 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.GetChatTime;
 /// <summary>
 /// Endpoint обработки команды /bot_chat_time
 /// </summary>
-/// <param name="usersUseCases">Посетитель обработчиков бизнес логики.</param>
 /// <param name="handler">Обработчик запроса на получение информации времени о чате, из которого вызывается команда</param>
 [BotHandler]
 public sealed class GetChatTimeEndpoint(
     IQueryHandler<
         GetNotificationReceiverTimeInformationQuery,
         GetNotificationReceiverTimeInformationQueryResponse
-    > handler,
-    IUsersUseCaseVisitor usersUseCases
+    > handler
 )
 {
     private readonly IQueryHandler<
         GetNotificationReceiverTimeInformationQuery,
         GetNotificationReceiverTimeInformationQueryResponse
     > _handler = handler;
-
-    private readonly IUsersUseCaseVisitor _userUseCases = usersUseCases;
 
     /// <summary>
     /// Обработчик endpoint'а
@@ -48,18 +41,6 @@ public sealed class GetChatTimeEndpoint(
     {
         Result<TelegramBotUser> telegramBotUserResult = update.GetUser();
         if (telegramBotUserResult.IsFailure)
-        {
-            await telegramBotUserResult.SendError(client, update);
-            return;
-        }
-
-        TelegramBotUser user = telegramBotUserResult.Value;
-        EnsureUserHasPermissionsUseCase hasPermissionUseCase = new(
-            user.Id,
-            [PermissionNames.CreateTasks]
-        );
-        Result hasPermission = await _userUseCases.Visit(hasPermissionUseCase);
-        if (!hasPermission.IsFailure)
         {
             await telegramBotUserResult.SendError(client, update);
             return;

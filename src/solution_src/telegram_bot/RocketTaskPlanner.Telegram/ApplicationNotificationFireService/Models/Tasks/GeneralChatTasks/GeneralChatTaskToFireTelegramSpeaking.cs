@@ -21,8 +21,15 @@ public sealed class GeneralChatTaskToFireTelegramSpeaking : IGeneralChatTaskToFi
 
     public async Task<ITaskToFire> Fire()
     {
-        await SendTelegramBotMessage();
-        return await _taskToFire.Fire();
+        try
+        {
+            await SendTelegramBotMessage();
+            return await _taskToFire.Fire();
+        }
+        catch
+        {
+            return new TaskFromRemovedChat(ChatId());
+        }
     }
 
     public long SubjectId() => _taskToFire.SubjectId();

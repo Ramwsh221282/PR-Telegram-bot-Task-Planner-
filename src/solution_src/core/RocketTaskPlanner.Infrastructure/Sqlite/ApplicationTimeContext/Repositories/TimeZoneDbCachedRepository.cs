@@ -38,14 +38,10 @@ public sealed class TimeZoneDbCachedRepository(
     public async Task<Result<TimeZoneDbProvider>> Get(CancellationToken ct = default) =>
         _instance.Instance ?? await _repository.Get(ct);
 
-    public async Task<Result> Remove(string? id, CancellationToken ct = default)
+    public async Task Remove(CancellationToken ct = default)
     {
-        Result result = await _repository.Remove(id, ct);
-        if (result.IsFailure)
-            return result;
-
+        await _repository.Remove(ct);
         _instance.SetNull();
-        return result;
     }
 
     public async Task Save(TimeZoneDbProvider provider, CancellationToken ct = default)

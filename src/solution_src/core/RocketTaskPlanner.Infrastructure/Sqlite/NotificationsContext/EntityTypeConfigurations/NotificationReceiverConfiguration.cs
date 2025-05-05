@@ -30,14 +30,13 @@ public sealed class NotificationReceiverConfiguration
                 fromDb => NotificationReceiverName.Create(fromDb).Value
             );
 
-        builder.ComplexProperty(
-            r => r.TimeZone,
-            cpb =>
-            {
-                cpb.Property(tz => tz.ZoneName).HasColumnName("receiver_zone_name");
-                cpb.Property(tz => tz.TimeStamp).HasColumnName("receiver_zone_time_stamp");
-            }
-        );
+        builder
+            .Property(r => r.TimeZone)
+            .HasColumnName("receiver_zone_name")
+            .HasConversion(
+                toDb => toDb.ZoneName,
+                fromDb => NotificationReceiverTimeZone.Create(fromDb).Value
+            );
 
         builder
             .HasMany(r => r.Themes)

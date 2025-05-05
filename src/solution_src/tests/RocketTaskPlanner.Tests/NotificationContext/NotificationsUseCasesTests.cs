@@ -20,14 +20,8 @@ public sealed class NotificationsUseCasesTests : IClassFixture<DefaultTestsFixtu
         const long receiverId = 123;
         const string receiverName = "Test Receiver";
         const string receiverZoneName = "Test Time Zone Name";
-        const long receiverZoneTimeStamp = 456;
 
-        RegisterChatUseCase useCase = new(
-            receiverId,
-            receiverName,
-            receiverZoneName,
-            receiverZoneTimeStamp
-        );
+        RegisterChatUseCase useCase = new(receiverId, receiverName, receiverZoneName);
 
         var useCaseHandler = _fixture.GetService<
             IUseCaseHandler<RegisterChatUseCase, RegisterChatUseCaseResponse>
@@ -47,14 +41,8 @@ public sealed class NotificationsUseCasesTests : IClassFixture<DefaultTestsFixtu
         const long receiverId = 123;
         const string receiverName = "Test Receiver";
         const string receiverZoneName = "Test Time Zone Name";
-        const long receiverZoneTimeStamp = 456;
 
-        RegisterChatUseCase useCase = new(
-            receiverId,
-            receiverName,
-            receiverZoneName,
-            receiverZoneTimeStamp
-        );
+        RegisterChatUseCase useCase = new(receiverId, receiverName, receiverZoneName);
 
         var useCaseHandler = _fixture.GetService<
             IUseCaseHandler<RegisterChatUseCase, RegisterChatUseCaseResponse>
@@ -77,14 +65,8 @@ public sealed class NotificationsUseCasesTests : IClassFixture<DefaultTestsFixtu
         const long receiverId = 123;
         const string receiverName = "Test Receiver";
         const string receiverZoneName = "Test Time Zone Name";
-        const long receiverZoneTimeStamp = 456;
 
-        RegisterChatUseCase useCase = new(
-            receiverId,
-            receiverName,
-            receiverZoneName,
-            receiverZoneTimeStamp
-        );
+        RegisterChatUseCase useCase = new(receiverId, receiverName, receiverZoneName);
 
         var useCaseHandler = _fixture.GetService<
             IUseCaseHandler<RegisterChatUseCase, RegisterChatUseCaseResponse>
@@ -126,14 +108,8 @@ public sealed class NotificationsUseCasesTests : IClassFixture<DefaultTestsFixtu
         const long receiverId = 123;
         const string receiverName = "Test Receiver";
         const string receiverZoneName = "Test Time Zone Name";
-        const long receiverZoneTimeStamp = 456;
 
-        RegisterChatUseCase useCase = new(
-            receiverId,
-            receiverName,
-            receiverZoneName,
-            receiverZoneTimeStamp
-        );
+        RegisterChatUseCase useCase = new(receiverId, receiverName, receiverZoneName);
 
         var useCaseHandler = _fixture.GetService<
             IUseCaseHandler<RegisterChatUseCase, RegisterChatUseCaseResponse>
@@ -161,14 +137,8 @@ public sealed class NotificationsUseCasesTests : IClassFixture<DefaultTestsFixtu
         const long receiverId = 123;
         const string receiverName = "Test Receiver";
         const string receiverZoneName = "Test Time Zone Name";
-        const long receiverZoneTimeStamp = 456;
 
-        RegisterChatUseCase useCase = new(
-            receiverId,
-            receiverName,
-            receiverZoneName,
-            receiverZoneTimeStamp
-        );
+        RegisterChatUseCase useCase = new(receiverId, receiverName, receiverZoneName);
 
         var useCaseHandler = _fixture.GetService<
             IUseCaseHandler<RegisterChatUseCase, RegisterChatUseCaseResponse>

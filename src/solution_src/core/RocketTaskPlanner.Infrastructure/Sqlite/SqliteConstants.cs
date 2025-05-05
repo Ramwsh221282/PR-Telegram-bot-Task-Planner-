@@ -16,12 +16,7 @@ public static class SqliteConstants
     public const string ApplicationTimeConnectionString = "Data Source=ApplicationTime.db";
 
     /// <summary>
-    /// Строка подключения для контекста прав
+    /// Строка подключения для контекста пользователей внешних чатов
     /// </summary>
-    public const string PermissionsConnectionString = "Data Source=Permissions.db";
-
-    /// <summary>
-    /// Строка подключения для контекста пользователей и прав пользователей
-    /// </summary>
-    public const string UsersConnectionString = "Data Source=Users.db";
+    public const string ExternalChatsConnectionString = "Data Source=ExternalChats.db";
 }

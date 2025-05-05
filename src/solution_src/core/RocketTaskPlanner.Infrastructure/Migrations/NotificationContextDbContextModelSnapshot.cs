@@ -135,19 +135,10 @@ namespace RocketTaskPlanner.Infrastructure.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("receiver_name");
 
-                    b.ComplexProperty<Dictionary<string, object>>("TimeZone", "RocketTaskPlanner.Domain.NotificationsContext.NotificationReceiver.TimeZone#NotificationReceiverTimeZone", b1 =>
-                        {
-                            b1.IsRequired();
-
-                            b1.Property<long>("TimeStamp")
-                                .HasColumnType("INTEGER")
-                                .HasColumnName("receiver_zone_time_stamp");
-
-                            b1.Property<string>("ZoneName")
-                                .IsRequired()
-                                .HasColumnType("TEXT")
-                                .HasColumnName("receiver_zone_name");
-                        });
+                    b.Property<string>("TimeZone")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("receiver_zone_name");
 
                     b.HasKey("Id");
 

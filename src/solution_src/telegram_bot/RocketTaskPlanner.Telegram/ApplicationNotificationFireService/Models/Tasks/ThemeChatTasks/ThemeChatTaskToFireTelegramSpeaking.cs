@@ -18,9 +18,15 @@ public sealed class ThemeChatTaskToFireTelegramSpeaking : IThemeChatTaskToFire
 
     public async Task<ITaskToFire> Fire()
     {
-        // отправка сообщения в телеграм (в тему чата)
-        await SendTelegramMessage();
-        return await _task.Fire();
+        try
+        {
+            await SendTelegramMessage();
+            return await _task.Fire();
+        }
+        catch
+        {
+            return new TaskFromRemovedChat(ChatId());
+        }
     }
 
     public long SubjectId() => _task.SubjectId();

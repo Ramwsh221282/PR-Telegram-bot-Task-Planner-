@@ -7,31 +7,21 @@ namespace RocketTaskPlanner.TimeRecognitionModule.TimeCalculation;
 /// </summary>
 public sealed class TimeCalculationItem
 {
-    public long TimeStamp { get; }
     public DateTime CalculationDateTime { get; }
     public bool IsPeriodic { get; }
 
-    public TimeCalculationItem(long seconds, DateTime calculationDateTime, bool isPeriodic)
+    public TimeCalculationItem(DateTime calculationDateTime, bool isPeriodic)
     {
-        TimeStamp = seconds;
         CalculationDateTime = calculationDateTime;
         IsPeriodic = isPeriodic;
     }
 
     public TimeCalculationItem(TimeCalculationItem other)
-        : this(other.TimeStamp, other.TimeStamp.FromUnixTimeSeconds(), other.IsPeriodic) { }
-
-    public TimeCalculationItem(TimeCalculationItem other, long seconds)
-        : this(other)
-    {
-        TimeStamp += seconds;
-        CalculationDateTime = TimeStamp.FromUnixTimeSeconds();
-    }
+        : this(other.CalculationDateTime, other.IsPeriodic) { }
 
     public TimeCalculationItem(TimeCalculationItem other, DateTime calculated)
         : this(other)
     {
-        TimeStamp = calculated.ToUnixTimeSeconds();
         CalculationDateTime = calculated;
     }
 

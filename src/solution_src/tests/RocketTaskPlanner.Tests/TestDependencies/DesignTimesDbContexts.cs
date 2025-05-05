@@ -1,8 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Design;
 using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext;
+using RocketTaskPlanner.Infrastructure.Sqlite.ExternalChatsManagementContext;
 using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext;
-using RocketTaskPlanner.Infrastructure.Sqlite.PermissionsContext;
-using RocketTaskPlanner.Infrastructure.Sqlite.UsersContext;
 
 namespace RocketTaskPlanner.Tests.TestDependencies;
 
@@ -24,19 +23,11 @@ public sealed class NotificationsTimeDesignTimeDbContext
     }
 }
 
-public sealed class PermissionsDesignTimeDbContext
-    : IDesignTimeDbContextFactory<PermissionsDbContext>
+public sealed class ExternalChatMembersDesignTimeDbContext
+    : IDesignTimeDbContextFactory<ExternalChatsDbContext>
 {
-    public PermissionsDbContext CreateDbContext(string[] args)
+    public ExternalChatsDbContext CreateDbContext(string[] args)
     {
-        return new PermissionsDbContext();
-    }
-}
-
-public sealed class UsersDesignTimeDbContext : IDesignTimeDbContextFactory<UsersDbContext>
-{
-    public UsersDbContext CreateDbContext(string[] args)
-    {
-        return new UsersDbContext();
+        return new ExternalChatsDbContext();
     }
 }

@@ -1,4 +1,5 @@
 using RocketTaskPlanner.Application.NotificationsContext.Repository;
+using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler;
 using RocketTaskPlanner.Domain.NotificationsContext;
 using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
@@ -6,15 +7,23 @@ using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.RegisterChat;
 
 /// <summary>
-/// Создание основного чата
+/// Регистрация чата для получения уведомлений
 /// </summary>
-/// <param name="writableRepository">Контракт взаимодействия с БД (операции записи)</param>
-public sealed class RegisterChatUseCaseHandler(
-    INotificationReceiverWritableRepository writableRepository
-) : IUseCaseHandler<RegisterChatUseCase, RegisterChatUseCaseResponse>
+public sealed class RegisterChatUseCaseHandler
+    : IUseCaseHandler<RegisterChatUseCase, RegisterChatUseCaseResponse>
 {
-    private readonly INotificationReceiverWritableRepository _writableRepository =
-        writableRepository;
+    private readonly INotificationsWritableRepository _writableRepository;
+
+    private readonly IUnitOfWork _unitOfWork;
+
+    public RegisterChatUseCaseHandler(
+        INotificationsWritableRepository writableRepository,
+        IUnitOfWork unitOfWork
+    )
+    {
+        _writableRepository = writableRepository;
+        _unitOfWork = unitOfWork;
+    }
 
     public async Task<Result<RegisterChatUseCaseResponse>> Handle(
         RegisterChatUseCase useCase,
@@ -24,7 +33,7 @@ public sealed class RegisterChatUseCaseHandler(
         NotificationReceiverId id = NotificationReceiverId.Create(useCase.ChatId).Value;
         NotificationReceiverName name = NotificationReceiverName.Create(useCase.ChatName).Value;
         NotificationReceiverTimeZone time = NotificationReceiverTimeZone
-            .Create(useCase.ZoneName, useCase.TimeStamp)
+            .Create(useCase.ZoneName)
             .Value;
 
         NotificationReceiver receiver = new()
@@ -34,7 +43,7 @@ public sealed class RegisterChatUseCaseHandler(
             TimeZone = time,
         };
 
-        Result saving = await _writableRepository.Add(receiver, ct);
+        Result saving = await _writableRepository.Add(receiver, _unitOfWork, ct);
 
         return saving.IsFailure
             ? Result.Failure<RegisterChatUseCaseResponse>(saving.Error)
