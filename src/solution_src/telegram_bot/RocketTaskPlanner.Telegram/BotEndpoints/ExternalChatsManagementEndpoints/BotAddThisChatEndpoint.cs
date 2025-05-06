@@ -71,7 +71,7 @@ public sealed class BotAddThisChatEndpoint
     /// <param name="client">Telegram bot клиент для общения с telegram</param>
     /// <param name="update">Последнее событие (в данном случае вызов команды /add_this_chat)</param>
     [ReplyMenuHandler(
-        CommandComparison.Equals,
+        CommandComparison.Contains,
         StringComparison.OrdinalIgnoreCase,
         commands: ["/add_this_chat"]
     )]

@@ -2,14 +2,14 @@
 using CSharpFunctionalExtensions;
 using Dapper;
 using RocketTaskPlanner.Application.NotificationsContext.Repository;
-using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 using RocketTaskPlanner.Domain.NotificationsContext;
+using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 using RocketTaskPlanner.Infrastructure.Abstractions;
 using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Repositories;
 
-public sealed class NotificationsReadableRepository : INotificationsReadableRepository, IRepository
+public sealed class NotificationsReadableRepository : INotificationsReadableRepository
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
 
@@ -116,4 +116,24 @@ public sealed class NotificationsReadableRepository : INotificationsReadableRepo
 
     public IDbConnection CreateConnection() =>
         _dbConnectionFactory.Create(SqliteConstants.NotificationsConnectionString);
+
+    public async Task<Result<NotificationReceiverName>> GetNameById(
+        long? id,
+        CancellationToken ct = default
+    )
+    {
+        const string sql = """
+            SELECT receiver_name FROM notification_receivers WHERE receiver_id = @id
+            """;
+
+        var parameters = new { id };
+        var command = new CommandDefinition(sql, parameters, cancellationToken: ct);
+        using var connection = CreateConnection();
+        var name = await connection.QueryFirstOrDefaultAsync<string>(command);
+
+        if (string.IsNullOrWhiteSpace(name))
+            return Result.Failure<NotificationReceiverName>($"Не найден чат с ID: {id}");
+
+        return NotificationReceiverName.Create(name).Value;
+    }
 }

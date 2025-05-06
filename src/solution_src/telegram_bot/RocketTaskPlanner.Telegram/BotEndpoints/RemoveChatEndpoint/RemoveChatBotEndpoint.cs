@@ -2,14 +2,8 @@
 using PRTelegramBot.Attributes;
 using PRTelegramBot.Extensions;
 using PRTelegramBot.Models.Enums;
-using RocketTaskPlanner.Application.ExternalChatsManagementContext.Features.RemoveExternalChat;
-using RocketTaskPlanner.Application.ExternalChatsManagementContext.Features.RemoveExternalChatOwner;
 using RocketTaskPlanner.Application.ExternalChatsManagementContext.Repository;
-using RocketTaskPlanner.Application.ExternalChatsManagementContext.Visitors;
-using RocketTaskPlanner.Application.NotificationsContext.Features.RemoveChat;
-using RocketTaskPlanner.Application.NotificationsContext.Features.RemoveTheme;
-using RocketTaskPlanner.Application.NotificationsContext.Visitor;
-using RocketTaskPlanner.Domain.ExternalChatsManagementContext;
+using RocketTaskPlanner.Application.Facades;
 using RocketTaskPlanner.Telegram.BotAbstractions;
 using RocketTaskPlanner.Telegram.BotExtensions;
 using Telegram.Bot;
@@ -20,164 +14,76 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.RemoveChatEndpoint;
 [BotHandler]
 public sealed class RemoveChatBotEndpoint
 {
-    private readonly INotificationUseCaseVisitor _notificationsVisitor;
-    private readonly IExternalChatUseCasesVisitor _chatsVisitor;
+    // Хранилище пользователей и пользовательских чатов
     private readonly IExternalChatsReadableRepository _repository;
 
+    // Фасадный класс для транзакции удаления пользовательского чата и чата уведомлений.
+    // Если при удалении, удаляется пользователь у которого был 1 чат.
+    // Пользователь будет так же удален
+    private readonly RemoveOwnerChatFacade _removeOwnerChat;
+
+    // Фасадный класс для транзакции удаления темы пользовательского чата и дочернего чата.
+    private readonly RemoveThemeChatFacade _removeThemeChat;
+
     public RemoveChatBotEndpoint(
-        INotificationUseCaseVisitor notificationsVisitor,
-        IExternalChatUseCasesVisitor chatsVisitor,
-        IExternalChatsReadableRepository repository
+        IExternalChatsReadableRepository repository,
+        RemoveOwnerChatFacade removeOwnerChat,
+        RemoveThemeChatFacade removeThemeChat
     )
     {
-        _notificationsVisitor = notificationsVisitor;
-        _chatsVisitor = chatsVisitor;
         _repository = repository;
+        _removeOwnerChat = removeOwnerChat;
+        _removeThemeChat = removeThemeChat;
     }
 
-    [ReplyMenuHandler(CommandComparison.Equals, "/remove")]
+    [ReplyMenuHandler(
+        CommandComparison.Equals,
+        StringComparison.OrdinalIgnoreCase,
+        "/remove_this_chat"
+    )]
     public async Task Handle(ITelegramBotClient client, Update update)
     {
-        Result<TelegramBotUser> invokeUser = update.GetUser();
-        if (invokeUser.IsFailure)
-        {
-            await invokeUser.SendError(client, update);
+        Result<TelegramBotUser> user = update.GetUser();
+        if (user.IsFailure)
             return;
-        }
 
-        long chatId = update.GetChatId();
+        long userId = user.Value.Id;
         Result<int> themeId = update.GetThemeId();
+        long chatId = update.GetChatId();
+        bool isLastChat = await _repository.IsLastUserChat(userId);
 
-        Result<ExternalChatOwner> owner = await GetUserAsChatOwner(invokeUser.Value);
-        if (owner.IsFailure)
+        Result result = await HandleMethod(userId, chatId, themeId, isLastChat);
+        if (result.IsFailure)
         {
-            await SendNoPermissionsError(client, chatId, themeId);
+            await result.SendError(client, update);
             return;
         }
 
-        Task handle = themeId.IsSuccess switch
-        {
-            true => HandleForTheme(chatId, themeId.Value, owner.Value, client, update),
-            false => HandleForGeneralChat(chatId, owner.Value, client, update),
-        };
-
-        await handle;
+        await SendReplyMessage(client, chatId, themeId);
     }
 
-    private async Task<Result<ExternalChatOwner>> GetUserAsChatOwner(TelegramBotUser user)
-    {
-        Result<ExternalChatOwner> owner = await _repository.GetExternalChatOwnerById(user.Id);
-        return owner;
-    }
-
-    private async Task HandleForTheme(
+    public Task<Result> HandleMethod(
+        long userId,
         long chatId,
-        int themeId,
-        ExternalChatOwner owner,
-        ITelegramBotClient client,
-        Update update
-    )
-    {
-        if (!owner.OwnsChat(themeId))
-        {
-            await SendNoPermissionsError(client, themeId, chatId);
-            return;
-        }
+        Result<int> themeResult,
+        bool isLastChat
+    ) =>
+        themeResult.IsSuccess
+            ? HandleForThemeChat(userId, chatId, themeResult.Value)
+            : HandleForChat(userId, chatId, isLastChat);
 
-        RemoveThemeUseCase removeTheme = new(chatId, themeId);
-        RemoveExternalChatUseCase removeExternalChat = new(owner.Id.Value, themeId);
-        Result removingTheme = await _notificationsVisitor.Visit(removeTheme);
+    public async Task<Result> HandleForChat(long userId, long chatId, bool isLastChat) =>
+        await _removeOwnerChat.RemoveOwnerChat(userId, chatId, isLastChat);
 
-        if (removingTheme.IsFailure)
-        {
-            await removingTheme.SendError(client, update);
-            return;
-        }
+    public async Task<Result> HandleForThemeChat(long userId, long chatId, long themeId) =>
+        await _removeThemeChat.RemoveThemeChat(userId, chatId, themeId);
 
-        Result removingChat = await _chatsVisitor.Visit(removeExternalChat);
-        if (removingChat.IsFailure)
-        {
-            await removingChat.SendError(client, update);
-            return;
-        }
-
-        await client.SendMessage(chatId: chatId, text: "Тема отписана", messageThreadId: themeId);
-    }
-
-    private async Task HandleForGeneralChat(
-        long chatId,
-        ExternalChatOwner owner,
-        ITelegramBotClient client,
-        Update update
-    )
-    {
-        if (!owner.OwnsChat(chatId))
-        {
-            await SendNoPermissionsError(client, chatId);
-            return;
-        }
-
-        RemoveChatUseCase removeChat = new(chatId);
-        RemoveExternalChatUseCase removeExternalChat = new(owner.Id.Value, chatId);
-        Result removingChat = await _notificationsVisitor.Visit(removeChat);
-        if (removingChat.IsFailure)
-        {
-            await removingChat.SendError(client, update);
-            return;
-        }
-
-        Result removingChatOwner = await _chatsVisitor.Visit(removeExternalChat);
-        if (removingChatOwner.IsFailure)
-        {
-            await removingChatOwner.SendError(client, update);
-            return;
-        }
-
-        await client.SendMessage(chatId: chatId, text: "Чат отписан");
-
-        // удаление пользователя как обладателя чата, если удаленный чат был последним.
-        ExternalChatOwner updatedOwnerState = (
-            await _repository.GetExternalChatOwnerById(owner.Id.Value)
-        ).Value;
-        if (updatedOwnerState.Chats.Count == 0)
-        {
-            RemoveExternalChatOwnerUseCase removeOwnwer = new(updatedOwnerState.Id.Value);
-            await _chatsVisitor.Visit(removeOwnwer);
-        }
-    }
-
-    private static async Task SendNoPermissionsError(
-        ITelegramBotClient client,
-        long chatId,
-        Result<int> themeResult
-    )
-    {
-        string errorMessage = "Операция доступна тому, кто добавлял этот чат.";
-        Task operation = themeResult.IsSuccess switch
-        {
-            true => client.SendMessage(
+    public Task SendReplyMessage(ITelegramBotClient client, long chatId, Result<int> themeResult) =>
+        themeResult.IsSuccess
+            ? client.SendMessage(
                 chatId: chatId,
-                text: errorMessage,
+                text: "Тема отписана",
                 messageThreadId: themeResult.Value
-            ),
-            false => client.SendMessage(chatId: chatId, text: errorMessage),
-        };
-        await operation;
-    }
-
-    private static async Task SendNoPermissionsError(ITelegramBotClient client, long chatId)
-    {
-        string errorMessage = "Операция доступна тому, кто добавлял этот чат.";
-        await client.SendMessage(chatId: chatId, text: errorMessage);
-    }
-
-    private static async Task SendNoPermissionsError(
-        ITelegramBotClient client,
-        int themeId,
-        long chatId
-    )
-    {
-        string errorMessage = "Операция доступна тому, кто добавлял этот чат.";
-        await client.SendMessage(chatId: chatId, text: errorMessage, messageThreadId: themeId);
-    }
+            )
+            : client.SendMessage(chatId: chatId, text: "Чат отписан");
 }

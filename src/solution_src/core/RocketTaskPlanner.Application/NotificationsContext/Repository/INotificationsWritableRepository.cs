@@ -2,6 +2,7 @@ using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 using RocketTaskPlanner.Domain.NotificationsContext;
 using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverSubjects;
 using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverThemes;
+using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Repository;
 
@@ -20,4 +21,12 @@ public interface INotificationsWritableRepository : IRepository
     Task<Result> AddSubject(GeneralChatReceiverSubject subject, CancellationToken ct = default);
     Result Remove(long? id, IUnitOfWork unitOfWork, CancellationToken ct = default);
     Result RemoveTheme(ReceiverTheme theme, IUnitOfWork unit, CancellationToken ct = default);
+    Task<Result> ChangeTimeZone(
+        NotificationReceiverId id,
+        NotificationReceiverTimeZone timeZone,
+        CancellationToken ct = default
+    );
+
+    Task<Result> RemoveGeneralChatSubject(long subjectId, CancellationToken ct = default);
+    Task<Result> RemoveThemeChatSubject(long subjectId, CancellationToken ct = default);
 }

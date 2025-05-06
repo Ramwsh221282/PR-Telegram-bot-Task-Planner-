@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using PRTelegramBot.Extensions;
+using PRTelegramBot.Models;
 using RocketTaskPlanner.Telegram.BotAbstractions;
 using RocketTaskPlanner.Telegram.BotConstants;
 using Telegram.Bot;
@@ -221,4 +222,32 @@ public static class CommonBotExtensions
             update,
             ReplyMessageConstants.OperationCanceled
         );
+
+    /// <summary>
+    /// Сброс reply keyboard menu меню в приватном чате бота.
+    /// </summary>
+    /// <param name="client">Telegram bot клиент для общения с telegram</param>
+    /// <param name="update">Последнее событие</param>
+    public static async Task ClearMenu(this ITelegramBotClient client, Update update)
+    {
+        var option = new OptionMessage() { ClearMenu = true };
+        await PRTelegramBot.Helpers.Message.Send(client, update, "", option);
+    }
+
+    /// <summary>
+    /// Сброс reply keyboard menu меню в приватном чате бота.
+    /// Сброс происходит с отправкой сопутствующего сообщения replyText параметр.
+    /// </summary>
+    /// <param name="client">Telegram bot клиент для общения с telegram</param>
+    /// <param name="update">Последнее событие</param>
+    /// <param name="replyText">Сообщение при сбросе меню.</param>
+    public static async Task ClearMenu(
+        this ITelegramBotClient client,
+        Update update,
+        string replyText
+    )
+    {
+        var option = new OptionMessage() { ClearMenu = true };
+        await PRTelegramBot.Helpers.Message.Send(client, update, replyText, option);
+    }
 }

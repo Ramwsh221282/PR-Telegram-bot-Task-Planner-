@@ -126,4 +126,17 @@ public sealed class ExternalChatsReadableRepository : IExternalChatsReadableRepo
         int count = await connection.ExecuteScalarAsync<int>(command);
         return count != 0;
     }
+
+    public async Task<bool> UserOwnsChat(long userId, long chatId, CancellationToken ct = default)
+    {
+        const string sql = """
+             SELECT COUNT(*) FROM external_chats WHERE id = @chatId AND owner_id = @userId
+            """;
+
+        var parameters = new { chatId, userId };
+        var command = new CommandDefinition(sql, parameters, cancellationToken: ct);
+        using var connection = _factory.Create(SqliteConstants.ExternalChatsConnectionString);
+        int count = await connection.ExecuteScalarAsync<int>(command);
+        return count != 0;
+    }
 }

@@ -119,4 +119,8 @@ public sealed class ExternalChatOwner
 
         return chat ?? Result.Failure<ExternalChat>("Не найден дочерний чат.");
     }
+
+    public ExternalChat[] GetGeneralChats() => [.. _chats.Where(c => c.ParentId == null)];
+
+    public ExternalChat[] GetChildChats() => [.. _chats.Where(c => c.ParentId != null)];
 }

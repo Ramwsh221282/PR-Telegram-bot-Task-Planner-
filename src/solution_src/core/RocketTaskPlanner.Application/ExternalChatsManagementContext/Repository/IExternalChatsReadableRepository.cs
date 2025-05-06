@@ -50,4 +50,13 @@ public interface IExternalChatsReadableRepository
     /// <param name="ct">Токен отмены</param>
     /// <returns>True если зарегистрирован. False если не зарегистрирован</returns>
     Task<bool> HasUserRegistered(long userId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Обладает ли пользователь чатом
+    /// </summary>
+    /// <param name="userId">ID пользователя</param>
+    /// <param name="chatId">ID чата</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>True если обладает. False если не обладает.</returns>
+    Task<bool> UserOwnsChat(long userId, long chatId, CancellationToken ct = default);
 }

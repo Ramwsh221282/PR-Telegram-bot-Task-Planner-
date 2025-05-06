@@ -6,6 +6,7 @@ using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 using RocketTaskPlanner.Domain.NotificationsContext;
 using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverSubjects;
 using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverThemes;
+using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 using RocketTaskPlanner.Infrastructure.Abstractions;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Repositories;
@@ -24,13 +25,18 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
         CancellationToken ct = default
     )
     {
-        const string duplicateSql = """
-            SELECT COUNT(*) FROM notification_receivers WHERE receiver_id = @receiver_id
-            """;
+        const string duplicateSql =
+            "SELECT COUNT(*) FROM notification_receivers WHERE receiver_id = @receiver_id";
 
         const string addSql = """
-            INSERT INTO notification_receivers (receiver_id, receiver_name, receiver_zone_name)
-            VALUES (@receiver_id, @receiver_name, @receiver_zone_name)
+            INSERT INTO notification_receivers 
+                (receiver_id, 
+                 receiver_name, 
+                 receiver_zone_name)
+            VALUES 
+                (@receiver_id, 
+                @receiver_name, 
+                @receiver_zone_name)
             """;
 
         using IDbConnection connection = CreateConnection();
@@ -62,8 +68,10 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
     )
     {
         const string sql = """
-            INSERT INTO receiver_themes (theme_id, receiver_id)
-            VALUES (@theme_id, @receiver_id)
+            INSERT INTO receiver_themes 
+                (theme_id, receiver_id)
+            VALUES 
+                (@theme_id, @receiver_id)
             """;
 
         var parameters = new
@@ -82,8 +90,20 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
     public async Task<Result> AddSubject(ThemeChatSubject subject, CancellationToken ct = default)
     {
         const string sql = """
-            INSERT INTO theme_chat_subjects (theme_chat_subject_id, theme_id, subject_periodic, subject_created, subject_notify, subject_message)
-            VALUES (@theme_chat_subject_id, @theme_id, @subject_periodic, @subject_created, @subject_notify, @subject_message)
+            INSERT INTO theme_chat_subjects 
+                (theme_chat_subject_id, 
+                 theme_id, 
+                 subject_periodic, 
+                 subject_created, 
+                 subject_notify, 
+                 subject_message)
+            VALUES 
+                (@theme_chat_subject_id, 
+                 @theme_id, 
+                 @subject_periodic,
+                 @subject_created, 
+                 @subject_notify, 
+                 @subject_message)
             """;
 
         var parameters = new
@@ -109,8 +129,20 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
     )
     {
         const string sql = """
-            INSERT INTO general_chat_subjects (general_chat_subject_id, general_chat_id, subject_periodic, subject_created, subject_notify, subject_message)
-            VALUES (@general_chat_subject_id, @general_chat_id, @subject_periodic, @subject_created, @subject_notify, @subject_message)
+            INSERT INTO general_chat_subjects 
+                (general_chat_subject_id, 
+                 general_chat_id, 
+                 subject_periodic, 
+                 subject_created, 
+                 subject_notify, 
+                 subject_message)
+            VALUES 
+                (@general_chat_subject_id, 
+                 @general_chat_id, 
+                 @subject_periodic, 
+                 @subject_created, 
+                 @subject_notify, 
+                 @subject_message)
             """;
 
         var parameters = new
@@ -122,6 +154,7 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
             subject_notify = subject.TimeInfo.Notify.Value,
             subject_message = subject.Message.Message,
         };
+
         CommandDefinition command = new(sql, parameters, cancellationToken: ct);
         using IDbConnection connection = CreateConnection();
         await connection.ExecuteAsync(command);
@@ -145,6 +178,29 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
         return Result.Success();
     }
 
+    public async Task<Result> ChangeTimeZone(
+        NotificationReceiverId id,
+        NotificationReceiverTimeZone timeZone,
+        CancellationToken ct = default
+    )
+    {
+        const string sql = """
+            UPDATE notification_receivers
+            SET receiver_zone_name = @zoneName
+            WHERE receiver_id = @id
+            """;
+
+        var parameters = new { id = id.Id, zoneName = timeZone.ZoneName };
+        var command = new CommandDefinition(sql, parameters, cancellationToken: ct);
+        using var connection = CreateConnection();
+
+        int rowsAffected = await connection.ExecuteAsync(command);
+
+        return rowsAffected == 0
+            ? Result.Failure($"Не удалось изменить временную зону чата: {id.Id}. Чат не был найден")
+            : Result.Success();
+    }
+
     public Result Remove(long? id, IUnitOfWork unitOfWork, CancellationToken ct = default)
     {
         const string sql = "DELETE FROM notification_receivers WHERE receiver_id = @id";
@@ -158,6 +214,37 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
         unitOfWork.AddCommand(this, unitCommand);
 
         return Result.Success();
+    }
+
+    public async Task<Result> RemoveGeneralChatSubject(
+        long subjectId,
+        CancellationToken ct = default
+    )
+    {
+        const string sql = """
+            DELETE FROM general_chat_subjects
+            WHERE general_chat_subject_id = @subjectId
+            """;
+
+        var parameters = new { subjectId };
+        CommandDefinition command = new(sql, parameters, cancellationToken: ct);
+        using var connection = CreateConnection();
+        int rowsAffected = await connection.ExecuteAsync(command);
+        return rowsAffected == 0 ? Result.Failure("Не удалось удалить задачу") : Result.Success();
+    }
+
+    public async Task<Result> RemoveThemeChatSubject(long subjectId, CancellationToken ct = default)
+    {
+        const string sql = """
+            DELETE FROM theme_chat_subjects WHERE
+            theme_chat_subject_id = @subjectId
+            """;
+
+        var parameters = new { subjectId };
+        var command = new CommandDefinition(sql, parameters, cancellationToken: ct);
+        using var connection = CreateConnection();
+        int rowsAffected = await connection.ExecuteAsync(command);
+        return rowsAffected == 0 ? Result.Failure("Не удалось удалить задачу") : Result.Success();
     }
 
     public IDbConnection CreateConnection() =>

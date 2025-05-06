@@ -1,0 +1,3 @@
+﻿namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetNotificationReceiversByIdArray;
+
+public record GetNotificationReceiversByIdentifiersQueryResponse(long ChatId, string ChatName);

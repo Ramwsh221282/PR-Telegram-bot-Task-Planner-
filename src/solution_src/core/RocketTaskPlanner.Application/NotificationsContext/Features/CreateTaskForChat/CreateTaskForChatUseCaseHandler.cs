@@ -1,6 +1,5 @@
 ﻿using RocketTaskPlanner.Application.NotificationsContext.Repository;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler;
-using RocketTaskPlanner.Domain.NotificationsContext;
 using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverSubjects;
 using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverSubjects.ValueObjects;
 using RocketTaskPlanner.Utilities.DateExtensions;

@@ -1,8 +1,6 @@
-﻿using System.Data;
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
 using Dapper;
 using RocketTaskPlanner.Application.ApplicationTimeContext.Repository;
-using RocketTaskPlanner.Domain.ApplicationTimeContext.Entities.TimeZones;
 using RocketTaskPlanner.Infrastructure.Abstractions;
 using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities;
 using RocketTaskPlanner.Infrastructure.TimeZoneDb;
@@ -24,7 +22,7 @@ public sealed class GetNotificationReceiverTimeInformationQueryHandler(
     >
 {
     private const string Sql = """
-        SELECT receiver_id, receiver_name, receiver_zone_time_stamp, receiver_zone_name
+        SELECT receiver_id, receiver_name, receiver_zone_name
         FROM notification_receivers
         WHERE receiver_id = @id
         """;
@@ -59,9 +57,7 @@ public sealed class GetNotificationReceiverTimeInformationQueryHandler(
     {
         var parameters = new { id };
         CommandDefinition command = new(Sql, parameters, cancellationToken: token);
-        using IDbConnection connection = _factory.Create(
-            SqliteConstants.NotificationsConnectionString
-        );
+        using var connection = _factory.Create(SqliteConstants.NotificationsConnectionString);
         return await connection.QueryFirstOrDefaultAsync<NotificationReceiverEntity>(command);
     }
 
@@ -71,9 +67,7 @@ public sealed class GetNotificationReceiverTimeInformationQueryHandler(
     )
     {
         string zoneName = entity.ReceiverZoneName;
-        ApplicationTimeZone? timeZone = provider.TimeZones.FirstOrDefault(z =>
-            z.Name.Name == zoneName
-        );
+        var timeZone = provider.TimeZones.FirstOrDefault(z => z.Name.Name == zoneName);
         if (timeZone == null)
             return new GetNotificationReceiverTimeInformationQueryResponse(
                 $"Не удалось найти время чата с ID: {entity.ReceiverId}. Наверное для чата ещё не было задано время.",

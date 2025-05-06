@@ -1,9 +1,12 @@
-﻿using RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChat;
+﻿using RocketTaskPlanner.Application.NotificationsContext.Features.ChangeTimeZone;
+using RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChat;
 using RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChatTheme;
 using RocketTaskPlanner.Application.NotificationsContext.Features.RegisterChat;
 using RocketTaskPlanner.Application.NotificationsContext.Features.RegisterTheme;
 using RocketTaskPlanner.Application.NotificationsContext.Features.RemoveChat;
+using RocketTaskPlanner.Application.NotificationsContext.Features.RemoveChatSubject;
 using RocketTaskPlanner.Application.NotificationsContext.Features.RemoveTheme;
+using RocketTaskPlanner.Application.NotificationsContext.Features.RemoveThemeSubject;
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Visitor;
 
@@ -59,4 +62,28 @@ public interface INotificationUseCaseVisitor
     /// <param name="ct">Токен отмены</param>
     /// <returns>Result Success или Failure</returns>
     Task<Result> Visit(RemoveChatUseCase useCase, CancellationToken ct = default);
+
+    /// <summary>
+    /// Изменить временную зону чата уведомлений
+    /// </summary>
+    /// <param name="useCase">Dto</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Result Success или Failure</returns>
+    Task<Result> Visit(ChangeTimeZoneUseCase useCase, CancellationToken ct = default);
+
+    /// <summary>
+    /// Удалить задачу основного чата
+    /// </summary>
+    /// <param name="useCase">Dto</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Result Success или Failure</returns>
+    Task<Result> Visit(RemoveChatSubjectUseCase useCase, CancellationToken ct = default);
+
+    /// <summary>
+    /// Удалить задачу темы
+    /// </summary>
+    /// <param name="useCase">Dto</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Result Success или Failure</returns>
+    Task<Result> Visit(RemoveThemeSubjectUseCase useCase, CancellationToken ct = default);
 }
