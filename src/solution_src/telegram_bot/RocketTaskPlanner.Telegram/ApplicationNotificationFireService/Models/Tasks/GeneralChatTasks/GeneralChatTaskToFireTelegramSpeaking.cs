@@ -28,7 +28,7 @@ public sealed class GeneralChatTaskToFireTelegramSpeaking : IGeneralChatTaskToFi
         }
         catch
         {
-            return new TaskFromRemovedChat(ChatId());
+            return new TaskFromRemovedChat(ChatId(), SubjectId());
         }
     }
 

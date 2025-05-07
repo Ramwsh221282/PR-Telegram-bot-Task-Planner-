@@ -25,7 +25,7 @@ public sealed class ThemeChatTaskToFireTelegramSpeaking : IThemeChatTaskToFire
         }
         catch
         {
-            return new TaskFromRemovedChat(ChatId());
+            return new TaskFromRemovedChat(ChatId(), SubjectId());
         }
     }
 

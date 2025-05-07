@@ -51,7 +51,7 @@ public sealed class RemoveChatBotEndpoint
     [SlashHandler(
         CommandComparison.Contains,
         StringComparison.OrdinalIgnoreCase,
-        "/remove_this_chat"
+        "/remove_this_chat@"
     )]
     public async Task Handle(ITelegramBotClient client, Update update)
     {

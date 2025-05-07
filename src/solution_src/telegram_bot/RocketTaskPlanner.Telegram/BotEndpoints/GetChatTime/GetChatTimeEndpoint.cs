@@ -40,7 +40,7 @@ public sealed class GetChatTimeEndpoint(
     [SlashHandler(
         CommandComparison.Contains,
         StringComparison.OrdinalIgnoreCase,
-        ["/bot_chat_time"]
+        ["/bot_chat_time@"]
     )]
     public async Task GetChatTime(ITelegramBotClient client, Update update)
     {

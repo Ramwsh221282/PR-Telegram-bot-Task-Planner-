@@ -87,7 +87,7 @@ public sealed class BotAddThisChatEndpoint
     [SlashHandler(
         CommandComparison.Contains,
         StringComparison.OrdinalIgnoreCase,
-        commands: ["/add_this_chat"]
+        commands: ["/add_this_chat@"]
     )]
     public async Task OnAddThisChat(ITelegramBotClient client, Update update) =>
         await _context.InvokeEntryPoint(client, update);

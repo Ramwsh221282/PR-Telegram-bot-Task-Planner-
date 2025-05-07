@@ -63,7 +63,7 @@ public sealed class ChangeTimeZoneEndpoint
     [SlashHandler(
         CommandComparison.Contains,
         StringComparison.OrdinalIgnoreCase,
-        ["/change_time_zone"]
+        ["/change_time_zone@"]
     )]
     public async Task ChangeTimeZoneHandler(ITelegramBotClient client, Update update)
     {
