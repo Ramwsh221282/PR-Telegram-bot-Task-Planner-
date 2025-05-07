@@ -1,0 +1,37 @@
+﻿# СТАДИЯ ПОДГОТОВКИ К СБОРКИ.
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /app
+
+# КОПИРОВАНИЕ ОСНОВНЫХ ЗАВИСИМОСТЕЙ ПРОЕКТА.
+COPY ./solution_src/core/RocketTaskPlanner.Domain/. /solution_src/core/RocketTaskPlanner.Domain
+COPY ./solution_src/core/RocketTaskPlanner.Application/. /solution_src/core/RocketTaskPlanner.Application
+COPY ./solution_src/core/RocketTaskPlanner.Infrastructure/. /solution_src/core/RocketTaskPlanner.Infrastructure
+COPY ./solution_src/core/RocketTaskPlanner.Presenters/. /solution_src/core/RocketTaskPlanner.Presenters
+COPY ./solution_src/core/RocketTaskPlanner.Utilities/. /solution_src/core/RocketTaskPlanner.Utilities
+
+# КОПИРОВАНИЕ МОДУЛЯ РАСПОЗНАВАНИЯ ВРЕМЕНИ.
+COPY ./solution_src/time_recognition/RocketTaskPlanner.TimeRecognitionModule /solution_src/time_recognition/RocketTaskPlanner.TimeRecognitionModule
+
+# КОПИРОВАНИЕ ПРОЕКТА С ТЕЛЕГРАМ БОТОМ.
+COPY ./solution_src/telegram_bot/RocketTaskPlanner.Telegram/. /solution_src/telegram_bot/RocketTaskPlanner.Telegram
+
+# УСТАНОВКА ПАПКИ С ТЕЛЕГРАМ БОТОМ ДЛЯ СБОРКИ ПРОЕКТА.
+WORKDIR /solution_src/telegram_bot/RocketTaskPlanner.Telegram
+
+# КОМАНДА ДЛЯ СБОРКИ ПРОЕКТА.
+RUN dotnet restore && \
+    dotnet publish -c Release -o /publish /p:TrimUnusedDependencies=true
+
+# СТАДИЯ ПОДГОТОВКИ К ЗАПУСКУ.
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS final
+
+COPY --from=build /publish/. ./
+
+# ЗАПУСК.
+ENTRYPOINT ["dotnet", "RocketTaskPlanner.Telegram.dll"]
+
+
+
+
+
+

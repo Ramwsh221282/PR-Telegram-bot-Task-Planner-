@@ -1,0 +1,13 @@
+﻿services:
+  bot:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: telegram_bot
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - TIME_ZONE_DB_KEY=${TIME_ZONE_DB_KEY}
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    restart: always
