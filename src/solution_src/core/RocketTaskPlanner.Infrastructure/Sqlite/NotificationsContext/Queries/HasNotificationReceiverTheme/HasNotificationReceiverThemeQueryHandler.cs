@@ -5,9 +5,11 @@ using RocketTaskPlanner.Infrastructure.Abstractions;
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.HasNotificationReceiverTheme;
 
 /// <summary>
-/// Обработчик на проверку существования записи темы чата по Id темы и Id чата
+/// Обработчик запроса <inheritdoc cref="HasNotificationReceiverThemeQuery"/>
+/// <param name="factory">
+/// <inheritdoc cref="IDbConnectionFactory"/>
+/// </param>
 /// </summary>
-/// <param name="factory">Фабрика создания соединения с БД</param>
 public sealed class HasNotificationReceiverThemeQueryHandler(IDbConnectionFactory factory)
     : IQueryHandler<HasNotificationReceiverThemeQuery, bool>
 {

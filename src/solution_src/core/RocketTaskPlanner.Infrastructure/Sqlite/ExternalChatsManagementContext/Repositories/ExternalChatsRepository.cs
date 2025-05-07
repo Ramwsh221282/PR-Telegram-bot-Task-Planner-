@@ -2,6 +2,11 @@
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.ExternalChatsManagementContext.Repositories;
 
+/// <summary>
+/// Фасадный класс для объединения
+/// <inheritdoc cref="IExternalChatsReadableRepository"/>
+/// <inheritdoc cref="IExternalChatsWritableRepository"/>
+/// </summary>
 public sealed class ExternalChatsRepository
     : Application.ExternalChatsManagementContext.Repository.IExternalChatsRepository
 {

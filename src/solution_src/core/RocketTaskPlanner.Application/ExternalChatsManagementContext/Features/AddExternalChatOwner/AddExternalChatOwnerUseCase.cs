@@ -2,6 +2,11 @@
 
 namespace RocketTaskPlanner.Application.ExternalChatsManagementContext.Features.AddExternalChatOwner;
 
+/// <summary>
+/// Добавить обладателя чата
+/// </summary>
+/// <param name="Id">ID пользователя</param>
+/// <param name="Name">Nick Name пользователя</param>
 public sealed record AddExternalChatOwnerUseCase(long Id, string Name)
     : IExternalChatUseCaseVisitable
 {

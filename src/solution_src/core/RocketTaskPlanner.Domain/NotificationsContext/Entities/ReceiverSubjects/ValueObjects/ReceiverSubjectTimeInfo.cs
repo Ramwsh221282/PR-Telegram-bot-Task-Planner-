@@ -1,5 +1,8 @@
 namespace RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverSubjects.ValueObjects;
 
+/// <summary>
+/// Информация о времени уведомления основного чата
+/// </summary>
 public readonly record struct ReceiverSubjectTimeInfo
 {
     public ReceiverSubjectDateCreated Created { get; }

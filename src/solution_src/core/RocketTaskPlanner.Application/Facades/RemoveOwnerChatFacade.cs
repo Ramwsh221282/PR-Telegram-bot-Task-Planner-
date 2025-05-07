@@ -7,10 +7,24 @@ using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 
 namespace RocketTaskPlanner.Application.Facades;
 
+/// <summary>
+/// Фасадный класс для удаления пользовательского чата
+/// </summary>
 public sealed class RemoveOwnerChatFacade
 {
+    /// <summary>
+    /// <inheritdoc cref="IUnitOfWork"/>
+    /// </summary>
     private readonly IUnitOfWork _unitOfWork;
+
+    /// <summary>
+    /// <inheritdoc cref="IExternalChatUseCasesVisitor"/>
+    /// </summary>
     private readonly IExternalChatUseCasesVisitor _userChats;
+
+    /// <summary>
+    /// <inheritdoc cref="INotificationUseCaseVisitor"/>
+    /// </summary>
     private readonly INotificationUseCaseVisitor _notificationChats;
 
     public RemoveOwnerChatFacade(
@@ -52,18 +66,21 @@ public sealed class RemoveOwnerChatFacade
         return Result.Success();
     }
 
+    // удалить пользователя, если у него был последний чат
     private async Task<Result> RemoveUserIfHasNoChatsLeft(long userId)
     {
         var useCase = new RemoveExternalChatOwnerUseCase(userId);
         return await _userChats.Visit(useCase);
     }
 
+    // удалить пользовательский чат
     private async Task<Result> RemoveUserChat(long userId, long chatId)
     {
         var useCase = new RemoveExternalChatUseCase(userId, chatId);
         return await _userChats.Visit(useCase);
     }
 
+    // удалить пользовательский чат для уведомлений
     private async Task<Result> RemoveNotificationChat(long chatId)
     {
         var useCase = new RemoveChatUseCase(chatId);

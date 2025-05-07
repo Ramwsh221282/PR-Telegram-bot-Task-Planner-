@@ -6,10 +6,24 @@ using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 
 namespace RocketTaskPlanner.Application.Facades;
 
+/// <summary>
+/// Фасадный класс для добавления темы чата
+/// </summary>
 public sealed class UserThemeRegistrationFacade
 {
+    /// <summary>
+    /// <inheritdoc cref="IExternalChatUseCasesVisitor"/>
+    /// </summary>
     private readonly IExternalChatUseCasesVisitor _externalChatsVisitor;
+
+    /// <summary>
+    /// <inheritdoc cref="INotificationUseCaseVisitor"/>
+    /// </summary>
     private readonly INotificationUseCaseVisitor _notificationChatsVisitor;
+
+    /// <summary>
+    /// <inheritdoc cref="IUnitOfWork"/>
+    /// </summary>
     private readonly IUnitOfWork _unitOfWork;
 
     public UserThemeRegistrationFacade(
@@ -54,6 +68,7 @@ public sealed class UserThemeRegistrationFacade
         return Result.Success();
     }
 
+    // добавить дочерний чат
     private async Task<Result> AddChildChatForParent(
         long parentChatId,
         long themeChatId,
@@ -65,6 +80,7 @@ public sealed class UserThemeRegistrationFacade
         return await _externalChatsVisitor.Visit(useCase);
     }
 
+    // добавить тему чата для уведомлений
     private async Task<Result> AddThemeAsNotificationReceiver(long chatId, long themeId)
     {
         RegisterThemeUseCase useCase = new(chatId, themeId);

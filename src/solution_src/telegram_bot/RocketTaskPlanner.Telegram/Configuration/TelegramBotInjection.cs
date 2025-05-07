@@ -19,6 +19,7 @@ public static class TelegramBotInjection
             ),
             false => BotOptionsResolver.ReadFromEnvironmentVariablesForProd(),
         };
+
         builder.Services.AddSingleton(options);
         builder.Services.AddSingleton(new TelegramBotClientFactory(options));
         builder.Services.AddTransient<TelegramBotClient>(_ =>
@@ -26,6 +27,7 @@ public static class TelegramBotInjection
             TelegramBotClient client = new(options.Token);
             return client;
         });
+
         builder.Services.AddScopedBotHandlers();
     }
 

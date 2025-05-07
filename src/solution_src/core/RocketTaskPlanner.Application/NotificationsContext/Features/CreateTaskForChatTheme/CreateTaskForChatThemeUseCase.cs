@@ -2,6 +2,16 @@
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChatTheme;
 
+/// <summary>
+/// Команда для бизнес логики создания уведомления темы чата
+/// </summary>
+/// <param name="ChatId">ID основного чата</param>
+/// <param name="ThemeId">ID темы чата</param>
+/// <param name="SubjectId">ID уведомления</param>
+/// <param name="DateCreated">Дата создания</param>
+/// <param name="DateNotify">Дата уведомления</param>
+/// <param name="Message">Текст уведомления</param>
+/// <param name="isPeriodic">Пероидоическая или нет</param>
 public record CreateTaskForChatThemeUseCase(
     long ChatId,
     long ThemeId,

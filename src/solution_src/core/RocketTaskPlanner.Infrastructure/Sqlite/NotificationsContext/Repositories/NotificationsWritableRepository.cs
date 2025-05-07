@@ -12,13 +12,27 @@ using RocketTaskPlanner.Infrastructure.Abstractions;
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Repositories;
 
 /// <summary>
-/// Абстракция для работы с БД чатов, тем чатов и их сообщений
+/// Абстракция для работы с <inheritdoc cref="NotificationReceiver"/>
 /// </summary>
 public sealed class NotificationsWritableRepository(IDbConnectionFactory factory)
     : INotificationsWritableRepository
 {
+    /// <summary>
+    /// <inheritdoc cref="IDbConnectionFactory"/>
+    /// </summary>
     private readonly IDbConnectionFactory _factory = factory;
 
+    /// <summary>
+    /// Добавление <inheritdoc cref="NotificationReceiver"/> в базу данных
+    /// <param name="receiver">
+    ///     <inheritdoc cref="NotificationReceiver"/>
+    /// </param>
+    /// <param name="unitOfWork">
+    ///     <inheritdoc cref="IUnitOfWork"/>
+    /// </param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Result Success или Failure</returns>
+    /// </summary>
     public async Task<Result> Add(
         NotificationReceiver receiver,
         IUnitOfWork unitOfWork,
@@ -40,6 +54,8 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
             """;
 
         using IDbConnection connection = CreateConnection();
+
+        // если чат уже существует - ошибка
         int count = await connection.ExecuteScalarAsync<int>(
             duplicateSql,
             new { receiver_id = receiver.Id.Id }
@@ -61,6 +77,17 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
         return Result.Success();
     }
 
+    /// <summary>
+    /// Добавление <inheritdoc cref="ReceiverTheme"/>
+    /// <param name="theme">
+    ///     <inheritdoc cref="ReceiverTheme"/>
+    /// </param>
+    /// <param name="unitOfWork">
+    ///     <inheritdoc cref="NotificationReceiver"/>
+    /// </param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Result Success или Failure</returns>
+    /// </summary>
     public Result AddTheme(
         ReceiverTheme theme,
         IUnitOfWork unitOfWork,
@@ -87,6 +114,18 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
         return Result.Success();
     }
 
+    /// <summary>
+    /// Добавление уведомления темы <inheritdoc cref="ThemeChatSubject"/>
+    /// <param name="subject">
+    ///     <inheritdoc cref="ThemeChatSubject"/>
+    /// </param>
+    /// <param name="ct">
+    ///     Токен отмены
+    /// </param>
+    /// <returns>
+    ///     Result Success или Failure
+    /// </returns>
+    /// </summary>
     public async Task<Result> AddSubject(ThemeChatSubject subject, CancellationToken ct = default)
     {
         const string sql = """
@@ -123,6 +162,18 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
         return Result.Success();
     }
 
+    /// <summary>
+    /// Добавление уведомления основного чата/>
+    /// <param name="subject">
+    ///     <inheritdoc cref="GeneralChatReceiverSubject"/>
+    /// </param>
+    /// <param name="ct">
+    ///     Токен отмены
+    /// </param>
+    /// <returns>
+    /// Result Success или Failure
+    /// </returns>
+    /// </summary>
     public async Task<Result> AddSubject(
         GeneralChatReceiverSubject subject,
         CancellationToken ct = default
@@ -162,6 +213,21 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
         return Result.Success();
     }
 
+    /// <summary>
+    /// Удаление темы для уведомлений из БД
+    /// <param name="theme">
+    ///     <inheritdoc cref="ReceiverTheme"/>
+    /// </param>
+    /// <param name="unitOfWork">
+    ///     <inheritdoc cref="IUnitOfWork"/>
+    /// </param>
+    /// <param name="ct">
+    ///     Токен отмены
+    /// </param>
+    /// <returns>
+    ///     Success или Failure
+    /// </returns>
+    /// </summary>
     public Result RemoveTheme(
         ReceiverTheme theme,
         IUnitOfWork unitOfWork,
@@ -178,6 +244,13 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
         return Result.Success();
     }
 
+    /// <summary>
+    /// Изменение временной зоны у основного чата в БД.
+    /// <param name="id">ID основного чата</param>
+    /// <param name="timeZone">Временная зона</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Success или Failure</returns>
+    /// </summary>
     public async Task<Result> ChangeTimeZone(
         NotificationReceiverId id,
         NotificationReceiverTimeZone timeZone,
@@ -201,6 +274,13 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
             : Result.Success();
     }
 
+    /// <summary>
+    /// Удаление основного чата для уведомлений
+    /// </summary>
+    /// <param name="id">ID чата</param>
+    /// <param name="unitOfWork"><inheritdoc cref="IUnitOfWork"/></param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Result Success или Failure</returns>
     public Result Remove(long? id, IUnitOfWork unitOfWork, CancellationToken ct = default)
     {
         const string sql = "DELETE FROM notification_receivers WHERE receiver_id = @id";
@@ -216,6 +296,12 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
         return Result.Success();
     }
 
+    /// <summary>
+    /// Удаление уведомления основного чата
+    /// </summary>
+    /// <param name="subjectId">ID уведомления</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Результат удаления уведомления Success или Failure</returns>
     public async Task<Result> RemoveGeneralChatSubject(
         long subjectId,
         CancellationToken ct = default
@@ -233,6 +319,12 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
         return rowsAffected == 0 ? Result.Failure("Не удалось удалить задачу") : Result.Success();
     }
 
+    /// <summary>
+    /// Удаление уведомления темы основного чата
+    /// </summary>
+    /// <param name="subjectId">ID уведомления</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Результат удаления уведомления Success или Failure</returns>
     public async Task<Result> RemoveThemeChatSubject(long subjectId, CancellationToken ct = default)
     {
         const string sql = """
@@ -247,6 +339,10 @@ public sealed class NotificationsWritableRepository(IDbConnectionFactory factory
         return rowsAffected == 0 ? Result.Failure("Не удалось удалить задачу") : Result.Success();
     }
 
+    /// <summary>
+    /// <inheritdoc cref="IRepository.CreateConnection"/>
+    /// </summary>
+    /// <returns><inheritdoc cref="IDbConnection"/></returns>
     public IDbConnection CreateConnection() =>
         _factory.Create(SqliteConstants.NotificationsConnectionString);
 }

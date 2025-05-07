@@ -9,6 +9,7 @@ namespace RocketTaskPlanner.Telegram.BotAbstractions;
 
 /// <summary>
 /// Контекст для выполнения обработчиков telegram команд поэтапно.
+/// Рекомендуется использовать для реализации сложной обработки команд.
 /// </summary>
 public sealed class TelegramBotExecutionContext
 {

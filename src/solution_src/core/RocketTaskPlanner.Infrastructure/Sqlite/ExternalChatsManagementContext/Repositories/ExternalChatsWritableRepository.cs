@@ -10,13 +10,30 @@ using RocketTaskPlanner.Infrastructure.Abstractions;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.ExternalChatsManagementContext.Repositories;
 
+/// <summary>
+/// Абстракция для взаимодействия с БД пользователей и пользовательских чатов (операции записи)
+/// </summary>
 public sealed class ExternalChatsWritableRepository : IExternalChatsWritableRepository
 {
+    /// <summary>
+    /// <inheritdoc cref="IDbConnectionFactory"/>
+    /// </summary>
     private readonly IDbConnectionFactory _connectionFactory;
 
     public ExternalChatsWritableRepository(IDbConnectionFactory connectionFactory) =>
         _connectionFactory = connectionFactory;
 
+    /// <summary>
+    /// Добавить обладателя чата
+    /// <param name="externalChatOwner">
+    ///     <inheritdoc cref="ExternalChatOwner"/>
+    /// </param>
+    /// <param name="unitOfWork">
+    ///     <inheritdoc cref="IUnitOfWork"/>
+    /// </param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Result Success</returns>
+    /// </summary>
     public Result<ExternalChatOwner> AddChatOwner(
         ExternalChatOwner externalChatOwner,
         IUnitOfWork unitOfWork,
@@ -41,6 +58,19 @@ public sealed class ExternalChatsWritableRepository : IExternalChatsWritableRepo
         return externalChatOwner;
     }
 
+    /// <summary>
+    /// Удалить обладателя чата
+    /// <param name="externalChatOwner">
+    ///     <inheritdoc cref="ExternalChatOwner"/>
+    /// </param>
+    /// <param name="unitOfWork">
+    ///     <inheritdoc cref="IUnitOfWork"/>
+    /// </param>
+    /// <param name="ct">
+    ///     Токен отмены
+    /// </param>
+    /// <returns>Result Success</returns>
+    /// </summary>
     public Result<ExternalChatOwner> RemoveChatOwner(
         ExternalChatOwner externalChatOwner,
         IUnitOfWork unitOfWork,
@@ -56,6 +86,19 @@ public sealed class ExternalChatsWritableRepository : IExternalChatsWritableRepo
         return externalChatOwner;
     }
 
+    /// <summary>
+    /// Удалить основной чат обладателя
+    /// <param name="externalChat">
+    ///     <inheritdoc cref="ExternalChat"/>
+    /// </param>
+    /// <param name="unitOfWork">
+    ///     <inheritdoc cref="IUnitOfWork"/>
+    /// </param>
+    /// <param name="ct">
+    ///     Токен отмены
+    /// </param>
+    /// <returns>Result Success</returns>
+    /// </summary>
     public Result<ExternalChat> RemoveChat(
         ExternalChat externalChat,
         IUnitOfWork unitOfWork,
@@ -81,6 +124,21 @@ public sealed class ExternalChatsWritableRepository : IExternalChatsWritableRepo
         return externalChat;
     }
 
+    /// <summary>
+    /// Добавить основной чат
+    /// <param name="externalChat">
+    ///     <inheritdoc cref="ExternalChat"/>
+    /// </param>
+    /// <param name="unitOfWork">
+    ///     <inheritdoc cref="IUnitOfWork"/>
+    /// </param>
+    /// <param name="ct">
+    ///     Токен отмены
+    /// </param>
+    /// <returns>
+    /// Result Success
+    /// </returns>
+    /// </summary>
     public Result<ExternalChat> AddChat(
         ExternalChat externalChat,
         IUnitOfWork unitOfWork,
@@ -106,6 +164,21 @@ public sealed class ExternalChatsWritableRepository : IExternalChatsWritableRepo
         return externalChat;
     }
 
+    /// <summary>
+    /// Добавить дочерний чат.
+    /// <param name="externalChat">
+    ///   Дочерний чат
+    /// </param>
+    /// <param name="unitOfWork">
+    ///     <inheritdoc cref="IUnitOfWork"/>
+    /// </param>
+    /// <param name="ct">
+    ///     Токен отмены
+    /// </param>
+    /// <returns>
+    ///     Result Success
+    /// </returns>
+    /// </summary>
     public Result<ExternalChat> AddThemeChat(
         ExternalChat externalChat,
         IUnitOfWork unitOfWork,
@@ -135,6 +208,21 @@ public sealed class ExternalChatsWritableRepository : IExternalChatsWritableRepo
         return externalChat;
     }
 
+    /// <summary>
+    /// Удалить дочерний чат
+    /// <param name="externalChat">
+    ///     Дочерний чат
+    /// </param>
+    /// <param name="unitOfWork">
+    ///     <inheritdoc cref="IUnitOfWork"/>
+    /// </param>
+    /// <param name="ct">
+    ///     Токен отмены
+    /// </param>
+    /// <returns>
+    ///     <inheritdoc cref="ExternalChat"/>
+    /// </returns>
+    /// </summary>
     public Result<ExternalChat> RemoveThemeChat(
         ExternalChat externalChat,
         IUnitOfWork unitOfWork,
@@ -162,6 +250,12 @@ public sealed class ExternalChatsWritableRepository : IExternalChatsWritableRepo
         return externalChat;
     }
 
+    /// <summary>
+    /// <inheritdoc cref="IRepository.CreateConnection"/>
+    /// <returns>
+    /// <inheritdoc cref="IDbConnection"/>
+    /// </returns>
+    /// </summary>
     public IDbConnection CreateConnection() =>
         _connectionFactory.Create(SqliteConstants.ExternalChatsConnectionString);
 }

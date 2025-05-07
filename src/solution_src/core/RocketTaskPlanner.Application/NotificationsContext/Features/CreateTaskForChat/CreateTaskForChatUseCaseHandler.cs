@@ -7,11 +7,14 @@ using RocketTaskPlanner.Utilities.DateExtensions;
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChat;
 
 /// <summary>
-/// Создание уведомления для основного чата
+/// Обработчик для <inheritdoc cref="CreateTaskForChatUseCase"/>
 /// </summary>
 public sealed class CreateTaskForChatUseCaseHandler
     : IUseCaseHandler<CreateTaskForChatUseCase, CreateTaskForChatUseCaseResponse>
 {
+    /// <summary>
+    /// <inheritdoc cref="INotificationRepository"/>
+    /// </summary>
     private readonly INotificationRepository _repository;
 
     public CreateTaskForChatUseCaseHandler(INotificationRepository repository) =>

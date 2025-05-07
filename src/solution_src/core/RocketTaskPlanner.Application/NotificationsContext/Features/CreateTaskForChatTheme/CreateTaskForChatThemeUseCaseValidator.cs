@@ -5,6 +5,9 @@ using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChatTheme;
 
+/// <summary>
+/// Валидатор для <inheritdoc cref="CreateTaskForChatThemeUseCase"/>
+/// </summary>
 public sealed class CreateTaskForChatThemeUseCaseValidator
     : AbstractValidator<CreateTaskForChatThemeUseCase>,
         IValidator<CreateTaskForChatThemeUseCase>

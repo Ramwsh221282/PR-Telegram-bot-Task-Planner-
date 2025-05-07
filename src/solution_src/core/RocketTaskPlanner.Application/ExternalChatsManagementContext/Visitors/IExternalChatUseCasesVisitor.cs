@@ -7,6 +7,9 @@ using RocketTaskPlanner.Application.ExternalChatsManagementContext.Features.Remo
 
 namespace RocketTaskPlanner.Application.ExternalChatsManagementContext.Visitors;
 
+/// <summary>
+/// Реализация паттерна посетителя для <inheritdoc cref="IExternalChatUseCaseVisitable"/>
+/// </summary>
 public interface IExternalChatUseCasesVisitor
 {
     /// <summary>

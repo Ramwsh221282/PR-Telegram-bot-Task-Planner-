@@ -7,14 +7,27 @@ using Telegram.Bot.Types;
 
 namespace RocketTaskPlanner.Telegram.BotEndpoints.UserTasksManageEndpoint.Handlers;
 
+/// <summary>
+/// Обработчик нажатия на выбранный чат
+/// </summary>
 public sealed class UserTaskManagementOnChatChosenHandler : ITelegramBotHandler
 {
+    /// <summary>
+    /// <inheritdoc cref="TelegramBotExecutionContext"/>
+    /// </summary>
     private readonly TelegramBotExecutionContext _context;
+
+    /// <summary>
+    /// <inheritdoc cref="ITelegramBotHandler.Command"/>
+    /// </summary>
     public string Command => HandlerNames.OnChatChoseHandler;
 
     public UserTaskManagementOnChatChosenHandler(TelegramBotExecutionContext context) =>
         _context = context;
 
+    /// <summary>
+    /// <inheritdoc cref="ITelegramBotHandler.Handle"/>
+    /// </summary>
     public async Task Handle(ITelegramBotClient client, Update update)
     {
         var cache = _context.GetCacheInfo<UserTaskManagementCache>();
@@ -30,6 +43,7 @@ public sealed class UserTaskManagementOnChatChosenHandler : ITelegramBotHandler
         var requiredChat = cache.Value.GetChat(message.Value);
         var cacheWithChat = cache.Value.SetSelectedChat(requiredChat);
 
+        // назначение обработчика меню выбора типа задач следующим.
         var nextHandler = _context.GetRequiredHandler(HandlerNames.ChooseTaskTypesHandler);
         await _context.AssignAndRun(client, update, nextHandler, cacheWithChat);
     }

@@ -20,18 +20,32 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoin
 [BotHandler]
 public sealed class BotAddThisChatEndpoint
 {
-    // контекст для выполнения команды
+    /// <summary>
+    /// <inheritdoc cref="TelegramBotExecutionContext"/>
+    /// </summary>
     private readonly TelegramBotExecutionContext _context;
+
+    /// <summary>
+    /// <inheritdoc cref="AddGeneralChatAfterCitySelection"/>
+    /// </summary>
     private readonly AddGeneralChatAfterCitySelection _handler;
 
     /// <summary>
     /// Конструктор endpoint
-    /// </summary>
-    /// <param name="timeProviders">Хранилище провайдера времени Time Zone Db</param>
-    /// <param name="firstRegistrationFacade">Фасадный класс для транзакции при первом вызове add this chat</param>
-    /// <param name="userChatRegistrationFacade">Фасадный класс для транзакции добавления чата</param>
-    /// <param name="userThemeRegistrationFacade">Фасадный класс для транзакции добавления темы чата</param>
+    /// <param name="timeProviders">
+    ///     <inheritdoc cref="IApplicationTimeRepository{TProvider}"/>
+    /// </param>
+    /// <param name="firstRegistrationFacade">
+    ///     <inheritdoc cref="FirstUserChatRegistrationFacade"/>
+    /// </param>
+    /// <param name="userChatRegistrationFacade">
+    ///     <inheritdoc cref="UserChatRegistrationFacade"/>
+    /// </param>
+    /// <param name="userThemeRegistrationFacade">
+    ///     <inheritdoc cref="UserThemeRegistrationFacade"/>
+    /// </param>
     /// <param name="chats">Хранилище чатов</param>
+    /// </summary>
     public BotAddThisChatEndpoint(
         IApplicationTimeRepository<TimeZoneDbProvider> timeProviders,
         FirstUserChatRegistrationFacade firstRegistrationFacade,
@@ -70,7 +84,7 @@ public sealed class BotAddThisChatEndpoint
     /// </summary>
     /// <param name="client">Telegram bot клиент для общения с telegram</param>
     /// <param name="update">Последнее событие (в данном случае вызов команды /add_this_chat)</param>
-    [ReplyMenuHandler(
+    [SlashHandler(
         CommandComparison.Contains,
         StringComparison.OrdinalIgnoreCase,
         commands: ["/add_this_chat"]

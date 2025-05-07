@@ -17,9 +17,26 @@ public sealed class AddThemeChatHandler(
     UserThemeRegistrationFacade facade
 ) : ITelegramBotHandler
 {
+    /// <summary>
+    /// <inheritdoc cref="TelegramBotExecutionContext"/>
+    /// </summary>
     private readonly TelegramBotExecutionContext _context = context;
+
+    /// <summary>
+    /// <inheritdoc cref="UserThemeRegistrationFacade"/>
+    /// </summary>
     private readonly UserThemeRegistrationFacade _facade = facade;
+
+    /// <summary>
+    /// <inheritdoc cref="ITelegramBotHandler.Command"/>
+    /// </summary>
     public string Command => AddThisChatEndpointConstants.ThemeChatHandler;
+
+    /// <summary>
+    /// Логика обработки добавления темы чата и дочернего чата пользователя
+    /// </summary>
+    /// <param name="client">Telegram bot client для общения с телеграм</param>
+    /// <param name="update">Последнее событие</param>
 
     public async Task Handle(ITelegramBotClient client, Update update)
     {

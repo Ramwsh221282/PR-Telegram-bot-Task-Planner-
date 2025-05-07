@@ -11,6 +11,12 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoin
 /// <param name="Zone">Временная зона из Time Zone Db провайдера</param>
 public sealed record AddGeneralChatScopeInfo(long ChatId, string ChatName, ApplicationTimeZone Zone)
 {
+    /// <summary>
+    /// Преобразовать в Dto <inheritdoc cref="RegisterChatUseCase"/>
+    /// <returns>
+    ///     <inheritdoc cref="RegisterChatUseCase"/>
+    /// </returns>
+    /// </summary>
     public RegisterChatUseCase AsUseCase() =>
         new RegisterChatUseCase(ChatId, ChatName, Zone.Name.Name);
 }

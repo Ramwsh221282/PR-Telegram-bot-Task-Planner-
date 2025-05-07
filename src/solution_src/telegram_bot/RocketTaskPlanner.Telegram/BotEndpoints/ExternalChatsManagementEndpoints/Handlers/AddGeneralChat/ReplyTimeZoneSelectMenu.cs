@@ -22,9 +22,19 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoin
 public sealed class ReplyTimeZoneSelectMenu(TelegramBotExecutionContext context)
     : ITelegramBotHandler
 {
+    /// <summary>
+    /// <inheritdoc cref="TelegramBotExecutionContext"/>
+    /// </summary>
     private readonly TelegramBotExecutionContext _context = context;
+
+    /// <summary>
+    /// <inheritdoc cref="ITelegramBotHandler.Command"/>
+    /// </summary>
     public string Command => AddThisChatEndpointConstants.DispatchAddThisChatHandler;
 
+    /// <summary>
+    /// Логика отправки меню выбора временных зон
+    /// </summary>
     public async Task Handle(ITelegramBotClient client, Update update)
     {
         Result<GeneralChatCache> cache = _context.GetCacheInfo<GeneralChatCache>();
@@ -35,11 +45,8 @@ public sealed class ReplyTimeZoneSelectMenu(TelegramBotExecutionContext context)
         long chatId = cache.Value.ChatId;
         TimeZoneDbProvider provider = cache.Value.Provider;
 
-        Result<IReadOnlyList<ApplicationTimeZone>> zones = await LoadTimeZones( // получение временных зон
-            provider,
-            client,
-            chatId
-        );
+        // получение временных зон
+        var zones = await LoadTimeZones(provider, client, chatId);
 
         if (zones.IsFailure)
         {
@@ -47,10 +54,16 @@ public sealed class ReplyTimeZoneSelectMenu(TelegramBotExecutionContext context)
             return;
         }
 
-        InlineKeyboardMarkup menu = BuildTimeZoneMenu(zones.Value, chatId, chatName); // создание меню выбора временной зоны
-        await SendSelectTimeZoneMessage(client, update, menu); // отправка меню выбора временных зон
+        // создание меню выбора временной зоны
+        InlineKeyboardMarkup menu = BuildTimeZoneMenu(zones.Value, chatId, chatName);
+
+        // отправка меню выбора временных зон
+        await SendSelectTimeZoneMessage(client, update, menu);
     }
 
+    /// <summary>
+    /// Получить временные зоны из провайдера
+    /// </summary>
     private static async Task<Result<IReadOnlyList<ApplicationTimeZone>>> LoadTimeZones(
         TimeZoneDbProvider provider,
         ITelegramBotClient client,
@@ -70,6 +83,9 @@ public sealed class ReplyTimeZoneSelectMenu(TelegramBotExecutionContext context)
         return zones;
     }
 
+    /// <summary>
+    /// Сделать меню выбора временных зон
+    /// </summary>
     private static InlineKeyboardMarkup BuildTimeZoneMenu(
         IReadOnlyList<ApplicationTimeZone> timeZones,
         long chatId,
@@ -108,6 +124,9 @@ public sealed class ReplyTimeZoneSelectMenu(TelegramBotExecutionContext context)
         return MenuGenerator.InlineKeyboard(2, buttons);
     }
 
+    /// <summary>
+    /// Отправить сообщения, что нужно выбрать временную зону
+    /// </summary>
     private static async Task SendSelectTimeZoneMessage(
         ITelegramBotClient client,
         Update update,

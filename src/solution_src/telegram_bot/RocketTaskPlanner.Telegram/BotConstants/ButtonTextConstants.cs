@@ -1,7 +1,7 @@
 namespace RocketTaskPlanner.Telegram.BotConstants;
 
 /// <summary>
-/// Текст для кнопок
+/// Общие тексты для кнопок
 /// </summary>
 public static class ButtonTextConstants
 {

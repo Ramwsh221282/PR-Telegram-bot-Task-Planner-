@@ -3,6 +3,12 @@ using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetNotificationReceiverTimeInformation;
 
+/// <summary>
+/// Ответ на запрос <inheritdoc cref="GetNotificationReceiverTimeInformationQuery"/>
+/// <param name="Information">Информация в виде строки (сообщения)</param>
+/// <param name="Entity"><inheritdoc cref="NotificationReceiverEntity"/></param>
+/// <param name="TimeZone"><inheritdoc cref="ApplicationTimeZone"/>></param>
+/// </summary>
 public sealed record GetNotificationReceiverTimeInformationQueryResponse(
     string Information,
     NotificationReceiverEntity? Entity,

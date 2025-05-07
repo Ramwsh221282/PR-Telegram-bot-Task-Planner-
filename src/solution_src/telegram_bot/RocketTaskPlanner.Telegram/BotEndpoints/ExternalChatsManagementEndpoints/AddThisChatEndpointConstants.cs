@@ -1,5 +1,8 @@
 namespace RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoints;
 
+/// <summary>
+/// Константы для отправки reply сообщений и хранения имён хендлеров в контексте endpoint добавления чата в бота
+/// </summary>
 public static class AddThisChatEndpointConstants
 {
     public const string DispatchAddThisChatHandler = "/dispatch";

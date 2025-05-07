@@ -1,5 +1,10 @@
-﻿namespace RocketTaskPlanner.Telegram.BotEndpoints.ChangeTimeZoneEndpoint;
+﻿using RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoints.Handlers.AddGeneralChat;
 
+namespace RocketTaskPlanner.Telegram.BotEndpoints.ChangeTimeZoneEndpoint;
+
+/// <summary>
+/// Аналогично <inheritdoc cref="AddGeneralChatScope"/>
+/// </summary>
 public static class ChangeGeneralChatTimeZoneScope
 {
     private static readonly Dictionary<

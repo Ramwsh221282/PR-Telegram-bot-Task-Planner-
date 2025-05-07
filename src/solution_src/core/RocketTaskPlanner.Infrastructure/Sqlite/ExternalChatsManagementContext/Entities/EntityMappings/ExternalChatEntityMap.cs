@@ -2,6 +2,9 @@
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.ExternalChatsManagementContext.Entities.EntityMappings;
 
+/// <summary>
+/// Маппинг модели таблицы external_chats в <inheritdoc cref="ExternalChatEntity"/>
+/// </summary>
 public sealed class ExternalChatEntityMap : EntityMap<ExternalChatEntity>
 {
     public ExternalChatEntityMap()

@@ -7,9 +7,19 @@ using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverThemes.Valu
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.RemoveTheme;
 
+/// <summary>
+/// Обработчик для <inheritdoc cref="RemoveThemeUseCase"/>
+/// </summary>
 public sealed class RemoveThemeUseCaseHandler : IUseCaseHandler<RemoveThemeUseCase, ReceiverTheme>
 {
+    /// <summary>
+    /// <inheritdoc cref="INotificationRepository"/>
+    /// </summary>
     private readonly INotificationRepository _repository;
+
+    /// <summary>
+    /// <inheritdoc cref="IUnitOfWork"/>
+    /// </summary>
     private readonly IUnitOfWork _unitOfWork;
 
     public RemoveThemeUseCaseHandler(INotificationRepository repository, IUnitOfWork unitOfWork)

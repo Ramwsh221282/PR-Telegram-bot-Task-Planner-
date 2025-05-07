@@ -2,6 +2,11 @@
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Repositories;
 
+/// <summary>
+/// Фасадный класс объединяющий
+/// <inheritdoc cref="INotificationsReadableRepository"/>
+/// <inheritdoc cref="INotificationsWritableRepository"/>
+/// </summary>
 public sealed class NotificationRepository : INotificationRepository
 {
     public INotificationsWritableRepository Writable { get; }

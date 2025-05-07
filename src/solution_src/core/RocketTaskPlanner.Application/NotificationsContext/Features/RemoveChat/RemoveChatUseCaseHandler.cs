@@ -5,10 +5,20 @@ using RocketTaskPlanner.Domain.NotificationsContext;
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.RemoveChat;
 
+/// <summary>
+/// Обработчик для <inheritdoc cref="RemoveChatUseCase"/>
+/// </summary>
 public sealed class RemoveChatUseCaseHandler
     : IUseCaseHandler<RemoveChatUseCase, NotificationReceiver>
 {
+    /// <summary>
+    /// <inheritdoc cref="INotificationRepository"/>
+    /// </summary>
     private readonly INotificationRepository _repository;
+
+    /// <summary>
+    /// <inheritdoc cref="IUnitOfWork"/>
+    /// </summary>
     private readonly IUnitOfWork _unitOfWork;
 
     public RemoveChatUseCaseHandler(INotificationRepository repository, IUnitOfWork unitOfWork)

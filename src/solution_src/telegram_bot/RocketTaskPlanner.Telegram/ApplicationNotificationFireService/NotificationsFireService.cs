@@ -14,11 +14,19 @@ namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService;
 
 /// <summary>
 /// Background процесс для отправки уведомлений
+/// <param name="timeCache">
+///     <inheritdoc cref="TimeZoneDbProviderCachedInstance"/>
+/// </param>
+/// <param name="logger">
+///     <inheritdoc cref="Serilog.ILogger"/>
+/// </param>
+/// <param name="connectionFactory">
+///     <inheritdoc cref="IDbConnectionFactory"/>
+/// </param>
+/// <param name="botFactory">
+///     <inheritdoc cref="TelegramBotClientFactory"/>
+/// </param>
 /// </summary>
-/// <param name="timeCache">Кеш временных зон</param>
-/// <param name="logger">Логгер</param>
-/// <param name="connectionFactory">Фабрика для создания соединения с БД</param>
-/// <param name="botFactory">Фабрика для создания экземпляра бота</param>
 public sealed class NotificationsFireService(
     TimeZoneDbProviderCachedInstance timeCache,
     Serilog.ILogger logger,
@@ -26,22 +34,52 @@ public sealed class NotificationsFireService(
     TelegramBotClientFactory botFactory
 ) : BackgroundService
 {
+    /// <summary>
+    ///     <inheritdoc cref="TimeZoneDbProviderCachedInstance"/>
+    /// </summary>
     private readonly TimeZoneDbProviderCachedInstance _timeCache = timeCache;
+
+    /// <summary>
+    ///     <inheritdoc cref="IDbConnectionFactory"/>
+    /// </summary>
     private readonly IDbConnectionFactory _connectionFactory = connectionFactory;
+
+    /// <summary>
+    ///     <inheritdoc cref="TelegramBotClientFactory"/>
+    /// </summary>
     private readonly TelegramBotClientFactory _botFactory = botFactory;
+
+    /// <summary>
+    ///     <inheritdoc cref="Serilog.ILogger"/>
+    /// </summary>
     private readonly Serilog.ILogger _logger = logger;
+
+    /// <summary>
+    /// Название текущего класса
+    /// </summary>
     private const string CONTEXT = nameof(NotificationsFireService);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            ITimeZoneOfCurrentTime[] times = Times(); // Получение списка временных зон.
-            GeneralChatReceiverOfCurrentTimeZone[] receivers = await Receivers(times); // Получение списка получателей на основе временных зон.
-            IThemeChatTaskToFire[] themeChatTasksToFire = ThemeChatTasks(receivers); // Получение списка тем, куда нужно отправить сообщения.
-            IGeneralChatTaskToFire[] generalChatTasksToFire = GeneralChatTasks(receivers); // Получение списка чатов, куда нужно отправить сообщения.
-            int fired = await HandleTasksToFire(themeChatTasksToFire, generalChatTasksToFire); // Отправка сообщений.
+            // Получение списка временных зон.
+            ITimeZoneOfCurrentTime[] times = Times();
+
+            // Получение списка получателей на основе временных зон.
+            GeneralChatReceiverOfCurrentTimeZone[] receivers = await Receivers(times);
+
+            // Получение списка тем, куда нужно отправить сообщения.
+            IThemeChatTaskToFire[] themeChatTasksToFire = ThemeChatTasks(receivers);
+
+            // Получение списка чатов, куда нужно отправить сообщения.
+            IGeneralChatTaskToFire[] generalChatTasksToFire = GeneralChatTasks(receivers);
+
+            // Отправка сообщений.
+            int fired = await HandleTasksToFire(themeChatTasksToFire, generalChatTasksToFire);
+
             _logger.Information("{Context} fired: {Count} tasks", CONTEXT, fired);
+
             await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
         }
     }
@@ -68,7 +106,7 @@ public sealed class NotificationsFireService(
 
     private IThemeChatTaskToFire[] ThemeChatTasks(GeneralChatReceiverOfCurrentTimeZone[] receivers)
     {
-        IThemeChatTaskToFire[] tasks = [.. receivers.SelectMany(r => r.ThemeChatUnfiredTasks())];
+        IThemeChatTaskToFire[] tasks = [.. receivers.SelectMany(r => r.ThemeChatTasksToFire())];
         TelegramBotClient bot = _botFactory.Create();
         for (int index = 0; index < tasks.Length; index++)
         {
@@ -86,7 +124,7 @@ public sealed class NotificationsFireService(
         GeneralChatReceiverOfCurrentTimeZone[] receivers
     )
     {
-        IGeneralChatTaskToFire[] tasks = [.. receivers.SelectMany(s => s.TasksToFire())];
+        IGeneralChatTaskToFire[] tasks = [.. receivers.SelectMany(s => s.GeneralChatTasksToFire())];
         TelegramBotClient bot = _botFactory.Create();
         for (int index = 0; index < tasks.Length; index++)
         {
@@ -124,6 +162,7 @@ public sealed class NotificationsFireService(
             count++;
         }
 
+        // если не удалось отправить уведомление (когда пользователь выгнал бота из чата - удаляем чат и пользователя).
         foreach (TaskFromRemovedChat removed in unfired)
             await removed.HandleTaskFromRemovedChat(_connectionFactory);
 

@@ -10,9 +10,24 @@ namespace RocketTaskPlanner.Telegram.ApplicationTimeZonesService;
 /// </summary>
 public sealed class ApplicationTimeZonesUpdateService : BackgroundService
 {
+    /// <summary>
+    /// <inheritdoc cref="TimeZoneDbProviderCachedInstance"/>
+    /// </summary>
     private readonly TimeZoneDbProviderCachedInstance _instance;
+
+    /// <summary>
+    /// <inheritdoc cref="IApplicationTimeRepository{TProvider}"/>
+    /// </summary>
     private readonly IApplicationTimeRepository<TimeZoneDbProvider> _repository;
+
+    /// <summary>
+    /// <inheritdoc cref="Serilog.ILogger"/>
+    /// </summary>
     private readonly Serilog.ILogger _logger;
+
+    /// <summary>
+    /// Название текущего класса
+    /// </summary>
     private const string CONTEXT = nameof(ApplicationTimeZonesUpdateService);
 
     public ApplicationTimeZonesUpdateService(

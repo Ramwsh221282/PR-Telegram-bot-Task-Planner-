@@ -1,5 +1,8 @@
 namespace RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverThemes.ValueObjects;
 
+/// <summary>
+/// ID темы основного чата
+/// </summary>
 public readonly record struct ReceiverThemeId
 {
     public long Id { get; }

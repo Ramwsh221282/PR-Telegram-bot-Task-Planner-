@@ -1,7 +1,13 @@
 namespace RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 
+/// <summary>
+/// ID основного чата уведомлений
+/// </summary>
 public readonly record struct NotificationReceiverId
 {
+    /// <summary>
+    /// ID
+    /// </summary>
     public long Id { get; }
 
     public NotificationReceiverId() => Id = -1;

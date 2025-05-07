@@ -3,14 +3,29 @@ using RocketTaskPlanner.Domain.ApplicationTimeContext.ValueObjects;
 
 namespace RocketTaskPlanner.Infrastructure.TimeZoneDb;
 
+/// <summary>
+/// Токен от Time Zone Db Provider. Используется как его ID.
+/// </summary>
 public sealed record TimeZoneDbToken : IApplicationTimeProviderId
 {
+    /// <summary>
+    /// ID (токен)
+    /// </summary>
     public string Id { get; }
 
-    private TimeZoneDbToken() => Id = string.Empty;
+    private TimeZoneDbToken() => Id = string.Empty; // ef core
 
     private TimeZoneDbToken(string id) => Id = id;
 
+    /// <summary>
+    /// Фабричный метод создания  <inheritdoc cref="TimeZoneDbProvider"/>
+    /// <param name="id">
+    ///     <inheritdoc cref="TimeZoneDbToken"/>
+    /// </param>
+    /// <returns>
+    /// Результат создания <inheritdoc cref="TimeZoneDbToken"/>
+    /// </returns>
+    /// </summary>
     public static Result<TimeZoneDbToken> Create(string? id)
     {
         if (string.IsNullOrWhiteSpace(id))

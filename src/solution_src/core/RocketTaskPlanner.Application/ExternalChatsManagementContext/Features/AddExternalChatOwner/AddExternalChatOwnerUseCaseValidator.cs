@@ -3,6 +3,9 @@ using RocketTaskPlanner.Domain.ExternalChatsManagementContext.ValueObjects;
 
 namespace RocketTaskPlanner.Application.ExternalChatsManagementContext.Features.AddExternalChatOwner;
 
+/// <summary>
+/// Валидатор для <inheritdoc cref="AddExternalChatOwnerUseCase"/>
+/// </summary>
 public sealed class AddExternalChatOwnerUseCaseValidator
     : AbstractValidator<AddExternalChatOwnerUseCase>,
         IValidator<AddExternalChatOwnerUseCase>

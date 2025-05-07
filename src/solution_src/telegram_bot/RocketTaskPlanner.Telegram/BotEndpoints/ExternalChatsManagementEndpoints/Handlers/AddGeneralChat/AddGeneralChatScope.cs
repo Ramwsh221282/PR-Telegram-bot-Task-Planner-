@@ -1,5 +1,8 @@
 namespace RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoints.Handlers.AddGeneralChat;
 
+/// <summary>
+/// Класс для хранения сессии выбора чата пользователем
+/// </summary>
 public static class AddGeneralChatScope
 {
     private static readonly Dictionary<

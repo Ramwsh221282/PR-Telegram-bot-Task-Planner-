@@ -7,13 +7,19 @@ using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.RegisterChat;
 
 /// <summary>
-/// Регистрация чата для получения уведомлений
+/// Обработчик для <inheritdoc cref="RegisterChatUseCase"/>
 /// </summary>
 public sealed class RegisterChatUseCaseHandler
     : IUseCaseHandler<RegisterChatUseCase, RegisterChatUseCaseResponse>
 {
+    /// <summary>
+    /// <inheritdoc cref="INotificationsWritableRepository"/>
+    /// </summary>
     private readonly INotificationsWritableRepository _writableRepository;
 
+    /// <summary>
+    /// <inheritdoc cref="IUnitOfWork"/>
+    /// </summary>
     private readonly IUnitOfWork _unitOfWork;
 
     public RegisterChatUseCaseHandler(

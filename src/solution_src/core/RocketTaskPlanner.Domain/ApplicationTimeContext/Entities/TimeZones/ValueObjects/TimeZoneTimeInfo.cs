@@ -2,9 +2,19 @@ using RocketTaskPlanner.Utilities.UnixTimeUtilities;
 
 namespace RocketTaskPlanner.Domain.ApplicationTimeContext.Entities.TimeZones.ValueObjects;
 
+/// <summary>
+/// Дата временной зоны
+/// </summary>
 public readonly record struct TimeZoneTimeInfo
 {
+    /// <summary>
+    /// Дата в Unix секундах
+    /// </summary>
     public long TimeStamp { get; }
+
+    /// <summary>
+    /// Дата и время в формате <inheritdoc cref="DateTime"/>
+    /// </summary>
     public DateTime DateTime { get; }
 
     public TimeZoneTimeInfo()

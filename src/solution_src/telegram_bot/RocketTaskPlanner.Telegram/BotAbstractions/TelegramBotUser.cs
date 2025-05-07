@@ -12,12 +12,10 @@ public sealed record TelegramBotUser(long Id, string FirstName, string? LastName
     /// Создание одной строки из двух строк FirstName и LastName
     /// </summary>
     /// <returns>Строка с информацией о имене пользователя</returns>
-    public string CombineNamesAsNickname()
-    {
-        return LastName switch
+    public string CombineNamesAsNickname() =>
+        LastName switch
         {
             null => FirstName,
             not null => $"{FirstName} {LastName}",
         };
-    }
 }

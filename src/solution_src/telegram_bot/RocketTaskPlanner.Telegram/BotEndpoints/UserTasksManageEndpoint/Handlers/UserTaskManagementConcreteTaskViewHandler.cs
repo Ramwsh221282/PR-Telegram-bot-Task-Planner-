@@ -12,9 +12,20 @@ using Telegram.Bot.Types;
 
 namespace RocketTaskPlanner.Telegram.BotEndpoints.UserTasksManageEndpoint.Handlers;
 
+/// <summary>
+/// Обработчик для меню конкретного объявления.
+/// Обрабатывает кнопки "Вернуться назад" и "Удалить задачу".
+/// </summary>
 public sealed class UserTaskManagementConcreteTaskViewHandler : ITelegramBotHandler
 {
+    /// <summary>
+    /// <inheritdoc cref="TelegramBotExecutionContext"/>
+    /// </summary>
     private readonly TelegramBotExecutionContext _context;
+
+    /// <summary>
+    /// <inheritdoc cref="INotificationUseCaseVisitor"/>
+    /// </summary>
     private readonly INotificationUseCaseVisitor _useCases;
 
     public UserTaskManagementConcreteTaskViewHandler(
@@ -26,8 +37,14 @@ public sealed class UserTaskManagementConcreteTaskViewHandler : ITelegramBotHand
         _useCases = useCases;
     }
 
+    /// <summary>
+    /// <inheritdoc cref="ITelegramBotHandler.Command"/>
+    /// </summary>
     public string Command => HandlerNames.ConcreteTaskViewHandler;
 
+    /// <summary>
+    /// <inheritdoc cref="ITelegramBotHandler.Handle"/>
+    /// </summary>
     public async Task Handle(ITelegramBotClient client, Update update)
     {
         var cache = _context.GetCacheInfo<UserTaskManagementCache>();
@@ -44,6 +61,12 @@ public sealed class UserTaskManagementConcreteTaskViewHandler : ITelegramBotHand
             await GoBackToList(client, update, cache.Value);
     }
 
+    /// <summary>
+    /// Вернуться в список задач
+    /// </summary>
+    /// <param name="client">Telegram bot клиент для взаимодействия с Telegram.</param>
+    /// <param name="update">Последнее событие</param>
+    /// <param name="cache">Кэш</param>
     private async Task GoBackToList(
         ITelegramBotClient client,
         Update update,
@@ -57,6 +80,12 @@ public sealed class UserTaskManagementConcreteTaskViewHandler : ITelegramBotHand
         await _context.AssignAndRun(client, update, nextHandler, cache);
     }
 
+    /// <summary>
+    /// Удалить задачу
+    /// </summary>
+    /// <param name="client">Telegram bot клиент для взаимодействия с Telegram.</param>
+    /// <param name="update">Последнее событие</param>
+    /// <param name="cache">Кэш</param>
     private async Task DeleteTask(
         ITelegramBotClient client,
         Update update,
@@ -70,10 +99,12 @@ public sealed class UserTaskManagementConcreteTaskViewHandler : ITelegramBotHand
 
         await PRTelegramBot.Helpers.Message.Send(client, update, "Удаляю задачу...");
 
+        // вызов бизнес логики.
         Result deletion = isThemeSubject
             ? await _useCases.Visit(new RemoveThemeSubjectUseCase(subjectId))
             : await _useCases.Visit(new RemoveChatSubjectUseCase(subjectId));
 
+        // если бизнес логика выдала ошибка, вернуться в спиоск задач.
         if (deletion.IsFailure)
         {
             await PRTelegramBot.Helpers.Message.Send(client, update, deletion.Error);
@@ -87,6 +118,7 @@ public sealed class UserTaskManagementConcreteTaskViewHandler : ITelegramBotHand
             $"Удалена задача: {subjectId} {subjectText}"
         );
 
+        // после удаления задачи вернуться в список задач.
         await GoBackToList(client, update, cache.ClearSelectedSubject());
     }
 }

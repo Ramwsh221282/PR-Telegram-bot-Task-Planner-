@@ -9,6 +9,13 @@ namespace RocketTaskPlanner.Infrastructure.Sqlite.DbConnectionFactory;
 /// </summary>
 public sealed class SqliteConnectionFactory : IDbConnectionFactory
 {
+    /// <summary>
+    /// Фабричный метод создания <inheritdoc cref="IDbConnection"/>
+    /// <param name="connectionString">Строка подключения</param>
+    /// <returns>
+    /// <inheritdoc cref="IDbConnection"/>
+    /// </returns>
+    /// </summary>
     public IDbConnection Create(string connectionString)
     {
         IDbConnection connection = new SqliteConnection(connectionString);

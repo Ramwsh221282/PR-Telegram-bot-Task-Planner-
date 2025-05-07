@@ -17,10 +17,24 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoin
 /// </summary>
 public sealed class DispatchAddThisChatHandler : ITelegramBotHandler
 {
+    /// <summary>
+    /// <inheritdoc cref="TelegramBotExecutionContext"/>
+    /// </summary>
     private readonly TelegramBotExecutionContext _context;
+
+    /// <summary>
+    /// <inheritdoc cref="IApplicationTimeRepository{TProvider}"/>
+    /// </summary>
     private readonly IApplicationTimeRepository<TimeZoneDbProvider> _timeRepository;
+
+    /// <summary>
+    /// <inheritdoc cref="IExternalChatsReadableRepository"/>
+    /// </summary>
     private readonly IExternalChatsReadableRepository _chatsRepository;
 
+    /// <summary>
+    /// <inheritdoc cref="ITelegramBotHandler.Command"/>
+    /// </summary>
     public string Command => AddThisChatEndpointConstants.DispatchAddThisChatHandler;
 
     public DispatchAddThisChatHandler(
@@ -34,6 +48,12 @@ public sealed class DispatchAddThisChatHandler : ITelegramBotHandler
         _chatsRepository = chatsRepository;
     }
 
+    /// <summary>
+    /// Логика диспетчирезации добавления чата.
+    /// Добавляет либо чат темы, либо чат основной
+    /// </summary>
+    /// <param name="client">Telegram bot клиент для взаимодействия с Telegram</param>
+    /// <param name="update">Последнее событие</param>
     public async Task Handle(ITelegramBotClient client, Update update)
     {
         // Time Zone Db Provider
@@ -94,6 +114,21 @@ public sealed class DispatchAddThisChatHandler : ITelegramBotHandler
         );
     }
 
+    /// <summary>
+    /// Метод для диспетчирезации какой чат добавлять
+    /// <param name="client">Telegram bot клиент для взаимодействия с Telegram</param>
+    /// <param name="update">Последнее событие</param>
+    /// <param name="provider">
+    ///     <inheritdoc cref="TimeZoneDbProvider"/>
+    /// </param>
+    /// <param name="chatId">ID чата</param>
+    /// <param name="chatTitle">Название чата</param>
+    /// <param name="themeId">ID темы чата</param>
+    /// <param name="isTopicMessage">Сообщение темы или нет</param>
+    /// <param name="user">
+    ///     <inheritdoc cref="TelegramBotUser"/>
+    /// </param>
+    /// </summary>
     private async Task Handle(
         ITelegramBotClient client,
         Update update,

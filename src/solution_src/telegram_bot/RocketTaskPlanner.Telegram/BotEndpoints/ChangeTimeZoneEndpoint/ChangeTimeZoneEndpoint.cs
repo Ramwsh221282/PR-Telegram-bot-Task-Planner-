@@ -10,7 +10,6 @@ using PRTelegramBot.Utils;
 using RocketTaskPlanner.Application.ApplicationTimeContext.Repository;
 using RocketTaskPlanner.Application.ExternalChatsManagementContext.Repository;
 using RocketTaskPlanner.Application.NotificationsContext.Features.ChangeTimeZone;
-using RocketTaskPlanner.Application.NotificationsContext.Repository;
 using RocketTaskPlanner.Application.NotificationsContext.Visitor;
 using RocketTaskPlanner.Domain.ApplicationTimeContext.Entities.TimeZones;
 using RocketTaskPlanner.Infrastructure.TimeZoneDb;
@@ -24,29 +23,45 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace RocketTaskPlanner.Telegram.BotEndpoints.ChangeTimeZoneEndpoint;
 
+/// <summary>
+/// Endpoint телеграм бота. Который отвечает за изменение временной зоны в пользовательском внешнем основном чате.
+/// </summary>
 [BotHandler]
 public sealed class ChangeTimeZoneEndpoint
 {
+    /// <summary>
+    /// <inheritdoc cref="IApplicationTimeRepository{TProvider}"/>
+    /// </summary>
     private readonly IApplicationTimeRepository<TimeZoneDbProvider> _providerRepository;
-    private readonly INotificationsReadableRepository _notificationsRepository;
+
+    /// <summary>
+    /// <inheritdoc cref="IExternalChatsReadableRepository"/>
+    /// </summary>
     private readonly IExternalChatsRepository _chatsRepository;
+
+    /// <summary>
+    /// <inheritdoc cref="INotificationUseCaseVisitor"/>
+    /// </summary>
     private readonly INotificationUseCaseVisitor _useCases;
 
     public ChangeTimeZoneEndpoint(
         IApplicationTimeRepository<TimeZoneDbProvider> providerRepository,
-        INotificationsReadableRepository notificationsRepository,
         IExternalChatsRepository chatsRepository,
         INotificationUseCaseVisitor useCases
     )
     {
-        _notificationsRepository = notificationsRepository;
         _providerRepository = providerRepository;
         _chatsRepository = chatsRepository;
         _useCases = useCases;
     }
 
-    [ReplyMenuHandler(
-        CommandComparison.Equals,
+    /// <summary>
+    /// Точка входа в endpoint.
+    /// </summary>
+    /// <param name="client">Telegram Bot клиент для взаимодействия с Telegram.</param>
+    /// <param name="update">Последнее событие.</param>
+    [SlashHandler(
+        CommandComparison.Contains,
         StringComparison.OrdinalIgnoreCase,
         ["/change_time_zone"]
     )]
@@ -59,13 +74,12 @@ public sealed class ChangeTimeZoneEndpoint
         var chatId = update.GetChatId();
         var ownsChatTask = _chatsRepository.Readable.UserOwnsChat(user.Value.Id, chatId);
         var providerTask = _providerRepository.Get();
-        var chatNameTask = _notificationsRepository.GetNameById(chatId);
-        await Task.WhenAll([ownsChatTask, providerTask, chatNameTask]);
+        await Task.WhenAll([ownsChatTask, providerTask]);
 
         var ownsChat = await ownsChatTask;
         var provider = await providerTask;
-        var chatName = await chatNameTask;
 
+        // проверка на обладание чатом
         if (!ownsChat)
         {
             const string message = "Пользователь не управляет чатом, либо чат не подписан";
@@ -73,18 +87,14 @@ public sealed class ChangeTimeZoneEndpoint
             return;
         }
 
-        if (chatName.IsFailure)
-        {
-            await client.SendMessage(chatId: chatId, text: chatName.Error);
-            return;
-        }
-
+        // получение провайдера
         if (provider.IsFailure)
         {
             await client.SendMessage(chatId: chatId, text: "Не удается получить временные зоны");
             return;
         }
 
+        // получение временных зон с обновленным временем (с настоящим временем)
         var timeZones = await LoadTimeZones(provider.Value, client, chatId);
         if (timeZones.IsFailure)
         {
@@ -92,10 +102,14 @@ public sealed class ChangeTimeZoneEndpoint
             return;
         }
 
+        // создание и отправка меню выбора временных зон.
         var menu = BuildTimeZoneMenu(timeZones.Value, chatId);
         await SendSelectTimeZoneMessage(client, update, menu);
     }
 
+    /// <summary>
+    /// Загрузить временные зоны
+    /// </summary>
     private static async Task<Result<IReadOnlyList<ApplicationTimeZone>>> LoadTimeZones(
         TimeZoneDbProvider provider,
         ITelegramBotClient client,
@@ -109,6 +123,9 @@ public sealed class ChangeTimeZoneEndpoint
         return zones;
     }
 
+    /// <summary>
+    /// Сделать меню выбора временных зон
+    /// </summary>
     private static InlineKeyboardMarkup BuildTimeZoneMenu(
         IReadOnlyList<ApplicationTimeZone> timeZones,
         long chatId
@@ -147,6 +164,9 @@ public sealed class ChangeTimeZoneEndpoint
         return MenuGenerator.InlineKeyboard(2, buttons);
     }
 
+    /// <summary>
+    /// Отправка сообщения выбора временных зон
+    /// </summary>
     private static async Task SendSelectTimeZoneMessage(
         ITelegramBotClient client,
         Update update,
@@ -177,6 +197,7 @@ public sealed class ChangeTimeZoneEndpoint
         );
     }
 
+    // Обработчик, который вызывается когда выбирается временная зона.
     private async Task HandleCitySelection(
         ChangeChatTimeZoneCitiesEnum selector,
         ITelegramBotClient client,

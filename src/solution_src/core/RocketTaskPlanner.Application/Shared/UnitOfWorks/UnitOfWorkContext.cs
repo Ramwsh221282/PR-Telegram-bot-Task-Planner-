@@ -2,9 +2,19 @@
 
 namespace RocketTaskPlanner.Application.Shared.UnitOfWorks;
 
+/// <summary>
+/// Контекст транзакции конкретной БД.
+/// </summary>
 public sealed class UnitOfWorkContext : IDisposable
 {
+    /// <summary>
+    /// <inheritdoc cref="IDbConnection"/>
+    /// </summary>
     public IDbConnection Connection { get; }
+
+    /// <summary>
+    /// <inheritdoc cref="IDbTransaction"/>
+    /// </summary>
     public IDbTransaction Transaction { get; }
 
     public UnitOfWorkContext(IDbConnection connection, IDbTransaction transaction)

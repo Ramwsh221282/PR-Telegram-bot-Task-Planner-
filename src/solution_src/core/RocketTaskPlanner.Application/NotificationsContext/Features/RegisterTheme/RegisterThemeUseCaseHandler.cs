@@ -8,12 +8,19 @@ using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverThemes.Valu
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.RegisterTheme;
 
 /// <summary>
-/// Добавление темы чата для уведомлений
+/// Обработчик для <inheritdoc cref="RegisterThemeUseCase"/>
 /// </summary>
 public sealed class RegisterThemeUseCaseHandler
     : IUseCaseHandler<RegisterThemeUseCase, RegisterThemeResponse>
 {
+    /// <summary>
+    /// <inheritdoc cref="INotificationsReadableRepository"/>
+    /// </summary>
     private readonly INotificationRepository _repository;
+
+    /// <summary>
+    /// <inheritdoc cref="IUnitOfWork"/>
+    /// </summary>
     private readonly IUnitOfWork _unitOfWork;
 
     public RegisterThemeUseCaseHandler(INotificationRepository repository, IUnitOfWork unitOfWork)

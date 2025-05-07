@@ -3,6 +3,9 @@ using RocketTaskPlanner.Application.Shared.Validation;
 
 namespace RocketTaskPlanner.Infrastructure.TimeZoneDb.Features.SaveTimeZoneDbApiKey;
 
+/// <summary>
+/// Валидатор токена
+/// </summary>
 public sealed class SaveTimeZoneDbApiKeyValidator
     : AbstractValidator<SaveTimeZoneDbApiKeyUseCase>,
         IValidator<SaveTimeZoneDbApiKeyUseCase>

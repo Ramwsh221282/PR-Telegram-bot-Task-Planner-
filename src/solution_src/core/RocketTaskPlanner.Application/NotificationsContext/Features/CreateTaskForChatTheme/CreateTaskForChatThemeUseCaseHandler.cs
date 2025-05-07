@@ -9,11 +9,14 @@ using RocketTaskPlanner.Utilities.DateExtensions;
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChatTheme;
 
 /// <summary>
-/// Создание уведомления для темы чата
+/// Обработчик для <inheritdoc cref="CreateTaskForChatThemeUseCase"/>
 /// </summary>
 public sealed class CreateTaskForChatThemeUseCaseHandler
     : IUseCaseHandler<CreateTaskForChatThemeUseCase, CreateTaskForChatThemeUseCaseResponse>
 {
+    /// <summary>
+    /// <inheritdoc cref="INotificationRepository"/>
+    /// </summary>
     private readonly INotificationRepository _repository;
 
     public CreateTaskForChatThemeUseCaseHandler(INotificationRepository repository) =>

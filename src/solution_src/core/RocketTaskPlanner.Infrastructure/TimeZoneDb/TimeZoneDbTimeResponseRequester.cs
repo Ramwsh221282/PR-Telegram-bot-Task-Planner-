@@ -3,10 +3,25 @@ using CSharpFunctionalExtensions;
 
 namespace RocketTaskPlanner.Infrastructure.TimeZoneDb;
 
+/// <summary>
+/// Запрашиватель временных зон по HTTP
+/// <param name="provider">
+///     <inheritdoc cref="TimeZoneDbProvider"/>
+/// </param>
+/// </summary>
 public sealed class TimeZoneDbTimeResponseRequester(TimeZoneDbProvider provider)
 {
+    /// <summary>
+    /// <inheritdoc cref="TimeZoneDbProvider"/>
+    /// </summary>
     private readonly TimeZoneDbProvider _provider = provider;
 
+    /// <summary>
+    /// Возврат ответа от сервиса. Ответ - список временных зон
+    /// <returns>
+    /// <inheritdoc cref="TimeZoneDbTimeResponse"/>
+    /// </returns>
+    /// </summary>
     public async Task<Result<TimeZoneDbTimeResponse[]>> GetResponse()
     {
         using HttpClient client = new();
@@ -26,11 +41,18 @@ public sealed class TimeZoneDbTimeResponseRequester(TimeZoneDbProvider provider)
         }
         catch
         {
-            string content = "Произошла внутренняя ошибка при запросе в Time Zone Db";
+            const string content = "Произошла внутренняя ошибка при запросе в Time Zone Db";
             return Result.Failure<TimeZoneDbTimeResponse[]>(content);
         }
     }
 
+    /// <summary>
+    /// Парсинг json ответа от Time Zone Db сервиса
+    /// <param name="json">Json ответ от запроса в Time Zone Db сервис</param>
+    /// <returns>
+    ///     <inheritdoc cref="TimeZoneDbTimeResponse"/>
+    /// </returns>
+    /// </summary>
     private static Result<TimeZoneDbTimeResponse[]> ParseJson(string json)
     {
         using JsonDocument document = JsonDocument.Parse(json);

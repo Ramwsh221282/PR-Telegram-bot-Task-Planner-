@@ -1,5 +1,8 @@
 namespace RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverSubjects.ValueObjects;
 
+/// <summary>
+/// Текст уведомления основного чата
+/// </summary>
 public sealed record ReceiverSubjectMessage
 {
     public string Message { get; }

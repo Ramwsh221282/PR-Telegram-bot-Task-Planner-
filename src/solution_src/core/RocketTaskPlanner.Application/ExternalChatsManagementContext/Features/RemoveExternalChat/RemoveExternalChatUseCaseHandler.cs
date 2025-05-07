@@ -8,12 +8,19 @@ using RocketTaskPlanner.Domain.ExternalChatsManagementContext.ValueObjects;
 namespace RocketTaskPlanner.Application.ExternalChatsManagementContext.Features.RemoveExternalChat;
 
 /// <summary>
-/// Обработчик удаления внешнего чата у обладателя
+/// Обработчик для <inheritdoc cref="RemoveExternalChatUseCase"/>
 /// </summary>
 public sealed class RemoveExternalChatUseCaseHandler
     : IUseCaseHandler<RemoveExternalChatUseCase, ExternalChat>
 {
+    /// <summary>
+    /// <inheritdoc cref="IExternalChatsReadableRepository"/>
+    /// </summary>
     private readonly IExternalChatsRepository _repository;
+
+    /// <summary>
+    /// <inheritdoc cref="IUnitOfWork"/>
+    /// </summary>
     private readonly IUnitOfWork _unitOfWork;
 
     public RemoveExternalChatUseCaseHandler(

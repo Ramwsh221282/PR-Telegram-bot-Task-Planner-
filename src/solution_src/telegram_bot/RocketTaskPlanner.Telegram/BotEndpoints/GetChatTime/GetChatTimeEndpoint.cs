@@ -13,7 +13,9 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.GetChatTime;
 /// <summary>
 /// Endpoint обработки команды /bot_chat_time
 /// </summary>
-/// <param name="handler">Обработчик запроса на получение информации времени о чате, из которого вызывается команда</param>
+/// <param name="handler">
+///     <inheritdoc cref="GetNotificationReceiverTimeInformationQueryHandler"/>
+/// </param>
 [BotHandler]
 public sealed class GetChatTimeEndpoint(
     IQueryHandler<
@@ -22,6 +24,9 @@ public sealed class GetChatTimeEndpoint(
     > handler
 )
 {
+    /// <summary>
+    /// <inheritdoc cref="GetNotificationReceiverTimeInformationQueryHandler"/>
+    /// </summary>
     private readonly IQueryHandler<
         GetNotificationReceiverTimeInformationQuery,
         GetNotificationReceiverTimeInformationQueryResponse
@@ -32,7 +37,7 @@ public sealed class GetChatTimeEndpoint(
     /// </summary>
     /// <param name="client">Telegram bot клиент для общения с telegram</param>
     /// <param name="update">Последнее событие (в данном случае вызов endpoint)</param>
-    [ReplyMenuHandler(
+    [SlashHandler(
         CommandComparison.Contains,
         StringComparison.OrdinalIgnoreCase,
         ["/bot_chat_time"]

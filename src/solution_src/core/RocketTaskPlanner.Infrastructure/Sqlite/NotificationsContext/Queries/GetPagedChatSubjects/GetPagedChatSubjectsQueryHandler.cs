@@ -6,14 +6,23 @@ using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetPagedChatSubjects;
 
+/// <summary>
+/// Обработчик запроса <inheritdoc cref="GetPagedChatSubjectsQuery"/>
+/// </summary>
 public sealed class GetPagedChatSubjectsQueryHandler
     : IQueryHandler<GetPagedChatSubjectsQuery, GetPagedChatSubjectsQueryResponse>
 {
+    /// <summary>
+    /// <inheritdoc cref="INotificationsReadableRepository"/>
+    /// </summary>
     private readonly INotificationsReadableRepository _repository;
 
     public GetPagedChatSubjectsQueryHandler(INotificationsReadableRepository repository) =>
         _repository = repository;
 
+    /// <summary>
+    /// SQL для основного чата
+    /// </summary>
     private const string _generalChatSql = """
         SELECT
           gs.general_chat_subject_id,
@@ -32,6 +41,9 @@ public sealed class GetPagedChatSubjectsQueryHandler
         OFFSET @offset;
         """;
 
+    /// <summary>
+    /// SQL для тем чата
+    /// </summary>
     private const string _themeChatSql = """
         SELECT 
             rts.theme_chat_subject_id,

@@ -1,7 +1,13 @@
 namespace RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 
+/// <summary>
+/// Временная зона основного чата уведомлений
+/// </summary>
 public sealed record class NotificationReceiverTimeZone
 {
+    /// <summary>
+    /// Временная зона название
+    /// </summary>
     public string ZoneName { get; }
 
     private NotificationReceiverTimeZone() => ZoneName = string.Empty; // ef core

@@ -4,7 +4,6 @@ using RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForC
 using RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChatTheme;
 using RocketTaskPlanner.Application.NotificationsContext.Visitor;
 using RocketTaskPlanner.Infrastructure.Abstractions;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities;
 using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetNotificationReceiverTimeInformation;
 using RocketTaskPlanner.Telegram.BotAbstractions;
 using RocketTaskPlanner.Telegram.BotExtensions;
@@ -21,23 +20,49 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.NotificationsManagementEndpoin
 /// </summary>
 public sealed class CreateTaskHandler : ITelegramBotHandler
 {
+    /// <summary>
+    /// <inheritdoc cref="TimeRecognitionFacade"/>
+    /// </summary>
     private readonly TimeRecognitionFacade _recognitionFacade;
+
+    /// <summary>
+    /// <inheritdoc cref="TimeCalculationService"/>
+    /// </summary>
     private readonly TimeCalculationService _calculationService;
+
+    /// <summary>
+    /// <inheritdoc cref="INotificationUseCaseVisitor"/>
+    /// </summary>
     private readonly INotificationUseCaseVisitor _notificationUseCases;
+
+    /// <summary>
+    /// <inheritdoc cref="GetNotificationReceiverTimeInformationQueryHandler"/>
+    /// </summary>
     private readonly IQueryHandler<
         GetNotificationReceiverTimeInformationQuery,
         GetNotificationReceiverTimeInformationQueryResponse
     > _getCurrentTimeQuery;
 
+    /// <summary>
+    /// <inheritdoc cref="ITelegramBotHandler.Command"/>
+    /// </summary>
     public string Command => "Create task handler";
 
     /// <summary>
     /// Констурктор для создания обработчика создания уведомлений
+    /// <param name="facade">
+    ///     <inheritdoc cref="TimeRecognitionFacade"/>
+    /// </param>
+    /// <param name="timeCalculation">
+    ///     <inheritdoc cref="TimeCalculationService"/>
+    /// </param>
+    /// <param name="notificationUseCases">
+    ///     <inheritdoc cref="NotificationUseCaseVisitor"/>
+    /// </param>
+    /// <param name="getCurrentTimeQuery">
+    ///     <inheritdoc cref="GetCurrentTime"/>
+    /// </param>
     /// </summary>
-    /// <param name="facade">Фасадный класс для определения времени.</param>
-    /// <param name="timeCalculation">Класс для расчёта времени уведомления.</param>
-    /// <param name="notificationUseCases">Посетитель для логики контекста уведомлений.</param>
-    /// <param name="getCurrentTimeQuery">Обработчик для получение текущего времени создания задачи.</param>
     public CreateTaskHandler(
         TimeRecognitionFacade facade,
         TimeCalculationService timeCalculation,
@@ -54,6 +79,11 @@ public sealed class CreateTaskHandler : ITelegramBotHandler
         _getCurrentTimeQuery = getCurrentTimeQuery;
     }
 
+    /// <summary>
+    /// Логика обработки создания задачи
+    /// </summary>
+    /// <param name="client">Telegram bot Client для взаимодействия с Telegram</param>
+    /// <param name="update">Последнее событие</param>
     public async Task Handle(ITelegramBotClient client, Update update)
     {
         // форматирование сообщения, для удаления подстроки /tc
@@ -283,7 +313,7 @@ public sealed class CreateTaskHandler : ITelegramBotHandler
         DateTime dateNotify
     )
     {
-        string template = """
+        const string template = """
             Создана задача:
             {0},
             Периодичность: {1},

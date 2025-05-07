@@ -5,10 +5,20 @@ using RocketTaskPlanner.Domain.ExternalChatsManagementContext;
 
 namespace RocketTaskPlanner.Application.ExternalChatsManagementContext.Features.RemoveExternalChatOwner;
 
+/// <summary>
+/// Обработчик для <inheritdoc cref="RemoveExternalChatOwnerUseCase"/>
+/// </summary>
 public sealed class RemoveExternalChatOwnerUseCaseHandler
     : IUseCaseHandler<RemoveExternalChatOwnerUseCase, ExternalChatOwner>
 {
+    /// <summary>
+    /// <inheritdoc cref="IExternalChatsReadableRepository"/>
+    /// </summary>
     private readonly IExternalChatsRepository _repository;
+
+    /// <summary>
+    /// <inheritdoc cref="IUnitOfWork"/>
+    /// </summary>
     private readonly IUnitOfWork _unitOfWork;
 
     public RemoveExternalChatOwnerUseCaseHandler(

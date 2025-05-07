@@ -9,9 +9,9 @@ namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.G
 
 /// <summary>
 /// Обработчик запроса на получение информации об основном чате по Id с обновленным временем из Time Zone Db провайдера
-/// </summary>
 /// <param name="factory">Фабрика соединения</param>
 /// <param name="repository">Контракт взаимодействия с БД временных зон</param>
+/// </summary>
 public sealed class GetNotificationReceiverTimeInformationQueryHandler(
     IDbConnectionFactory factory,
     IApplicationTimeRepository<TimeZoneDbProvider> repository
@@ -21,13 +21,23 @@ public sealed class GetNotificationReceiverTimeInformationQueryHandler(
         GetNotificationReceiverTimeInformationQueryResponse
     >
 {
+    /// <summary>
+    /// SQL запрос
+    /// </summary>
     private const string Sql = """
         SELECT receiver_id, receiver_name, receiver_zone_name
         FROM notification_receivers
         WHERE receiver_id = @id
         """;
 
+    /// <summary>
+    ///     <inheritdoc cref="IDbConnectionFactory"/>
+    /// </summary>
     private readonly IDbConnectionFactory _factory = factory;
+
+    /// <summary>
+    ///     <inheritdoc cref="IApplicationTimeRepository{TProvider}"/>
+    /// </summary>
     private readonly IApplicationTimeRepository<TimeZoneDbProvider> _repository = repository;
 
     public async Task<GetNotificationReceiverTimeInformationQueryResponse> Handle(

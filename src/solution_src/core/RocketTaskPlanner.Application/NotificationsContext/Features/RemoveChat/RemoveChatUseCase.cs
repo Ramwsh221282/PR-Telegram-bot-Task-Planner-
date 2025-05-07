@@ -2,6 +2,10 @@
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.RemoveChat;
 
+/// <summary>
+/// Бизнес логика удаления чата для уведомлений
+/// </summary>
+/// <param name="chatId">ID чата для уведомлений</param>
 public sealed record RemoveChatUseCase(long chatId) : INotificationVisitableUseCase
 {
     public async Task<Result> Accept(

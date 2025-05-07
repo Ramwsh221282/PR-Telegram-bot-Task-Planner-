@@ -3,6 +3,9 @@ using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.RegisterChat;
 
+/// <summary>
+/// Валидатор для <inheritdoc cref="RegisterChatUseCase"/>
+/// </summary>
 public sealed class RegisterChatUseCaseValidator
     : AbstractValidator<RegisterChatUseCase>,
         IValidator<RegisterChatUseCase>

@@ -5,14 +5,23 @@ using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetNotificationReceiversByIdArray;
 
+/// <summary>
+/// Обработчик <inheritdoc cref="GetNotificationReceiversByIdentifiersQuery"/>
+/// </summary>
 public sealed class GetNotificationReceiversByIdentifiersQueryHandler
     : IQueryHandler<
         GetNotificationReceiversByIdentifiersQuery,
         GetNotificationReceiversByIdentifiersQueryResponse[]
     >
 {
+    /// <summary>
+    /// <inheritdoc cref="INotificationsReadableRepository"/>
+    /// </summary>
     private readonly INotificationsReadableRepository _repository;
 
+    /// <summary>
+    /// sql запрос
+    /// </summary>
     private const string _sql = """
         SELECT receiver_id, receiver_name, receiver_zone_name
         FROM notification_receivers

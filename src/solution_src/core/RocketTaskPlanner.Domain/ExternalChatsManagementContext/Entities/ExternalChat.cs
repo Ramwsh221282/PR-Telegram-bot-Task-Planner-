@@ -3,7 +3,7 @@
 namespace RocketTaskPlanner.Domain.ExternalChatsManagementContext.Entities;
 
 /// <summary>
-/// Внешний чат.
+/// Внешний чат пользователя.
 /// </summary>
 public sealed class ExternalChat
 {
@@ -28,7 +28,7 @@ public sealed class ExternalChat
     public ExternalChatOwner Owner { get; } = null!;
 
     /// <summary>
-    /// ID ообладателя внешнего чата
+    /// ID обладателя внешнего чата
     /// </summary>
     public ExternalChatMemberId OwnerId { get; }
 
@@ -59,6 +59,21 @@ public sealed class ExternalChat
         Name = chatName;
     }
 
+    /// <summary>
+    /// Конструктор для создания дочернего чата
+    /// </summary>
+    /// <param name="owner">
+    ///     <inheritdoc cref="ExternalChatOwner"/>
+    /// </param>
+    /// <param name="parent">
+    ///     Чат-родитель
+    /// </param>
+    /// <param name="themeId">
+    ///     ID дочернего чата
+    /// </param>
+    /// <param name="themeName">
+    ///     Название дочернего чата
+    /// </param>
     internal ExternalChat(
         ExternalChatOwner owner,
         ExternalChat parent,

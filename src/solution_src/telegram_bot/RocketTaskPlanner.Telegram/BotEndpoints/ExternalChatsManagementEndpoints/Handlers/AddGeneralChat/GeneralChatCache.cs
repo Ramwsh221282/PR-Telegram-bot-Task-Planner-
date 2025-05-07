@@ -12,11 +12,23 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoin
 public sealed class GeneralChatCache(TimeZoneDbProvider provider, long chatId, string chatName)
     : ITelegramCache
 {
+    /// <summary>
+    /// ID чата
+    /// </summary>
     public long ChatId { get; } = chatId;
 
+    /// <summary>
+    /// Название чата
+    /// </summary>
     public string ChatName { get; } = chatName;
 
+    /// <summary>
+    /// <inheritdoc cref="TimeZoneDbProvider"/>
+    /// </summary>
     public TimeZoneDbProvider Provider { get; } = provider;
 
+    /// <summary>
+    /// Заглушка очистки кеша
+    /// </summary>
     public bool ClearData() => true;
 }

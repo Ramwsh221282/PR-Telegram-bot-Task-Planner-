@@ -6,10 +6,24 @@ using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 
 namespace RocketTaskPlanner.Application.Facades;
 
+/// <summary>
+/// Фасадный класс удаления темы чата
+/// </summary>
 public sealed class RemoveThemeChatFacade
 {
+    /// <summary>
+    /// <inheritdoc cref="IExternalChatUseCasesVisitor"/>
+    /// </summary>
     private readonly IExternalChatUseCasesVisitor _userChats;
+
+    /// <summary>
+    /// <inheritdoc cref="INotificationUseCaseVisitor"/>
+    /// </summary>
     private readonly INotificationUseCaseVisitor _notificationChats;
+
+    /// <summary>
+    /// <inheritdoc cref="IUnitOfWork"/>
+    /// </summary>
     private readonly IUnitOfWork _unitOfWork;
 
     public RemoveThemeChatFacade(
@@ -44,12 +58,14 @@ public sealed class RemoveThemeChatFacade
         return Result.Success();
     }
 
+    // удалить тему чата для уведомлений
     private async Task<Result> RemoveNotificationThemeChat(long chatId, long themeId)
     {
         var useCase = new RemoveThemeUseCase(chatId, themeId);
         return await _notificationChats.Visit(useCase);
     }
 
+    // удалить дочерний чат
     private async Task<Result> RemoveUserChildChat(long userId, long chatId, long themeId)
     {
         var useCase = new RemoveExternalChatThemeUseCase(userId, chatId, themeId);

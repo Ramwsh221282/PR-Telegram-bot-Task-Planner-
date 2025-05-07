@@ -5,17 +5,16 @@ using RocketTaskPlanner.Infrastructure.Abstractions;
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.HasNotificationReceiver;
 
 /// <summary>
-/// Проверка на существование записи основного чата в БД
+/// Обработчик <inheritdoc cref="HasNotificationReceiverQuery"/>
+/// <param name="factory"><inheritdoc cref="IDbConnectionFactory"/></param>
 /// </summary>
-/// <param name="factory">Фабрика соединения с БД</param>
 public sealed class HasNotificationReceiverQueryHandler(IDbConnectionFactory factory)
     : IQueryHandler<HasNotificationReceiverQuery, bool>
 {
     private readonly IDbConnectionFactory _factory = factory;
 
-    private const string SQL = """
-        SELECT COUNT(*) FROM notification_receivers WHERE receiver_id = @id
-        """;
+    private const string SQL =
+        "SELECT COUNT(*) FROM notification_receivers WHERE receiver_id = @id";
 
     public async Task<bool> Handle(
         HasNotificationReceiverQuery query,

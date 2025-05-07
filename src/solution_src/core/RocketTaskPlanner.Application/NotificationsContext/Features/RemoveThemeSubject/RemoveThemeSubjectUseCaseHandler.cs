@@ -3,9 +3,15 @@ using RocketTaskPlanner.Application.Shared.UseCaseHandler;
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.RemoveThemeSubject;
 
+/// <summary>
+/// Обработчик для <inheritdoc cref="RemoveThemeSubjectUseCase"/>
+/// </summary>
 public sealed class RemoveThemeSubjectUseCaseHandler
     : IUseCaseHandler<RemoveThemeSubjectUseCase, bool>
 {
+    /// <summary>
+    /// <inheritdoc cref="INotificationsWritableRepository"/>
+    /// </summary>
     private readonly INotificationsWritableRepository _repository;
 
     public RemoveThemeSubjectUseCaseHandler(INotificationsWritableRepository repository) =>

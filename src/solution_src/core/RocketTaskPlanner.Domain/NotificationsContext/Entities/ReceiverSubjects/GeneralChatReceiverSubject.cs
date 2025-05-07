@@ -12,6 +12,10 @@ public sealed class GeneralChatReceiverSubject : ReceiverSubject
     /// Чат-обладатель сообщения
     /// </summary>
     public NotificationReceiver Receiver { get; } = null!;
+
+    /// <summary>
+    /// ID основного чата уведомлений
+    /// </summary>
     public NotificationReceiverId GeneralChatId { get; } = default!;
 
     private GeneralChatReceiverSubject() { } // ef core

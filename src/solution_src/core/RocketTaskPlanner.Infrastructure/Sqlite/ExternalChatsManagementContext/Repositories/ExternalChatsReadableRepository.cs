@@ -7,12 +7,24 @@ using RocketTaskPlanner.Infrastructure.Sqlite.ExternalChatsManagementContext.Ent
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.ExternalChatsManagementContext.Repositories;
 
+/// <summary>
+/// Абстракция взаимодействия БД пользователей и пользовательскими чатами (операции чтения)
+/// </summary>
 public sealed class ExternalChatsReadableRepository : IExternalChatsReadableRepository
 {
+    /// <summary>
+    /// <inheritdoc cref="IDbConnectionFactory"/>
+    /// </summary>
     private readonly IDbConnectionFactory _factory;
 
     public ExternalChatsReadableRepository(IDbConnectionFactory factory) => _factory = factory;
 
+    /// <summary>
+    /// Получить <inheritdoc cref="ExternalChatOwner"/> по его ID
+    /// <param name="id">ID</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>Result Success если найден с таким ID, либо Failure</returns>
+    /// </summary>
     public async Task<Result<ExternalChatOwner>> GetExternalChatOwnerById(
         long id,
         CancellationToken ct = default
@@ -65,6 +77,12 @@ public sealed class ExternalChatsReadableRepository : IExternalChatsReadableRepo
         return owner;
     }
 
+    /// <summary>
+    /// Проверка на то, последний ли чат у пользователя или нет
+    /// <param name="userId">ID пользователя</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>True если у пользователя остался 1 чат. Иначе false</returns>
+    /// </summary>
     public async Task<bool> IsLastUserChat(long userId, CancellationToken ct = default)
     {
         const string sql = """
@@ -80,6 +98,12 @@ public sealed class ExternalChatsReadableRepository : IExternalChatsReadableRepo
         return count == 1;
     }
 
+    /// <summary>
+    /// Проверка на существование чата
+    /// <param name="chatId">ID чата</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>True если чат существует. Иначе false</returns>
+    /// </summary>
     public async Task<bool> ContainsChat(long chatId, CancellationToken ct = default)
     {
         const string sql = """
@@ -95,6 +119,13 @@ public sealed class ExternalChatsReadableRepository : IExternalChatsReadableRepo
         return count != 0;
     }
 
+    /// <summary>
+    /// Проверка на существование дочернего чата (темы)
+    /// <param name="chatId">ИД родителя</param>
+    /// <param name="childChatId">ИД дочернего чата</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>True если дочерний чат существует. Иначе false</returns>
+    /// </summary>
     public async Task<bool> ContainsChildChat(
         long chatId,
         long childChatId,
@@ -114,6 +145,12 @@ public sealed class ExternalChatsReadableRepository : IExternalChatsReadableRepo
         return count != 0;
     }
 
+    /// <summary>
+    /// Проверка на существования пользователя с таким ID
+    /// <param name="userId">ID пользователей</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>True если пользователь найден, иначе False.</returns>
+    /// </summary>
     public async Task<bool> HasUserRegistered(long userId, CancellationToken ct = default)
     {
         const string sql = """
@@ -127,6 +164,13 @@ public sealed class ExternalChatsReadableRepository : IExternalChatsReadableRepo
         return count != 0;
     }
 
+    /// <summary>
+    /// Проверка на то, является ли пользователем владельцем чата
+    /// <param name="userId">ID пользователя</param>
+    /// <param name="chatId">ID чата</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns>True если владеет, иначе False</returns>
+    /// </summary>
     public async Task<bool> UserOwnsChat(long userId, long chatId, CancellationToken ct = default)
     {
         const string sql = """

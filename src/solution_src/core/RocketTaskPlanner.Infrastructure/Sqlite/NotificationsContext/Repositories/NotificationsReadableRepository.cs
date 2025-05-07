@@ -2,6 +2,7 @@
 using CSharpFunctionalExtensions;
 using Dapper;
 using RocketTaskPlanner.Application.NotificationsContext.Repository;
+using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 using RocketTaskPlanner.Domain.NotificationsContext;
 using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 using RocketTaskPlanner.Infrastructure.Abstractions;
@@ -9,8 +10,15 @@ using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Repositories;
 
+/// <summary>
+/// Абстракция для работы с базой данных <inheritdoc cref="NotificationReceiver"/>
+/// Выполняет только операции чтения.
+/// </summary>
 public sealed class NotificationsReadableRepository : INotificationsReadableRepository
 {
+    /// <summary>
+    ///     <inheritdoc cref="IDbConnectionFactory"/>
+    /// </summary>
     private readonly IDbConnectionFactory _dbConnectionFactory;
 
     public NotificationsReadableRepository(IDbConnectionFactory connectionFactory)
@@ -18,6 +26,12 @@ public sealed class NotificationsReadableRepository : INotificationsReadableRepo
         _dbConnectionFactory = connectionFactory;
     }
 
+    /// <summary>
+    /// Получить NotificationReceiver с его чатами, темами, и уведомления (тем и чатов)
+    /// </summary>
+    /// <param name="id">ID чата</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns><inheritdoc cref="NotificationReceiver"/></returns>
     public async Task<Result<NotificationReceiver>> GetById(
         long? id,
         CancellationToken ct = default
@@ -114,9 +128,19 @@ public sealed class NotificationsReadableRepository : INotificationsReadableRepo
         );
     }
 
+    /// <summary>
+    /// <inheritdoc cref="IRepository.CreateConnection"/>
+    /// </summary>
+    /// <returns><inheritdoc cref="IDbConnection"/></returns>
     public IDbConnection CreateConnection() =>
         _dbConnectionFactory.Create(SqliteConstants.NotificationsConnectionString);
 
+    /// <summary>
+    /// Получить название чата по ID
+    /// </summary>
+    /// <param name="id">ID</param>
+    /// <param name="ct">Токен отмены</param>
+    /// <returns><inheritdoc cref="NotificationReceiverName"/></returns>
     public async Task<Result<NotificationReceiverName>> GetNameById(
         long? id,
         CancellationToken ct = default

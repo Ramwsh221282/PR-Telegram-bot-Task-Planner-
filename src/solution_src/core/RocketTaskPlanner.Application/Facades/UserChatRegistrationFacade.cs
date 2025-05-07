@@ -6,10 +6,24 @@ using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 
 namespace RocketTaskPlanner.Application.Facades;
 
+/// <summary>
+/// Фасадный класс для добавления чата пользователя
+/// </summary>
 public sealed class UserChatRegistrationFacade
 {
+    /// <summary>
+    /// <inheritdoc cref="IUnitOfWork"/>
+    /// </summary>
     private readonly IUnitOfWork _unitOfWork;
+
+    /// <summary>
+    /// <inheritdoc cref="IExternalChatUseCasesVisitor"/>
+    /// </summary>
     private readonly IExternalChatUseCasesVisitor _externalChatsVisitor;
+
+    /// <summary>
+    /// <inheritdoc cref="INotificationUseCaseVisitor"/>
+    /// </summary>
     private readonly INotificationUseCaseVisitor _notificationChatsVisitor;
 
     public UserChatRegistrationFacade(
@@ -49,12 +63,14 @@ public sealed class UserChatRegistrationFacade
         return Result.Success();
     }
 
+    // добавить чат пользователю
     private async Task<Result> AddUserExternalChat(long ownerId, long chatId, string chatName)
     {
         AddExternalChatUseCase useCase = new(ownerId, chatId, chatName);
         return await _externalChatsVisitor.Visit(useCase);
     }
 
+    // добавить чат для уведомлений
     private async Task<Result> AddChatForNotifications(
         long chatId,
         string ownerName,

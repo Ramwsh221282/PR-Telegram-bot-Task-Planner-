@@ -4,6 +4,9 @@ using RocketTaskPlanner.Domain.ExternalChatsManagementContext.ValueObjects;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.ExternalChatsManagementContext.Entities;
 
+/// <summary>
+/// DAO модель чата пользователя
+/// </summary>
 public sealed class ExternalChatEntity
 {
     public long Id { get; set; }

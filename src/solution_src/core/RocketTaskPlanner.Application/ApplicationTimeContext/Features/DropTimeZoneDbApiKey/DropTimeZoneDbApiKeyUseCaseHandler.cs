@@ -6,14 +6,17 @@ namespace RocketTaskPlanner.Application.ApplicationTimeContext.Features.DropTime
 
 /// <summary>
 /// Обработчик удаления провайдера временной зоны.
-/// </summary>
 /// <param name="repository">Контракт взаимодействия с БД.</param>
 /// <typeparam name="TProvider">Тип провайдера временной зоны</typeparam>
+/// </summary>
 public sealed class DropTimeZoneDbApiKeyUseCaseHandler<TProvider>(
     IApplicationTimeRepository<TProvider> repository
 ) : IUseCaseHandler<DropTimeZoneDbApiKeyUseCase, string>
     where TProvider : IApplicationTimeProvider
 {
+    /// <summary>
+    /// <inheritdoc cref="IApplicationTimeRepository{TProvider}"/>
+    /// </summary>
     private readonly IApplicationTimeRepository<TProvider> _repository = repository;
 
     public async Task<Result<string>> Handle(

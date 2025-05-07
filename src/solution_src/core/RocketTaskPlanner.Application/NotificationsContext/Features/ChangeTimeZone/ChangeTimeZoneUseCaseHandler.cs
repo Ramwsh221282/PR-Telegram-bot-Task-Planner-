@@ -5,11 +5,14 @@ using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.ChangeTimeZone;
 
 /// <summary>
-/// Обработчик изменения временной зоны чата.
+/// Обработчик <inheritdoc cref="ChangeTimeZoneUseCase"/>
 /// </summary>
 public sealed class ChangeTimeZoneUseCaseHandler
     : IUseCaseHandler<ChangeTimeZoneUseCase, NotificationReceiverTimeZone>
 {
+    /// <summary>
+    /// <inheritdoc cref="INotificationsWritableRepository"/>
+    /// </summary>
     private readonly INotificationsWritableRepository _repository;
 
     public ChangeTimeZoneUseCaseHandler(INotificationsWritableRepository repository) =>

@@ -4,6 +4,9 @@ using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Features.RegisterTheme;
 
+/// <summary>
+/// Валидатор для <inheritdoc cref="RegisterThemeUseCase"/>
+/// </summary>
 public sealed class RegisterThemeUseCaseValidator
     : AbstractValidator<RegisterThemeUseCase>,
         IValidator<RegisterThemeUseCase>

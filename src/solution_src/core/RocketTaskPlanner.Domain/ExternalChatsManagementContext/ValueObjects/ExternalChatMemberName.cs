@@ -1,7 +1,13 @@
 ﻿namespace RocketTaskPlanner.Domain.ExternalChatsManagementContext.ValueObjects;
 
+/// <summary>
+/// Никнейм обладателя чата
+/// </summary>
 public sealed record ExternalChatMemberName
 {
+    /// <summary>
+    /// Никнейм
+    /// </summary>
     public string Value { get; }
 
     private ExternalChatMemberName() => Value = string.Empty;

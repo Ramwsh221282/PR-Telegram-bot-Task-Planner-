@@ -7,12 +7,19 @@ using RocketTaskPlanner.Domain.ExternalChatsManagementContext.ValueObjects;
 namespace RocketTaskPlanner.Application.ExternalChatsManagementContext.Features.AddExternalChatOwner;
 
 /// <summary>
-/// Создание обладателя внешнего чата.
+/// Обработчик для <inheritdoc cref="AddExternalChatOwnerUseCase"/>
 /// </summary>
 public sealed class AddExternalChatOwnerUseCaseHandler
     : IUseCaseHandler<AddExternalChatOwnerUseCase, ExternalChatOwner>
 {
+    /// <summary>
+    /// <inheritdoc cref="IExternalChatsReadableRepository"/>
+    /// </summary>
     private readonly IExternalChatsRepository _repository;
+
+    /// <summary>
+    /// <inheritdoc cref="IUnitOfWork"/>
+    /// </summary>
     private readonly IUnitOfWork _unitOfWork;
 
     public AddExternalChatOwnerUseCaseHandler(

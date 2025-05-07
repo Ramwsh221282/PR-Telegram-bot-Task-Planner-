@@ -10,23 +10,30 @@ namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.R
 /// </summary>
 public sealed class GeneralChatReceiverOfCurrentTimeZone
 {
+    /// <summary>
+    ///     <inheritdoc cref="NotificationReceiverEntity"/>
+    /// </summary>
     private readonly NotificationReceiverEntity _receiver;
 
     public GeneralChatReceiverOfCurrentTimeZone(NotificationReceiverEntity receiver) =>
         _receiver = receiver;
 
     /// <summary>
-    /// Сообщения для основного чата
+    ///     <inheritdoc cref="IGeneralChatTaskToFire"/>
     /// </summary>
-    /// <returns>Сообщения основного чата, которые нужно отправить</returns>
-    public IGeneralChatTaskToFire[] TasksToFire() =>
+    /// <returns>
+    ///     <inheritdoc cref="IGeneralChatTaskToFire"/>
+    /// </returns>
+    public IGeneralChatTaskToFire[] GeneralChatTasksToFire() =>
         [.. _receiver.ReceiverSubjects.Select(s => new GeneralChatTaskToFire(s))];
 
     /// <summary>
-    /// Сообщения для тем чатов
+    ///     <inheritdoc cref="IThemeChatTaskToFire"/>
     /// </summary>
-    /// <returns>Сообщения для тем чатов, которые нужно отправить</returns>
-    public IThemeChatTaskToFire[] ThemeChatUnfiredTasks() =>
+    /// <returns>
+    ///     <inheritdoc cref="IThemeChatTaskToFire"/>
+    /// </returns>
+    public IThemeChatTaskToFire[] ThemeChatTasksToFire() =>
         [
             .. _receiver
                 .ReceiverThemes.SelectMany(th => th.Subjects)

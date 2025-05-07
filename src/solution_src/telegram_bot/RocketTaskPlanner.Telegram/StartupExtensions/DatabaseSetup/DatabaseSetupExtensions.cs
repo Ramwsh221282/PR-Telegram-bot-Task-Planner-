@@ -6,7 +6,8 @@ using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext;
 namespace RocketTaskPlanner.Telegram.StartupExtensions.DatabaseSetup;
 
 /// <summary>
-/// Utility класс для применения миграций и создания локальных БД Sqlite
+/// Utility класс для применения миграций и создания локальных БД Sqlite.
+/// Все в try catch, поскольку исключения срабатывают, если БД уже есть.
 /// </summary>
 public static class DatabaseSetupExtensions
 {

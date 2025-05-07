@@ -14,33 +14,63 @@ using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Visitor;
 
+/// <summary>
+/// Посетитель для бизнес логики для <inheritdoc cref="NotificationReceiver"/>
+/// </summary>
 public sealed class NotificationUseCaseVisitor : INotificationUseCaseVisitor
 {
+    /// <summary>
+    /// <inheritdoc cref="CreateTaskForChatUseCaseHandler"/>
+    /// </summary>
     private readonly IUseCaseHandler<
         CreateTaskForChatUseCase,
         CreateTaskForChatUseCaseResponse
     > _chatTask;
 
+    /// <summary>
+    /// <inheritdoc cref="CreateTaskForChatThemeUseCase"/>
+    /// </summary>
     private readonly IUseCaseHandler<
         CreateTaskForChatThemeUseCase,
         CreateTaskForChatThemeUseCaseResponse
     > _themeTask;
 
+    /// <summary>
+    /// <inheritdoc cref="ChangeTimeZoneUseCaseHandler"/>
+    /// </summary>
     private readonly IUseCaseHandler<
         ChangeTimeZoneUseCase,
         NotificationReceiverTimeZone
     > _changeTimeZone;
 
+    /// <summary>
+    /// <inheritdoc cref="RegisterChatUseCaseHandler"/>
+    /// </summary>
     private readonly IUseCaseHandler<RegisterChatUseCase, RegisterChatUseCaseResponse> _addChat;
 
+    /// <summary>
+    /// <inheritdoc cref="RegisterThemeUseCaseHandler"/>
+    /// </summary>
     private readonly IUseCaseHandler<RegisterThemeUseCase, RegisterThemeResponse> _registerTheme;
 
+    /// <summary>
+    /// <inheritdoc cref="RemoveThemeUseCaseHandler"/>
+    /// </summary>
     private readonly IUseCaseHandler<RemoveThemeUseCase, ReceiverTheme> _removeTheme;
 
+    /// <summary>
+    /// <inheritdoc cref="RemoveChatUseCaseHandler"/>
+    /// </summary>
     private readonly IUseCaseHandler<RemoveChatUseCase, NotificationReceiver> _removeChat;
 
+    /// <summary>
+    /// <inheritdoc cref="RemoveChatSubjectUseCaseHandler"/>
+    /// </summary>
     private readonly IUseCaseHandler<RemoveChatSubjectUseCase, bool> _removeChatSubject;
 
+    /// <summary>
+    /// <inheritdoc cref="RemoveThemeUseCaseHandler"/>
+    /// </summary>
     private readonly IUseCaseHandler<RemoveThemeSubjectUseCase, bool> _removeThemeSubject;
 
     public NotificationUseCaseVisitor(

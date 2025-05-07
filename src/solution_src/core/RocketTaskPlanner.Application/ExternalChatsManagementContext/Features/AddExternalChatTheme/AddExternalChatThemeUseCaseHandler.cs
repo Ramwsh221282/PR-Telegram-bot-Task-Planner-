@@ -8,15 +8,22 @@ using RocketTaskPlanner.Domain.ExternalChatsManagementContext.ValueObjects;
 namespace RocketTaskPlanner.Application.ExternalChatsManagementContext.Features.AddExternalChatTheme;
 
 /// <summary>
-/// Метод добавление внешнего дочернего чата пользователю
+/// Обработчик для <inheritdoc cref="AddExternalChatThemeUseCase"/>
 /// </summary>
-public sealed class AddExternalChatUseCaseHandler
+public sealed class AddExternalChatThemeUseCaseHandler
     : IUseCaseHandler<AddExternalChatThemeUseCase, ExternalChat>
 {
+    /// <summary>
+    /// <inheritdoc cref="IExternalChatsReadableRepository"/>
+    /// </summary>
     private readonly IExternalChatsRepository _repository;
+
+    /// <summary>
+    /// <inheritdoc cref="IUnitOfWork"/>
+    /// </summary>
     private readonly IUnitOfWork _unitOfWork;
 
-    public AddExternalChatUseCaseHandler(
+    public AddExternalChatThemeUseCaseHandler(
         IExternalChatsRepository repository,
         IUnitOfWork unitOfWork
     )

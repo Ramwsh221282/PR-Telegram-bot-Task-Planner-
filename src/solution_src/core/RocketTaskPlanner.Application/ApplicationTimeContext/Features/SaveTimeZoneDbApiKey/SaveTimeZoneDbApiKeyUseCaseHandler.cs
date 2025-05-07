@@ -8,11 +8,11 @@ namespace RocketTaskPlanner.Application.ApplicationTimeContext.Features.SaveTime
 
 /// <summary>
 /// Создание провайдера временной зоны
-/// </summary>
 /// <param name="repository">Контракт взаимодействия с БД.</param>
 /// <param name="idFactory">Фабрика создания Id.</param>
 /// <param name="providerFactory">Фабрика создания провайдера временной зоны</param>
 /// <typeparam name="TProvider">Тип провайдера временной зоны</typeparam>
+/// </summary>
 public sealed class SaveTimeZoneDbApiKeyUseCaseHandler<TProvider>(
     IApplicationTimeRepository<TProvider> repository,
     IApplicationTimeProviderIdFactory idFactory,
@@ -20,8 +20,19 @@ public sealed class SaveTimeZoneDbApiKeyUseCaseHandler<TProvider>(
 ) : IUseCaseHandler<SaveTimeZoneDbApiKeyUseCase, TProvider>
     where TProvider : IApplicationTimeProvider
 {
+    /// <summary>
+    /// <inheritdoc cref="IApplicationTimeRepository{TProvider}"/>
+    /// </summary>
     private readonly IApplicationTimeRepository<TProvider> _repository = repository;
+
+    /// <summary>
+    /// <inheritdoc cref="IApplicationTimeProviderIdFactory"/>
+    /// </summary>
     private readonly IApplicationTimeProviderIdFactory _idFactory = idFactory;
+
+    /// <summary>
+    /// <inheritdoc cref="IApplicationTimeProviderFactory"/>
+    /// </summary>
     private readonly IApplicationTimeProviderFactory _providerFactory = providerFactory;
 
     public async Task<Result<TProvider>> Handle(

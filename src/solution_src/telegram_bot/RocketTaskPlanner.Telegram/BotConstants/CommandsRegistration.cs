@@ -4,7 +4,7 @@ using Telegram.Bot.Types;
 namespace RocketTaskPlanner.Telegram.BotConstants;
 
 /// <summary>
-/// Extension методы для работы с командами (меню команд)
+/// Метод для регистрации слэш команд в боте
 /// </summary>
 public static class CommandRegistration
 {
@@ -21,7 +21,7 @@ public static class CommandRegistration
             new("/remove_this_chat", "Удаление чата из бота. Используется не в чате с ботом."),
             new("/bot_chat_time", "Узнать временную зону чата. Используется не в чате с ботом."),
             new(
-                "/reconfigure_bot_chat_time",
+                "/change_time_zone",
                 "Изменить временную зону чата. Используется не в чате с ботом."
             ),
             new("/tc", "Создать задачу /tc <Текст задачи>. Используется не в чате с ботом."),

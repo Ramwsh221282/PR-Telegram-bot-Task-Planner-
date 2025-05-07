@@ -6,9 +6,15 @@ using RocketTaskPlanner.Infrastructure.Sqlite.Shared;
 
 namespace RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetPageCountForChatSubjects;
 
+/// <summary>
+/// Обработчик запроса <inheritdoc cref="GetPageCountForChatSubjectsQuery"/>
+/// </summary>
 public sealed class GetPageCountForChatSubjectsQueryHandler
     : IQueryHandler<GetPageCountForChatSubjectsQuery, int>
 {
+    /// <summary>
+    /// SQL для получения уведомлений из основного чата
+    /// </summary>
     private const string _generalChatSql = """
         SELECT
             COUNT(*)
@@ -20,6 +26,9 @@ public sealed class GetPageCountForChatSubjectsQueryHandler
             nr.receiver_id = @chatId AND gs.subject_periodic = @isPeriodic
         """;
 
+    /// <summary>
+    /// SQL для получения уведомлений из тем чата
+    /// </summary>
     private const string _themeChatSql = """
         SELECT
             COUNT(*)
@@ -31,6 +40,9 @@ public sealed class GetPageCountForChatSubjectsQueryHandler
             rt.receiver_id = @chatId AND rts.subject_periodic = @isPeriodic
         """;
 
+    /// <summary>
+    /// <inheritdoc cref="INotificationsReadableRepository"/>
+    /// </summary>
     private readonly INotificationsReadableRepository _repository;
 
     public GetPageCountForChatSubjectsQueryHandler(INotificationsReadableRepository repository) =>

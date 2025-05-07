@@ -10,12 +10,28 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoin
 public sealed class ThemeChatCache(long chatId, long themeId, long userId, string chatName)
     : ITelegramCache
 {
+    /// <summary>
+    /// Id основного чата
+    /// </summary>
     public long ChatId { get; } = chatId;
+
+    /// <summary>
+    /// Id темы чата
+    /// </summary>
     public long ThemeId { get; } = themeId;
 
+    /// <summary>
+    /// Id обладателя основного чата
+    /// </summary>
     public long UserId { get; } = userId;
 
+    /// <summary>
+    /// Название чата (заголовок)
+    /// </summary>
     public string ChatName { get; } = chatName;
 
+    /// <summary>
+    /// Заглушка очистки кеша
+    /// </summary>
     public bool ClearData() => true;
 }

@@ -11,10 +11,24 @@ using Telegram.Bot.Types;
 
 namespace RocketTaskPlanner.Telegram.BotEndpoints.UserTasksManageEndpoint.Handlers;
 
+/// <summary>
+/// Обработчик валидации при вызове команды /my_tasks
+/// </summary>
 public sealed class UserTaskManagementValidationHandler : ITelegramBotHandler
 {
+    /// <summary>
+    /// <inheritdoc cref="TelegramBotExecutionContext"/>
+    /// </summary>
     private readonly TelegramBotExecutionContext _context;
+
+    /// <summary>
+    /// <inheritdoc cref="IExternalChatsReadableRepository"/>
+    /// </summary>
     private readonly IExternalChatsReadableRepository _repository;
+
+    /// <summary>
+    /// <inheritdoc cref="IQueryHandler{TQuery,TQueryResponse}"/>
+    /// </summary>
     private readonly IQueryHandler<
         GetNotificationReceiversByIdentifiersQuery,
         GetNotificationReceiversByIdentifiersQueryResponse[]
@@ -34,8 +48,14 @@ public sealed class UserTaskManagementValidationHandler : ITelegramBotHandler
         _queryHandler = queryHandler;
     }
 
+    /// <summary>
+    /// <inheritdoc cref="ITelegramBotHandler.Command"/>
+    /// </summary>
     public string Command => HandlerNames.ValidationHandler;
 
+    /// <summary>
+    /// <inheritdoc cref="ITelegramBotHandler.Handle"/>
+    /// </summary>
     public async Task Handle(ITelegramBotClient client, Update update)
     {
         var user = update.GetUser();
@@ -58,6 +78,8 @@ public sealed class UserTaskManagementValidationHandler : ITelegramBotHandler
 
         const string nextHandlerName = HandlerNames.ChooseChatHandler;
         var handler = _context.GetRequiredHandler(nextHandlerName);
+
+        // назначение следующего обработчика - меню выбора чатов.
         await _context.AssignAndRun(client, update, handler, cache);
     }
 }
