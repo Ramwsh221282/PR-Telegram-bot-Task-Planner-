@@ -14,7 +14,7 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.LifeCheckEndpoint;
 [BotHandler]
 public sealed class LifeCheckBotEndpoint
 {
-    [SlashHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, ["/ping@"])]
+    [ReplyMenuHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, ["/ping@", "/ping"])]
     public static async Task LifeCheckHandler(ITelegramBotClient client, Update update)
     {
         long chatId = update.GetChatId();

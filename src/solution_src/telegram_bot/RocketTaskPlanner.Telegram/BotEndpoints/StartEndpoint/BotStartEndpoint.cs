@@ -62,7 +62,7 @@ public sealed class BotStartEndpoint
     /// </summary>
     /// <param name="client">Telegram bot клиент для общения с Telegram.</param>
     /// <param name="update">Последнее событие.</param>
-    [SlashHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, ["/start@"])]
+    [ReplyMenuHandler(CommandComparison.Equals, StringComparison.OrdinalIgnoreCase, ["/start@", "/start"])]
     public async Task OnStart(ITelegramBotClient client, Update update)
     {
         long chatId = update.GetChatId();
@@ -71,10 +71,7 @@ public sealed class BotStartEndpoint
         await client.RegisterBotCommands();
     }
 
-    [SlashHandler(
-        CommandComparison.Contains,
-        StringComparison.OrdinalIgnoreCase,
-        ["/external_chat_info@"]
+    [ReplyMenuHandler(CommandComparison.Equals, StringComparison.OrdinalIgnoreCase, ["/external_chat_info@", "/external_chat_info"]
     )]
     public async Task OnExternalChatInfo(ITelegramBotClient client, Update update)
     {
@@ -83,10 +80,7 @@ public sealed class BotStartEndpoint
         await SendInformation(client, chatId, themeId, _externalChatInfo);
     }
 
-    [SlashHandler(
-        CommandComparison.Contains,
-        StringComparison.OrdinalIgnoreCase,
-        ["/bot_chat_info@"]
+    [SlashHandler(CommandComparison.Equals, StringComparison.OrdinalIgnoreCase, ["/bot_chat_info@", "/bot_chat_info"]
     )]
     public async Task OnBotChatInfo(ITelegramBotClient client, Update update)
     {

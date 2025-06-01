@@ -100,11 +100,7 @@ public sealed class CreateTaskEndpoint
     /// <param name="client">Telegram Bot клиент для общения с Telegram</param>
     /// <param name="chatId">ID чата</param>
     /// <param name="themeId">ID темы</param>
-    private static async Task SendUserDoesntOwnChat(
-        ITelegramBotClient client,
-        long chatId,
-        Result<int> themeId
-    )
+    private static async Task SendUserDoesntOwnChat(ITelegramBotClient client, long chatId, Result<int> themeId)
     {
         const string replyMessage = "Команда доступна тому, кто добавлял чат.";
 

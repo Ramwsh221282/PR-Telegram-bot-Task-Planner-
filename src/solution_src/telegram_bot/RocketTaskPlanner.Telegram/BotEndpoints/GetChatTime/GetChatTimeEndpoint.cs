@@ -20,8 +20,7 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.GetChatTime;
 public sealed class GetChatTimeEndpoint(
     IQueryHandler<
         GetNotificationReceiverTimeInformationQuery,
-        GetNotificationReceiverTimeInformationQueryResponse
-    > handler
+        GetNotificationReceiverTimeInformationQueryResponse> handler
 )
 {
     /// <summary>
@@ -37,10 +36,7 @@ public sealed class GetChatTimeEndpoint(
     /// </summary>
     /// <param name="client">Telegram bot клиент для общения с telegram</param>
     /// <param name="update">Последнее событие (в данном случае вызов endpoint)</param>
-    [SlashHandler(
-        CommandComparison.Contains,
-        StringComparison.OrdinalIgnoreCase,
-        ["/bot_chat_time@"]
+    [ReplyMenuHandler(CommandComparison.Equals, StringComparison.OrdinalIgnoreCase, ["/bot_chat_time@", "/bot_chat_time"]
     )]
     public async Task GetChatTime(ITelegramBotClient client, Update update)
     {

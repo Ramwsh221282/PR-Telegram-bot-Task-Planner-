@@ -85,7 +85,7 @@ public sealed class UserTasksManageBotEndpoint
     /// </summary>
     /// <param name="client">Telegram bot клиент для общений с телеграм</param>
     /// <param name="update">Последнее событие</param>
-    [SlashHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, ["/my_tasks"])]
+    [ReplyMenuHandler(CommandComparison.Equals, StringComparison.OrdinalIgnoreCase, ["/my_tasks", "/my_tasks@"])]
     public async Task ManageTasksHandler(ITelegramBotClient client, Update update)
     {
         await _context.InvokeEntryPoint(client, update);
