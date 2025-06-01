@@ -41,6 +41,7 @@ public sealed class AddExternalChatUseCaseHandler
         ExternalChatName chatName = ExternalChatName.Create(useCase.ChatName).Value;
         ExternalChat chat = new(ownerId, chatId, chatName);
 
+        // сохранение данных чата пользователя в хранилище
         _repository.Writable.AddChat(chat, _unitOfWork, ct);
         return await Task.FromResult(chat);
     }

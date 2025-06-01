@@ -46,16 +46,22 @@ public sealed class UserChatRegistrationFacade
     {
         using (_unitOfWork)
         {
+            // добавление чата пользователя
             var addingChat = await AddUserExternalChat(ownerId, chatId, chatName);
             if (addingChat.IsFailure)
                 return addingChat;
 
+            // добавление чата для уведомлений
             var addingNotificationChat = await AddChatForNotifications(chatId, chatName, timeZone);
             if (addingNotificationChat.IsFailure)
                 return addingNotificationChat;
 
+            // выполнение команд
             await _unitOfWork.Process();
+
+            // попытка сохранить результаты выполнения команд
             var commit = _unitOfWork.TryCommit();
+
             if (commit.IsFailure)
                 return commit;
         }

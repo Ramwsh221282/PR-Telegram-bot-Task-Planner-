@@ -72,6 +72,18 @@ public sealed class ChangeTimeZoneEndpoint
             return;
 
         var chatId = update.GetChatId();
+
+        // если команда вызывается из темы чата - ошибка.
+        // команда допускается к вызову только в основном чате.
+        if (IsCalledFromThemeChat(update))
+        {
+            int themeId = update.GetThemeId().Value;
+            string errorMessage = "Ошибка. Команда поддерживается в основном чате.";
+
+            await client.SendMessage(chatId: chatId, text: errorMessage, messageThreadId: themeId);
+            return;
+        }
+
         var ownsChatTask = _chatsRepository.Readable.UserOwnsChat(user.Value.Id, chatId);
         var providerTask = _providerRepository.Get();
         await Task.WhenAll([ownsChatTask, providerTask]);
@@ -162,6 +174,17 @@ public sealed class ChangeTimeZoneEndpoint
         }
 
         return MenuGenerator.InlineKeyboard(2, buttons);
+    }
+
+    /// <summary>
+    /// Проверка на то, вызывается ли команда из темы чата.
+    /// </summary>
+    /// <param name="update">Последнее обновление</param>
+    /// <returns>True, если вызывается из темы, иначе false</returns>
+    private static bool IsCalledFromThemeChat(Update update)
+    {
+        Result<int> themeId = update.GetThemeId();
+        return themeId.IsSuccess;
     }
 
     /// <summary>

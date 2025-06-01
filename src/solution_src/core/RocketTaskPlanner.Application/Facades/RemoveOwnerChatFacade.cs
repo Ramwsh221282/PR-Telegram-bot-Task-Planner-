@@ -42,14 +42,17 @@ public sealed class RemoveOwnerChatFacade
     {
         using (_unitOfWork)
         {
+            // удаление чата
             var removingChat = await RemoveUserChat(userId, chatId);
             if (removingChat.IsFailure)
                 return removingChat;
 
+            // удаление чата для уведомлений
             var removingNotificationChat = await RemoveNotificationChat(chatId);
             if (removingNotificationChat.IsFailure)
                 return removingNotificationChat;
 
+            // если это последний чат пользователя - удаляется пользователь
             if (isLastChat)
             {
                 var removeUser = await RemoveUserIfHasNoChatsLeft(userId);
@@ -57,6 +60,7 @@ public sealed class RemoveOwnerChatFacade
                     return removeUser;
             }
 
+            // выполнения команд и сохранение изменений
             await _unitOfWork.Process();
             Result commit = _unitOfWork.TryCommit();
             if (commit.IsFailure)

@@ -59,18 +59,22 @@ public sealed class FirstUserChatRegistrationFacade
     {
         using (_unitOfWork)
         {
+            // регистрация пользователя
             Result user = await RegisterUser(userId, userName);
             if (user.IsFailure)
                 return user;
 
+            // добавление чата пользователя
             Result mainChat = await RegisterUserChat(userId, chatId, chatName);
             if (mainChat.IsFailure)
                 return mainChat;
 
+            // добавление чата для уведомлений
             Result notificationsChat = await RegisterNotificationChat(chatId, chatName, zoneName);
             if (notificationsChat.IsFailure)
                 return notificationsChat;
 
+            // выполнение команд и сохранение изменений
             await _unitOfWork.Process();
             Result saving = _unitOfWork.TryCommit();
             if (saving.IsFailure)

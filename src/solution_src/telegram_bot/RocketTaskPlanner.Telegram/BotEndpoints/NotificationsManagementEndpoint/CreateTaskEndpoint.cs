@@ -74,7 +74,7 @@ public sealed class CreateTaskEndpoint
     /// </summary>
     /// <param name="client">Telegram bot клиент для общения с telegram</param>
     /// <param name="update">Последнее событие</param>
-    [SlashHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, ["/tc@"])]
+    [ReplyMenuHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, ["/tc"])]
     public async Task CreateTask(ITelegramBotClient client, Update update)
     {
         var user = update.GetUser();

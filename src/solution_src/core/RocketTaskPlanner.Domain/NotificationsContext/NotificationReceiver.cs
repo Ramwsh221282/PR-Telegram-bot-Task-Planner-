@@ -34,11 +34,7 @@ public sealed class NotificationReceiver
     public IReadOnlyList<GeneralChatReceiverSubject> Subjects => _subjects;
     public IReadOnlyList<ReceiverTheme> Themes => _themes;
 
-    /// <summary>
-    /// Добавление темы в основной чат. Success если темы ещё нет в чате. Failure если тема есть в чате.
-    /// </summary>
-    /// <param name="id">Id темы</param>
-    /// <returns>Success если тема добавлена. Failure если не добавлена.</returns>
+    // Добавление темы в основной чат. Success если темы ещё нет в чате. Failure если тема есть в чате.
     public Result<ReceiverTheme> AddTheme(ReceiverThemeId id)
     {
         if (_themes.Any(t => t.Id == id))
@@ -51,14 +47,7 @@ public sealed class NotificationReceiver
         return theme;
     }
 
-    /// <summary>
-    /// Добавление уведомления в основной чат.
-    /// </summary>
-    /// <param name="id">Id сообщения</param>
-    /// <param name="time">Информация о времени(создания и уведомления)</param>
-    /// <param name="period">Информация о периодичности</param>
-    /// <param name="message">Текст сообщения</param>
-    /// <returns></returns>
+    // Добавление уведомления в основной чат.
     public GeneralChatReceiverSubject AddSubject(
         ReceiverSubjectId id,
         ReceiverSubjectTimeInfo time,
@@ -71,11 +60,7 @@ public sealed class NotificationReceiver
         return subject;
     }
 
-    /// <summary>
-    /// Удаление темы из основного чата
-    /// </summary>
-    /// <param name="themeId">Id темы</param>
-    /// <returns>Success если тема была найдена и удалена. Failure если не была найдена.</returns>
+    // Удаление темы из основного чата
     public Result<ReceiverTheme> RemoveTheme(ReceiverThemeId themeId)
     {
         ReceiverTheme? theme = _themes.FirstOrDefault(t => t.Id == themeId);

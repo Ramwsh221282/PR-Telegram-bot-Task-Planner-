@@ -39,19 +39,18 @@ public sealed class AddExternalChatOwnerUseCaseHandler
         long id = useCase.Id;
         string name = useCase.Name;
 
-        Result<ExternalChatOwner> existing = await _repository.Readable.GetExternalChatOwnerById(
-            id,
-            ct
-        );
+        // проверка на существование пользователя
+        var existing = await _repository.Readable.GetExternalChatOwnerById(id, ct);
         if (existing.IsSuccess)
             return Result.Failure<ExternalChatOwner>(
                 $"Обладатель внешнего чата с id: {useCase.Id} уже присутствует."
             );
 
-        ExternalChatMemberId memberId = ExternalChatMemberId.Dedicated(useCase.Id);
-        ExternalChatMemberName memberName = ExternalChatMemberName.Create(name).Value;
+        var memberId = ExternalChatMemberId.Dedicated(useCase.Id);
+        var memberName = ExternalChatMemberName.Create(name).Value;
         ExternalChatOwner owner = new(memberId, memberName);
 
+        // сохранение данных зарегистрированного пользователя в хранилище
         _repository.Writable.AddChatOwner(owner, _unitOfWork, ct);
         return owner;
     }
