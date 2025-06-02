@@ -84,7 +84,7 @@ public sealed class BotAddThisChatEndpoint
     /// </summary>
     /// <param name="client">Telegram bot клиент для общения с telegram</param>
     /// <param name="update">Последнее событие (в данном случае вызов команды /add_this_chat)</param>
-    [ReplyMenuHandler(CommandComparison.Equals,StringComparison.OrdinalIgnoreCase, commands: ["/add_this_chat@", "/add_this_chat"])]
+    [ReplyMenuHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, commands: ["/add_this_chat@", "/add_this_chat"])]
     public async Task OnAddThisChat(ITelegramBotClient client, Update update) =>
         await _context.InvokeEntryPoint(client, update);
 

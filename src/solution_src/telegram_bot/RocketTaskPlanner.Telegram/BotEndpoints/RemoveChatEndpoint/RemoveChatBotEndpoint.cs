@@ -48,7 +48,7 @@ public sealed class RemoveChatBotEndpoint
     /// </summary>
     /// <param name="client">Telegram bot клиент для общения с Telegram</param>
     /// <param name="update">Последнее событие</param>
-    [ReplyMenuHandler(CommandComparison.Equals, StringComparison.OrdinalIgnoreCase, ["/remove_this_chat@", "/remove_this_chat"])]
+    [ReplyMenuHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, ["/remove_this_chat@", "/remove_this_chat"])]
     public async Task Handle(ITelegramBotClient client, Update update)
     {
         Result<TelegramBotUser> user = update.GetUser();

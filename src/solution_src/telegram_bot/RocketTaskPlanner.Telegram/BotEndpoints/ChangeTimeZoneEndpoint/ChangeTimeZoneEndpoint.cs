@@ -1,3 +1,4 @@
+using System.Reflection;
 using CSharpFunctionalExtensions;
 using PRTelegramBot.Attributes;
 using PRTelegramBot.Extensions;
@@ -17,6 +18,7 @@ using RocketTaskPlanner.Telegram.BotConstants;
 using RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoints;
 using RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoints.Handlers.AddGeneralChat;
 using RocketTaskPlanner.Telegram.BotExtensions;
+using RocketTaskPlanner.Telegram.Configuration;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -60,17 +62,15 @@ public sealed class ChangeTimeZoneEndpoint
     /// </summary>
     /// <param name="client">Telegram Bot клиент для взаимодействия с Telegram.</param>
     /// <param name="update">Последнее событие.</param>
-    [SlashHandler(
-        CommandComparison.Contains,
-        StringComparison.OrdinalIgnoreCase,
-        ["/change_time_zone@"]
+    [ReplyMenuHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, 
+        ["/change_time_zone", "/change_time_zone@"]
     )]
     public async Task ChangeTimeZoneHandler(ITelegramBotClient client, Update update)
     {
         var user = update.GetUser();
         if (user.IsFailure)
             return;
-
+        
         var chatId = update.GetChatId();
 
         // если команда вызывается из темы чата - ошибка.

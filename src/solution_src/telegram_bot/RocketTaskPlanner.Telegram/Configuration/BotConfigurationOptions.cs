@@ -21,6 +21,7 @@ public static class BotOptionsResolver
     {
         IEnvReader reader = new SystemEnvReader();
         string token = reader.GetBotToken();
+        string name = reader.GetBotName();
         return new BotConfigurationOptions(token);
     }
 
@@ -33,12 +34,19 @@ public static class BotOptionsResolver
     {
         IEnvReader reader = new FileEnvReader(filePath);
         string token = reader.GetBotToken();
+        string name = reader.GetBotName();
         return new BotConfigurationOptions(token);
     }
 
     private static string GetBotToken(this IEnvReader reader)
     {
         string token = reader.GetEnvironmentVariable("BOT_TOKEN");
+        return token;
+    }
+
+    private static string GetBotName(this IEnvReader reader)
+    {
+        string token = reader.GetEnvironmentVariable("BOT_NAME");
         return token;
     }
 }
