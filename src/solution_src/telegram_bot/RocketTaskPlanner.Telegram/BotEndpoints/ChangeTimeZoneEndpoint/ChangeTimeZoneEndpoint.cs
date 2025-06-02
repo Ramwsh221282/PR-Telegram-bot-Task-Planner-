@@ -1,4 +1,3 @@
-using System.Reflection;
 using CSharpFunctionalExtensions;
 using PRTelegramBot.Attributes;
 using PRTelegramBot.Extensions;
@@ -18,7 +17,6 @@ using RocketTaskPlanner.Telegram.BotConstants;
 using RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoints;
 using RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoints.Handlers.AddGeneralChat;
 using RocketTaskPlanner.Telegram.BotExtensions;
-using RocketTaskPlanner.Telegram.Configuration;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -31,6 +29,10 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.ChangeTimeZoneEndpoint;
 [BotHandler]
 public sealed class ChangeTimeZoneEndpoint
 {
+    private const string Context = nameof(ChangeTimeZoneEndpoint);
+    
+    private readonly Serilog.ILogger _logger;
+    
     /// <summary>
     /// <inheritdoc cref="IApplicationTimeRepository{TProvider}"/>
     /// </summary>
@@ -39,22 +41,21 @@ public sealed class ChangeTimeZoneEndpoint
     /// <summary>
     /// <inheritdoc cref="IExternalChatsReadableRepository"/>
     /// </summary>
-    private readonly IExternalChatsRepository _chatsRepository;
+    private readonly IExternalChatsReadableRepository _chatsRepository;
 
-    /// <summary>
-    /// <inheritdoc cref="INotificationUseCaseVisitor"/>
-    /// </summary>
-    private readonly INotificationUseCaseVisitor _useCases;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     public ChangeTimeZoneEndpoint(
+        Serilog.ILogger logger,
         IApplicationTimeRepository<TimeZoneDbProvider> providerRepository,
-        IExternalChatsRepository chatsRepository,
-        INotificationUseCaseVisitor useCases
+        IExternalChatsReadableRepository chatsRepository,
+        IServiceScopeFactory scopeFactory
     )
     {
+        _logger = logger;
         _providerRepository = providerRepository;
         _chatsRepository = chatsRepository;
-        _useCases = useCases;
+        _scopeFactory = scopeFactory;
     }
 
     /// <summary>
@@ -62,15 +63,19 @@ public sealed class ChangeTimeZoneEndpoint
     /// </summary>
     /// <param name="client">Telegram Bot клиент для взаимодействия с Telegram.</param>
     /// <param name="update">Последнее событие.</param>
-    [ReplyMenuHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, 
-        ["/change_time_zone", "/change_time_zone@"]
-    )]
+    [ReplyMenuHandler(CommandComparison.Contains, "/change_time_zone", "/change_time_zone@")]
     public async Task ChangeTimeZoneHandler(ITelegramBotClient client, Update update)
     {
+        _logger.Information("{Context} invoked.", Context);
+        _logger.Information("{Context} receiving user info from update", Context);
         var user = update.GetUser();
         if (user.IsFailure)
+        {
+            _logger.Error("{Context} receiving user info from update failed.", user.Error);
             return;
+        }
         
+        _logger.Information("{Context} receiving chat id information from update", Context);
         var chatId = update.GetChatId();
 
         // если команда вызывается из темы чата - ошибка.
@@ -78,13 +83,14 @@ public sealed class ChangeTimeZoneEndpoint
         if (IsCalledFromThemeChat(update))
         {
             int themeId = update.GetThemeId().Value;
-            string errorMessage = "Ошибка. Команда поддерживается в основном чате.";
-
+            const string errorMessage = "Ошибка. Команда поддерживается в основном чате.";
             await client.SendMessage(chatId: chatId, text: errorMessage, messageThreadId: themeId);
+            _logger.Error("{Context} command should be invoked in general chat", Context);
             return;
         }
-
-        var ownsChatTask = _chatsRepository.Readable.UserOwnsChat(user.Value.Id, chatId);
+        
+        _logger.Information("{Context} checking if user is owning chat.", Context);
+        var ownsChatTask = _chatsRepository.UserOwnsChat(user.Value.Id, chatId);
         var providerTask = _providerRepository.Get();
         await Task.WhenAll([ownsChatTask, providerTask]);
 
@@ -96,6 +102,7 @@ public sealed class ChangeTimeZoneEndpoint
         {
             const string message = "Пользователь не управляет чатом, либо чат не подписан";
             await client.SendMessage(chatId: chatId, text: message);
+            _logger.Error("{Context} user does not own chat", Context);
             return;
         }
 
@@ -103,6 +110,7 @@ public sealed class ChangeTimeZoneEndpoint
         if (provider.IsFailure)
         {
             await client.SendMessage(chatId: chatId, text: "Не удается получить временные зоны");
+            _logger.Error("{Context} unable to get time zone db provider.", Context);
             return;
         }
 
@@ -111,10 +119,12 @@ public sealed class ChangeTimeZoneEndpoint
         if (timeZones.IsFailure)
         {
             await client.SendMessage(chatId: chatId, text: "Не удается получить временные зоны");
+            _logger.Error("{Context} unable to get time zone db provider.", Context);
             return;
         }
 
         // создание и отправка меню выбора временных зон.
+        _logger.Information("{Context} building menu for time zone change", Context);
         var menu = BuildTimeZoneMenu(timeZones.Value, chatId);
         await SendSelectTimeZoneMessage(client, update, menu);
     }
@@ -213,11 +223,14 @@ public sealed class ChangeTimeZoneEndpoint
     [InlineCallbackHandler<AddGeneralChatCitiesEnum>(AddGeneralChatCitiesEnum.Cancellation)]
     public async Task OnCancelCitySelection(ITelegramBotClient botClient, Update update)
     {
+        update.ClearStepUserHandler();
+        update.ClearCacheData();
         await PRTelegramBot.Helpers.Message.Send(
             botClient,
             update,
             ReplyMessageConstants.OperationCanceled
         );
+        _logger.Information("{Context} cancelled", Context);
     }
 
     // Обработчик, который вызывается когда выбирается временная зона.
@@ -231,15 +244,20 @@ public sealed class ChangeTimeZoneEndpoint
         string timeZone = information.Time.Name.Name;
         long chatId = information.ChatId;
 
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var visitor = scope.ServiceProvider.GetRequiredService<INotificationUseCaseVisitor>();
         var useCase = new ChangeTimeZoneUseCase(chatId, timeZone);
-        Result changing = await _useCases.Visit(useCase);
+        Result changing = await visitor.Visit(useCase);
         if (changing.IsFailure)
         {
             await changing.SendError(client, update);
             return;
         }
-
+        
+        _logger.Information("{Context} changed time zone", Context);
         await client.SendMessage(chatId: chatId, text: $"Новая временная зона чата: {timeZone}");
+        update.ClearStepUserHandler();
+        update.ClearCacheData();
     }
 
     // Далее обработчики нажатия на кнопку для каждой временной зоны.

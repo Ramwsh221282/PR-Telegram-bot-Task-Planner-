@@ -21,7 +21,7 @@ public sealed class DefaultTestsFixture : IAsyncDisposable, IDisposable
     {
         if (_isDisposed)
             return;
-        TestsDatabaseDrop.DropDatabases().Wait();
+        _scope.DropDatabases().Wait();
         _scope.Dispose();
         _isDisposed = true;
     }
@@ -30,7 +30,7 @@ public sealed class DefaultTestsFixture : IAsyncDisposable, IDisposable
     {
         if (_isDisposed)
             return;
-        await TestsDatabaseDrop.DropDatabases();
+        await _scope.DropDatabases();
         _scope.Dispose();
         _isDisposed = true;
     }

@@ -1,8 +1,40 @@
-﻿using PRTelegramBot.Interfaces;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetNotificationReceiversByIdArray;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetPagedChatSubjects;
+﻿using System.Diagnostics;
+using PRTelegramBot.Interfaces;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Queries.GetNotificationReceiversByIdArray;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Queries.GetPagedChatSubjects;
 
 namespace RocketTaskPlanner.Telegram.BotEndpoints.UserTasksManageEndpoint.Cache;
+
+public abstract record UserTaskManagementChat
+{
+    public abstract string MetadataInformation();
+
+    public abstract UserTaskManagementChat? Specify(string chatName);
+}
+
+public sealed record UserTaskManagementGeneralChat(string Name, long Id) : UserTaskManagementChat
+{
+    private string? _metadata;
+    public override string MetadataInformation() => _metadata ??= $"Чат: {Name} ID: {Id}";
+    public override UserTaskManagementChat? Specify(string chatName)
+    {
+        return MetadataInformation() != chatName ? null : this;
+    }
+}
+
+public sealed record UserTaskManagementThemeChat(UserTaskManagementGeneralChat GeneralChat, long Id) : UserTaskManagementChat
+{
+    private string? _metadata;
+    public override string MetadataInformation()
+    {
+        return _metadata ??= $"Тема чата: {GeneralChat.Name} ({GeneralChat.Id}). ID: {Id}";
+    }
+
+    public override UserTaskManagementChat? Specify(string chatName)
+    {
+        return MetadataInformation() != chatName ? null : this;
+    }
+}
 
 /// <summary>
 /// Кеш для работы в контексте обработки команды /my_tasks
@@ -12,7 +44,7 @@ public sealed record UserTaskManagementCache : ITelegramCache
     /// <summary>
     /// <inheritdoc cref="GetNotificationReceiversByIdentifiersQueryResponse"/>
     /// </summary>
-    private GetNotificationReceiversByIdentifiersQueryResponse? _selectedChat;
+    private UserTaskManagementChat? _selectedChat;
 
     /// <summary>
     /// <inheritdoc cref="SubjectsResponse"/>
@@ -22,7 +54,7 @@ public sealed record UserTaskManagementCache : ITelegramCache
     /// <summary>
     /// <inheritdoc cref="GetNotificationReceiversByIdentifiersQueryResponse"/>
     /// </summary>
-    public GetNotificationReceiversByIdentifiersQueryResponse[] UserChats { get; }
+    public UserTaskManagementChat[] UserChats { get; }
 
     /// <summary>
     /// <inheritdoc cref="SubjectsResponse"/>
@@ -50,7 +82,7 @@ public sealed record UserTaskManagementCache : ITelegramCache
     public int PagesCount { get; init; } = -1;
 
     public UserTaskManagementCache(
-        GetNotificationReceiversByIdentifiersQueryResponse[] userChats
+        UserTaskManagementChat[] userChats
     ) => UserChats = userChats;
 
     /// <summary>
@@ -64,9 +96,9 @@ public sealed record UserTaskManagementCache : ITelegramCache
     /// <param name="chatName">Название чата</param>
     /// <returns>Dto с информацией о чате.</returns>
     /// <exception cref="ArgumentNullException">Исключение, если не найден чат. Если чаты не проинициализированы.</exception>
-    public GetNotificationReceiversByIdentifiersQueryResponse GetChat(string chatName)
+    public UserTaskManagementChat GetChat(string chatName)
     {
-        var requiredChat = UserChats.FirstOrDefault(c => c.ChatName == chatName);
+        var requiredChat = UserChats.FirstOrDefault(c => c.Specify(chatName) != null);
         return requiredChat
             ?? throw new ArgumentNullException(nameof(requiredChat), "required chat was not found");
     }
@@ -78,7 +110,7 @@ public sealed record UserTaskManagementCache : ITelegramCache
     /// <param name="chat">Чат</param>
     /// <returns>Обновленный кеш</returns>
     public UserTaskManagementCache SetSelectedChat(
-        GetNotificationReceiversByIdentifiersQueryResponse chat
+        UserTaskManagementChat chat
     )
     {
         _selectedChat = chat;
@@ -150,5 +182,29 @@ public sealed record UserTaskManagementCache : ITelegramCache
     /// <returns>ID чата</returns>
     /// <exception cref="ArgumentNullException">Исключение если выбранный чат не проиницализирован</exception>
     public long GetSelectedChatId() =>
-        _selectedChat?.ChatId ?? throw new ArgumentNullException(nameof(_selectedChat));
+        _selectedChat switch
+        {
+            null => throw new ArgumentNullException(nameof(_selectedChat)),
+            UserTaskManagementGeneralChat g => g.Id,
+            UserTaskManagementThemeChat t => t.Id,
+            _ => throw new UnreachableException(),
+        };
+
+    public bool IsSelectedChatTheme() =>
+        _selectedChat switch
+        {
+            null => throw new ArgumentNullException(nameof(_selectedChat)),
+            UserTaskManagementGeneralChat => false,
+            UserTaskManagementThemeChat => true,
+            _ => throw new UnreachableException(),
+        };
+
+    public long ThemeParentId() =>
+        _selectedChat switch
+        {
+            null => throw new ArgumentNullException(nameof(_selectedChat)),
+            UserTaskManagementGeneralChat => throw new ArgumentException(),
+            UserTaskManagementThemeChat t => t.GeneralChat.Id,
+            _ => throw new UnreachableException(),
+        };
 }

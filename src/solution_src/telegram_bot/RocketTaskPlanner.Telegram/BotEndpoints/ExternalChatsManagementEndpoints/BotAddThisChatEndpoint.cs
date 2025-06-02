@@ -1,4 +1,5 @@
 using PRTelegramBot.Attributes;
+using PRTelegramBot.Extensions;
 using PRTelegramBot.Models.Enums;
 using RocketTaskPlanner.Application.ApplicationTimeContext.Repository;
 using RocketTaskPlanner.Application.ExternalChatsManagementContext.Repository;
@@ -20,6 +21,9 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoin
 [BotHandler]
 public sealed class BotAddThisChatEndpoint
 {
+    private readonly Serilog.ILogger _logger;
+    private const string Context = nameof(BotAddThisChatEndpoint);
+    
     /// <summary>
     /// <inheritdoc cref="TelegramBotExecutionContext"/>
     /// </summary>
@@ -48,12 +52,11 @@ public sealed class BotAddThisChatEndpoint
     /// </summary>
     public BotAddThisChatEndpoint(
         IApplicationTimeRepository<TimeZoneDbProvider> timeProviders,
-        FirstUserChatRegistrationFacade firstRegistrationFacade,
-        UserChatRegistrationFacade userChatRegistrationFacade,
-        UserThemeRegistrationFacade userThemeRegistrationFacade,
-        IExternalChatsReadableRepository chats
-    )
+        IServiceScopeFactory scopeFactory,
+        IExternalChatsReadableRepository chats,
+        Serilog.ILogger logger)
     {
+        _logger = logger;
         TelegramBotExecutionContext context = new();
 
         // обработчик для определния, какой чат добавлять (основной или темы)
@@ -64,7 +67,7 @@ public sealed class BotAddThisChatEndpoint
         var generalChatHandler = new ReplyTimeZoneSelectMenu(context);
 
         // обработчик для добавления темы чата.
-        var themeChatHandler = new AddThemeChatHandler(context, userThemeRegistrationFacade);
+        var themeChatHandler = new AddThemeChatHandler(context, scopeFactory);
 
         _context = context
             .SetEntryPointHandler(dispatcher)
@@ -72,11 +75,7 @@ public sealed class BotAddThisChatEndpoint
             .RegisterHandler(themeChatHandler);
 
         // обработчик для добавления основного чата после выбора временной зоны
-        _handler = new AddGeneralChatAfterCitySelection(
-            userChatRegistrationFacade,
-            firstRegistrationFacade,
-            chats
-        );
+        _handler = new AddGeneralChatAfterCitySelection(scopeFactory, chats);
     }
 
     /// <summary>
@@ -84,9 +83,12 @@ public sealed class BotAddThisChatEndpoint
     /// </summary>
     /// <param name="client">Telegram bot клиент для общения с telegram</param>
     /// <param name="update">Последнее событие (в данном случае вызов команды /add_this_chat)</param>
-    [ReplyMenuHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, commands: ["/add_this_chat@", "/add_this_chat"])]
-    public async Task OnAddThisChat(ITelegramBotClient client, Update update) =>
+    [ReplyMenuHandler(CommandComparison.Contains, "/add_this_chat@", "/add_this_chat")]
+    public async Task OnAddThisChat(ITelegramBotClient client, Update update)
+    {
+        _logger.Information("{Context} invoked", Context);
         await _context.InvokeEntryPoint(client, update);
+    }
 
     /// <summary>
     /// Обработчик нажатия отмены при выборе временной зоны
@@ -96,6 +98,9 @@ public sealed class BotAddThisChatEndpoint
     [InlineCallbackHandler<AddGeneralChatCitiesEnum>(AddGeneralChatCitiesEnum.Cancellation)]
     public async Task OnCancelCitySelection(ITelegramBotClient botClient, Update update)
     {
+        _logger.Information("{Context} cancelled", Context);
+        update.ClearStepUserHandler();
+        update.ClearCacheData();
         await PRTelegramBot.Helpers.Message.Send(
             botClient,
             update,

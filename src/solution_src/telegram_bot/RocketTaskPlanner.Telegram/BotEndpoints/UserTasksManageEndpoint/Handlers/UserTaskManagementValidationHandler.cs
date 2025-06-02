@@ -1,7 +1,9 @@
 ﻿using PRTelegramBot.Extensions;
 using RocketTaskPlanner.Application.ExternalChatsManagementContext.Repository;
 using RocketTaskPlanner.Infrastructure.Abstractions;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetNotificationReceiversByIdArray;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Entities;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Queries.GetNotificationReceiversByIdArray;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Queries.GetReceiverThemesByParentId;
 using RocketTaskPlanner.Telegram.BotAbstractions;
 using RocketTaskPlanner.Telegram.BotEndpoints.UserTasksManageEndpoint.Cache;
 using RocketTaskPlanner.Telegram.BotEndpoints.UserTasksManageEndpoint.Constants;
@@ -34,18 +36,22 @@ public sealed class UserTaskManagementValidationHandler : ITelegramBotHandler
         GetNotificationReceiversByIdentifiersQueryResponse[]
     > _queryHandler;
 
+    private readonly IQueryHandler<GetNotificationReceiverThemesByParentId, ReceiverThemeEntity[]> _getThemes;
+
     public UserTaskManagementValidationHandler(
         TelegramBotExecutionContext context,
         IExternalChatsReadableRepository repository,
         IQueryHandler<
             GetNotificationReceiversByIdentifiersQuery,
             GetNotificationReceiversByIdentifiersQueryResponse[]
-        > queryHandler
+        > queryHandler,
+        IQueryHandler<GetNotificationReceiverThemesByParentId, ReceiverThemeEntity[]> getThemes
     )
     {
         _context = context;
         _repository = repository;
         _queryHandler = queryHandler;
+        _getThemes = getThemes;
     }
 
     /// <summary>
@@ -72,9 +78,21 @@ public sealed class UserTaskManagementValidationHandler : ITelegramBotHandler
 
         var parentChats = owner.Value.GetGeneralChats();
         long[] parentChatIdentifiers = [.. parentChats.Select(p => p.Id.Value)];
+        
         var query = new GetNotificationReceiversByIdentifiersQuery(parentChatIdentifiers);
         var response = await _queryHandler.Handle(query);
-        var cache = new UserTaskManagementCache(response);
+        List<UserTaskManagementChat> chats = [];
+        foreach (var parent in response)
+        {
+            var generalChat = new UserTaskManagementGeneralChat(parent.ChatName, parent.ChatId);
+            chats.Add(generalChat);
+            var themesQuery = new GetNotificationReceiverThemesByParentId(parent.ChatId);
+            var themes = await _getThemes.Handle(themesQuery);
+            foreach (var theme in themes)
+                chats.Add(new UserTaskManagementThemeChat(generalChat, theme.ThemeId));
+        }
+        
+        var cache = new UserTaskManagementCache(chats.ToArray());
 
         const string nextHandlerName = HandlerNames.ChooseChatHandler;
         var handler = _context.GetRequiredHandler(nextHandlerName);

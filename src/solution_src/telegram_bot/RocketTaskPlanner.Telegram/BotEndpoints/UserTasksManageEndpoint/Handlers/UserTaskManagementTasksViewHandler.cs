@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 using PRTelegramBot.Models;
 using RocketTaskPlanner.Infrastructure.Abstractions;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetPageCountForChatSubjects;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetPagedChatSubjects;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Queries.GetPageCountForChatSubjects;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Queries.GetPagedChatSubjects;
 using RocketTaskPlanner.Telegram.BotAbstractions;
 using RocketTaskPlanner.Telegram.BotEndpoints.UserTasksManageEndpoint.Cache;
 using RocketTaskPlanner.Telegram.BotEndpoints.UserTasksManageEndpoint.Constants;
@@ -154,12 +154,14 @@ public sealed partial class UserTaskManagementTasksViewHandler : ITelegramBotHan
     /// <returns>Обновленный кеш</returns>
     private async Task<UserTaskManagementCache> GetChatSubjects(UserTaskManagementCache cache)
     {
+        bool isTheme = cache.IsSelectedChatTheme();
+        long? parentId = isTheme ? cache.ThemeParentId() : null;
         long chatId = cache.GetSelectedChatId();
         int page = cache.CurrentPage;
         int pageSize = cache.PageSize;
         bool isPeriodic = cache.IsPeriodicView;
 
-        GetPagedChatSubjectsQuery query = new(chatId, page, pageSize, isPeriodic);
+        GetPagedChatSubjectsQuery query = new(chatId, page, pageSize, isPeriodic, isTheme, parentId);
         GetPagedChatSubjectsQueryResponse response = await _itemsHandler.Handle(query);
         var cacheWithItems = cache with { CurrentTasks = response.Subjects };
         return cacheWithItems;

@@ -52,8 +52,8 @@ public sealed class TestUserFirstRegistration : IClassFixture<DefaultTestsFixtur
         Assert.Null(parentChat.Value.ParentId);
 
         // проверка на существование зарегистрированного чата для уведомлений
-        var notifications = _fixture.GetService<INotificationRepository>();
-        Result<NotificationReceiver> receiver = await notifications.Readable.GetById(chatId);
+        var notifications = _fixture.GetService<INotificationsReadableRepository>();
+        Result<NotificationReceiver> receiver = await notifications.GetById(chatId);
         Assert.True(receiver.IsSuccess);
 
         Assert.Equal(chatId, receiver.Value.Id.Id);
@@ -89,7 +89,7 @@ public sealed class TestUserFirstRegistration : IClassFixture<DefaultTestsFixtur
         Assert.Null(parentChat.Value.ParentId);
 
         // проверка на существование зарегистрированного чата для уведомлений
-        receiver = await notifications.Readable.GetById(otherChatId);
+        receiver = await notifications.GetById(otherChatId);
         Assert.True(receiver.IsSuccess);
 
         Assert.Equal(otherChatId, receiver.Value.Id.Id);

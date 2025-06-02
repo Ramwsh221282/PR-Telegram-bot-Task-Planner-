@@ -1,4 +1,4 @@
-﻿using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Cache;
+﻿using RocketTaskPlanner.Infrastructure.Database.ApplicationTimeContext.Cache;
 using RocketTaskPlanner.Infrastructure.TimeZoneDb;
 
 namespace RocketTaskPlanner.Telegram.ApplicationTimeZonesService;
@@ -36,16 +36,23 @@ public sealed class ApplicationTimeZoneMonitoringService(
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _logger.Information("{Context} checking Time Zone Db Provider cache.", CONTEXT);
+            try
+            {
+                _logger.Information("{Context} checking Time Zone Db Provider cache.", CONTEXT);
 
-            TimeZoneDbProvider? providerInstance = _instance.Instance;
+                TimeZoneDbProvider? providerInstance = _instance.Instance;
 
-            if (providerInstance == null)
-                _logger.Information("{Context} cached instance has not been set yet.", CONTEXT);
-            else
-                _logger.Information("{Context} cached instance is initialized.", CONTEXT);
+                if (providerInstance == null)
+                    _logger.Information("{Context} cached instance has not been set yet.", CONTEXT);
+                else
+                    _logger.Information("{Context} cached instance is initialized.", CONTEXT);
 
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
+            }
+            catch(Exception ex)
+            {
+                _logger.Fatal("{Context} exception {Exception}", CONTEXT, ex.Message);
+            }
         }
 
         _logger.Information("{Context} shut down called", CONTEXT);

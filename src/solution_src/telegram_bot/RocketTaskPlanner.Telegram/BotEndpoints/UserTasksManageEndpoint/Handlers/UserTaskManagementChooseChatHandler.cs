@@ -44,7 +44,7 @@ public sealed class UserTaskManagementChooseChatHandler : ITelegramBotHandler
         List<KeyboardButton> menuList = [];
         foreach (var chat in chats)
         {
-            var buttonContent = $"{chat.ChatName}";
+            var buttonContent = $"{chat.MetadataInformation()}";
             var button = new KeyboardButton(buttonContent);
             menuList.Add(button);
         }

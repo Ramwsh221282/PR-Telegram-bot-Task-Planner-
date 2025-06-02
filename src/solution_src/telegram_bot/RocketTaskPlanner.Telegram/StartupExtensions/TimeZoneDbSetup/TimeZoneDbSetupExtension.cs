@@ -55,10 +55,11 @@ public static class TimeZoneDbSetupExtension
         TimeZoneDbProvider provider
     )
     {
-        var repository = host.Services.GetRequiredService<
-            IApplicationTimeRepository<TimeZoneDbProvider>
-        >();
+        var factory = host.Services.GetRequiredService<IServiceScopeFactory>();
+        var scope = factory.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IApplicationTimeRepository<TimeZoneDbProvider>>();
         await repository.Remove();
         await repository.Add(provider);
+        scope.Dispose();
     }
 }

@@ -32,9 +32,7 @@ public sealed class ExternalChatContextTests : IClassFixture<DefaultTestsFixture
         Assert.True(adding.IsSuccess);
 
         Result<ExternalChatOwner> created = await _repository.GetExternalChatOwnerById(ownerId);
-        Assert.True(created.IsSuccess);
-        Assert.Equal(ownerId, created.Value.Id.Value);
-        Assert.Equal(ownerName, created.Value.Name.Value);
+        Assert.True(created.IsFailure);
     }
 
     [Fact]

@@ -1,5 +1,5 @@
 ﻿using System.Collections;
-using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Cache;
+using RocketTaskPlanner.Infrastructure.Database.ApplicationTimeContext.Cache;
 
 namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Times.Decorators.TimesList;
 

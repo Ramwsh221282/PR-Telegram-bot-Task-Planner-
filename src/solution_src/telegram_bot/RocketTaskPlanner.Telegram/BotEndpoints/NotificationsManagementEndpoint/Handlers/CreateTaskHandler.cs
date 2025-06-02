@@ -4,7 +4,7 @@ using RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForC
 using RocketTaskPlanner.Application.NotificationsContext.Features.CreateTaskForChatTheme;
 using RocketTaskPlanner.Application.NotificationsContext.Visitor;
 using RocketTaskPlanner.Infrastructure.Abstractions;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetNotificationReceiverTimeInformation;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Queries.GetNotificationReceiverTimeInformation;
 using RocketTaskPlanner.Telegram.BotAbstractions;
 using RocketTaskPlanner.Telegram.BotExtensions;
 using RocketTaskPlanner.TimeRecognitionModule.TimeCalculation;
@@ -33,7 +33,7 @@ public sealed class CreateTaskHandler : ITelegramBotHandler
     /// <summary>
     /// <inheritdoc cref="INotificationUseCaseVisitor"/>
     /// </summary>
-    private readonly INotificationUseCaseVisitor _notificationUseCases;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     /// <summary>
     /// <inheritdoc cref="GetNotificationReceiverTimeInformationQueryHandler"/>
@@ -56,9 +56,6 @@ public sealed class CreateTaskHandler : ITelegramBotHandler
     /// <param name="timeCalculation">
     ///     <inheritdoc cref="TimeCalculationService"/>
     /// </param>
-    /// <param name="notificationUseCases">
-    ///     <inheritdoc cref="NotificationUseCaseVisitor"/>
-    /// </param>
     /// <param name="getCurrentTimeQuery">
     ///     <inheritdoc cref="GetCurrentTime"/>
     /// </param>
@@ -66,7 +63,7 @@ public sealed class CreateTaskHandler : ITelegramBotHandler
     public CreateTaskHandler(
         TimeRecognitionFacade facade,
         TimeCalculationService timeCalculation,
-        INotificationUseCaseVisitor notificationUseCases,
+        IServiceScopeFactory serviceScopeFactory,
         IQueryHandler<
             GetNotificationReceiverTimeInformationQuery,
             GetNotificationReceiverTimeInformationQueryResponse
@@ -75,7 +72,7 @@ public sealed class CreateTaskHandler : ITelegramBotHandler
     {
         _recognitionFacade = facade;
         _calculationService = timeCalculation;
-        _notificationUseCases = notificationUseCases;
+        _scopeFactory = serviceScopeFactory;
         _getCurrentTimeQuery = getCurrentTimeQuery;
     }
 
@@ -244,7 +241,9 @@ public sealed class CreateTaskHandler : ITelegramBotHandler
             message,
             isPeriodic
         );
-        Result result = await _notificationUseCases.Visit(useCase);
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var visitor = scope.ServiceProvider.GetRequiredService<INotificationUseCaseVisitor>();
+        Result result = await visitor.Visit(useCase);
         if (result.IsFailure)
             await client.SendMessage(chatId, text: result.Error);
         else
@@ -285,7 +284,9 @@ public sealed class CreateTaskHandler : ITelegramBotHandler
             message,
             isPeriodic
         );
-        Result result = await _notificationUseCases.Visit(useCase);
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var visitor = scope.ServiceProvider.GetRequiredService<INotificationUseCaseVisitor>();
+        Result result = await visitor.Visit(useCase);
         if (result.IsFailure)
             await client.SendMessage(
                 chatId: chatId,

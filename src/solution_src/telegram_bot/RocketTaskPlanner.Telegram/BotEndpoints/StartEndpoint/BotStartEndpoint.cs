@@ -4,7 +4,6 @@ using PRTelegramBot.Extensions;
 using PRTelegramBot.Models.Enums;
 using RocketTaskPlanner.Telegram.BotConstants;
 using RocketTaskPlanner.Telegram.BotExtensions;
-using SQLitePCL;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -62,7 +61,7 @@ public sealed class BotStartEndpoint
     /// </summary>
     /// <param name="client">Telegram bot клиент для общения с Telegram.</param>
     /// <param name="update">Последнее событие.</param>
-    [ReplyMenuHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, ["/start@", "/start"])]
+    [ReplyMenuHandler(CommandComparison.Contains, "/start@", "/start")]
     public async Task OnStart(ITelegramBotClient client, Update update)
     {
         long chatId = update.GetChatId();
@@ -71,8 +70,7 @@ public sealed class BotStartEndpoint
         await client.RegisterBotCommands();
     }
 
-    [ReplyMenuHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, ["/external_chat_info@", "/external_chat_info"]
-    )]
+    [ReplyMenuHandler(CommandComparison.Contains, "/external_chat_info@", "/external_chat_info")]
     public async Task OnExternalChatInfo(ITelegramBotClient client, Update update)
     {
         long chatId = update.GetChatId();
@@ -80,8 +78,7 @@ public sealed class BotStartEndpoint
         await SendInformation(client, chatId, themeId, _externalChatInfo);
     }
 
-    [SlashHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, ["/bot_chat_info@", "/bot_chat_info"]
-    )]
+    [ReplyMenuHandler(CommandComparison.Contains, "/bot_chat_info@", "/bot_chat_info")]
     public async Task OnBotChatInfo(ITelegramBotClient client, Update update)
     {
         long chatId = update.GetChatId();

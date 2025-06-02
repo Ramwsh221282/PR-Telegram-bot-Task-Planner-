@@ -17,30 +17,25 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.RemoveChatEndpoint;
 [BotHandler]
 public sealed class RemoveChatBotEndpoint
 {
+    private const string Context = nameof(RemoveChatBotEndpoint);
+    private readonly Serilog.ILogger _logger;
+    
     /// <summary>
     /// <inheritdoc cref="IExternalChatsReadableRepository"/>
     /// </summary>
     private readonly IExternalChatsReadableRepository _repository;
 
-    /// <summary>
-    /// <inheritdoc cref="RemoveOwnerChatFacade"/>
-    /// </summary>
-    private readonly RemoveOwnerChatFacade _removeOwnerChat;
-
-    /// <summary>
-    /// <inheritdoc cref="RemoveThemeChatFacade"/>
-    /// </summary>
-    private readonly RemoveThemeChatFacade _removeThemeChat;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     public RemoveChatBotEndpoint(
         IExternalChatsReadableRepository repository,
-        RemoveOwnerChatFacade removeOwnerChat,
-        RemoveThemeChatFacade removeThemeChat
+        IServiceScopeFactory scopeFactory,
+        Serilog.ILogger logger
     )
     {
+        _logger = logger;
         _repository = repository;
-        _removeOwnerChat = removeOwnerChat;
-        _removeThemeChat = removeThemeChat;
+        _scopeFactory = scopeFactory;
     }
 
     /// <summary>
@@ -48,9 +43,10 @@ public sealed class RemoveChatBotEndpoint
     /// </summary>
     /// <param name="client">Telegram bot клиент для общения с Telegram</param>
     /// <param name="update">Последнее событие</param>
-    [ReplyMenuHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, ["/remove_this_chat@", "/remove_this_chat"])]
+    [ReplyMenuHandler(CommandComparison.Contains, "/remove_this_chat@", "/remove_this_chat")]
     public async Task Handle(ITelegramBotClient client, Update update)
     {
+        _logger.Information("{Context} invoked", Context);
         Result<TelegramBotUser> user = update.GetUser();
         if (user.IsFailure)
             return;
@@ -100,8 +96,12 @@ public sealed class RemoveChatBotEndpoint
     /// <param name="chatId">ID чата</param>
     /// <param name="isLastChat">Последний чат пользователя или нет</param>
     /// <returns>Success или Failure</returns>
-    private async Task<Result> HandleForChat(long userId, long chatId, bool isLastChat) =>
-        await _removeOwnerChat.RemoveOwnerChat(userId, chatId, isLastChat);
+    private async Task<Result> HandleForChat(long userId, long chatId, bool isLastChat)
+    {
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var facade = scope.ServiceProvider.GetRequiredService<RemoveOwnerChatFacade>();
+        return await facade.RemoveOwnerChat(userId, chatId, isLastChat);
+    }
 
     /// <summary>
     /// Обработка удаления темы чата пользователя
@@ -110,8 +110,12 @@ public sealed class RemoveChatBotEndpoint
     /// <param name="chatId">ID чата</param>
     /// <param name="themeId">ID темы чата</param>
     /// <returns>Success или Failure</returns>
-    private async Task<Result> HandleForThemeChat(long userId, long chatId, long themeId) =>
-        await _removeThemeChat.RemoveThemeChat(userId, chatId, themeId);
+    private async Task<Result> HandleForThemeChat(long userId, long chatId, long themeId)
+    {
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var facade = scope.ServiceProvider.GetRequiredService<RemoveThemeChatFacade>();
+        return await facade.RemoveThemeChat(userId, chatId, themeId);
+    }
 
     /// <summary>
     /// Отправка ответного сообщения, что был удален чат/тема чата.

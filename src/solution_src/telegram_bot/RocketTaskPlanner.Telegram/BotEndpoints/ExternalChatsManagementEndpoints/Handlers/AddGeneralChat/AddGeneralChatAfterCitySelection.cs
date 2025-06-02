@@ -22,20 +22,11 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoin
 /// </param>
 /// /// </summary>
 public sealed class AddGeneralChatAfterCitySelection(
-    UserChatRegistrationFacade notFirstSignUp,
-    FirstUserChatRegistrationFacade firstSignUp,
+    IServiceScopeFactory scopeFactory,
     IExternalChatsReadableRepository repository
 )
 {
-    /// <summary>
-    /// <inheritdoc cref="FirstUserChatRegistrationFacade"/>
-    /// </summary>
-    private readonly FirstUserChatRegistrationFacade _firstSignUp = firstSignUp;
-
-    /// <summary>
-    /// <inheritdoc cref="UserChatRegistrationFacade"/>
-    /// </summary>
-    private readonly UserChatRegistrationFacade _notFirstSignUp = notFirstSignUp;
+    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
     /// <summary>
     /// <inheritdoc cref="IExternalChatsReadableRepository"/>
@@ -105,18 +96,28 @@ public sealed class AddGeneralChatAfterCitySelection(
             ? HandleForNotFirstSignUp(userId, chatId, chatTitle, chatZoneName)
             : HandleForFirstUser(userId, userName, chatId, chatTitle, chatZoneName);
 
-    private Task<Result> HandleForFirstUser(
+    private async Task<Result> HandleForFirstUser(
         long userId,
         string userName,
         long chatId,
         string chatTitle,
         string chatZoneName
-    ) => _firstSignUp.RegisterUser(userId, userName, chatId, chatTitle, chatZoneName);
+    )
+    {
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var facade = scope.ServiceProvider.GetRequiredService<FirstUserChatRegistrationFacade>();
+        return await facade.RegisterUser(userId, userName, chatId, chatTitle, chatZoneName);
+    }
 
-    private Task<Result> HandleForNotFirstSignUp(
+    private async Task<Result> HandleForNotFirstSignUp(
         long userId,
         long chatId,
         string chatName,
         string chatZoneName
-    ) => _notFirstSignUp.AddUserExternalChat(userId, chatId, chatName, chatZoneName);
+    )
+    {
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var facade = scope.ServiceProvider.GetRequiredService<UserChatRegistrationFacade>();
+        return await facade.AddUserExternalChat(userId, chatId, chatName, chatZoneName);
+    }
 }

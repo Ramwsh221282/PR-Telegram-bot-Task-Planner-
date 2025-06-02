@@ -3,9 +3,11 @@ using PRTelegramBot.Models.Enums;
 using RocketTaskPlanner.Application.ExternalChatsManagementContext.Repository;
 using RocketTaskPlanner.Application.NotificationsContext.Visitor;
 using RocketTaskPlanner.Infrastructure.Abstractions;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetNotificationReceiversByIdArray;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetPageCountForChatSubjects;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetPagedChatSubjects;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Entities;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Queries.GetNotificationReceiversByIdArray;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Queries.GetPageCountForChatSubjects;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Queries.GetPagedChatSubjects;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Queries.GetReceiverThemesByParentId;
 using RocketTaskPlanner.Telegram.BotAbstractions;
 using RocketTaskPlanner.Telegram.BotEndpoints.UserTasksManageEndpoint.Handlers;
 using Telegram.Bot;
@@ -21,10 +23,14 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.UserTasksManageEndpoint;
 [BotHandler]
 public sealed class UserTasksManageBotEndpoint
 {
+    private const string Context = nameof(UserTasksManageBotEndpoint);
+    
     /// <summary>
     /// <inheritdoc cref="TelegramBotExecutionContext"/>
     /// </summary>
     private readonly TelegramBotExecutionContext _context;
+
+    private readonly Serilog.ILogger _logger;
 
     /// <summary>
     /// Конструктор Endpoint
@@ -33,7 +39,6 @@ public sealed class UserTasksManageBotEndpoint
     /// <param name="getSubjects">Обработчик запроса на получение задач (включая задач тем).</param>
     /// <param name="pageCount">Обработчик запроса для получения пагинации.</param>
     /// <param name="repository">Хранилище внешних пользовательских чатов.</param>
-    /// <param name="useCases">Обработчики бизнес логики чатов уведомлений.</param>
     public UserTasksManageBotEndpoint(
         IQueryHandler<
             GetNotificationReceiversByIdentifiersQuery,
@@ -41,21 +46,25 @@ public sealed class UserTasksManageBotEndpoint
         > getChats,
         IQueryHandler<GetPagedChatSubjectsQuery, GetPagedChatSubjectsQueryResponse> getSubjects,
         IQueryHandler<GetPageCountForChatSubjectsQuery, int> pageCount,
+        IQueryHandler<GetNotificationReceiverThemesByParentId, ReceiverThemeEntity[]> getThemes,
         IExternalChatsReadableRepository repository,
-        INotificationUseCaseVisitor useCases
+        IServiceScopeFactory scopeFactory,
+        Serilog.ILogger logger
     )
     {
+        _logger = logger;
+        
         // инициализация пустого контекста
         var context = new TelegramBotExecutionContext();
 
         // обработчик валидации (что пользователь - обладатель чатов), нужен для авторизации
-        var validation = new UserTaskManagementValidationHandler(context, repository, getChats);
+        var validation = new UserTaskManagementValidationHandler(context, repository, getChats, getThemes);
 
         // обработчик для отображения списка задач в меню
         var tasksList = new UserTaskManagementTasksViewHandler(context, getSubjects, pageCount);
 
         // обработчик для отображения меню конкретной задачи (выбранной задачи)
-        var concreteTask = new UserTaskManagementConcreteTaskViewHandler(context, useCases);
+        var concreteTask = new UserTaskManagementConcreteTaskViewHandler(context, scopeFactory);
 
         // обработчик для отображения меню выбора типа задач (период или без периода)
         var chooseTaskType = new UserTaskManagementChooseTaskTypesHandler(context);
@@ -85,9 +94,10 @@ public sealed class UserTasksManageBotEndpoint
     /// </summary>
     /// <param name="client">Telegram bot клиент для общений с телеграм</param>
     /// <param name="update">Последнее событие</param>
-    [ReplyMenuHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, ["/my_tasks", "/my_tasks@"])]
+    [ReplyMenuHandler(CommandComparison.Contains, "/my_tasks", "/my_tasks@")]
     public async Task ManageTasksHandler(ITelegramBotClient client, Update update)
     {
+        _logger.Information("{Context} called", Context);
         await _context.InvokeEntryPoint(client, update);
     }
 }

@@ -5,7 +5,7 @@ using PRTelegramBot.Models.Enums;
 using RocketTaskPlanner.Application.ExternalChatsManagementContext.Repository;
 using RocketTaskPlanner.Application.NotificationsContext.Visitor;
 using RocketTaskPlanner.Infrastructure.Abstractions;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetNotificationReceiverTimeInformation;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Queries.GetNotificationReceiverTimeInformation;
 using RocketTaskPlanner.Telegram.BotEndpoints.NotificationsManagementEndpoint.Handlers;
 using RocketTaskPlanner.Telegram.BotExtensions;
 using RocketTaskPlanner.TimeRecognitionModule.TimeCalculation;
@@ -21,6 +21,9 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.NotificationsManagementEndpoin
 [BotHandler]
 public sealed class CreateTaskEndpoint
 {
+    private const string Context = nameof(CreateTaskEndpoint);
+    private readonly Serilog.ILogger _logger;
+    
     /// <summary>
     /// <inheritdoc cref="CreateTaskHandler"/>
     /// </summary>
@@ -42,9 +45,6 @@ public sealed class CreateTaskEndpoint
     /// <param name="getCurrentTimeQuery">
     ///     <inheritdoc cref="GetNotificationReceiverTimeInformationQuery"/>
     /// </param>
-    /// <param name="notificationUseCases">
-    ///     <inheritdoc cref="INotificationUseCaseVisitor"/>
-    /// </param>
     /// <param name="repository">
     ///     <inheritdoc cref="IExternalChatsReadableRepository"/>
     /// </param>
@@ -56,15 +56,17 @@ public sealed class CreateTaskEndpoint
             GetNotificationReceiverTimeInformationQuery,
             GetNotificationReceiverTimeInformationQueryResponse
         > getCurrentTimeQuery,
-        INotificationUseCaseVisitor notificationUseCases,
-        IExternalChatsReadableRepository repository
+        IServiceScopeFactory scopeFactory,
+        IExternalChatsReadableRepository repository,
+        Serilog.ILogger logger
     )
     {
+        _logger = logger;
         _repository = repository;
         _dispatcher = new CreateTaskHandler(
             facade,
             timeCalculation,
-            notificationUseCases,
+            scopeFactory,
             getCurrentTimeQuery
         );
     }
@@ -74,9 +76,10 @@ public sealed class CreateTaskEndpoint
     /// </summary>
     /// <param name="client">Telegram bot клиент для общения с telegram</param>
     /// <param name="update">Последнее событие</param>
-    [ReplyMenuHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, ["/tc"])]
+    [ReplyMenuHandler(CommandComparison.Contains, "/tc")]
     public async Task CreateTask(ITelegramBotClient client, Update update)
     {
+        _logger.Information("{Context} invoked", Context);
         var user = update.GetUser();
         if (user.IsFailure)
             return;
@@ -107,7 +110,7 @@ public sealed class CreateTaskEndpoint
         Task reply = themeId.IsSuccess
             ? client.SendMessage(chatId: chatId, text: replyMessage, messageThreadId: themeId.Value)
             : client.SendMessage(chatId: chatId, text: replyMessage);
-
+        
         await reply;
     }
 }

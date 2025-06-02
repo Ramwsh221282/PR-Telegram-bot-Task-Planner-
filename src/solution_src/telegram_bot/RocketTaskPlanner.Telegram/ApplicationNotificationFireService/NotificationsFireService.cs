@@ -1,5 +1,5 @@
 ﻿using RocketTaskPlanner.Infrastructure.Abstractions;
-using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext.Cache;
+using RocketTaskPlanner.Infrastructure.Database.ApplicationTimeContext.Cache;
 using RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Receivers;
 using RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Tasks;
 using RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Tasks.GeneralChatTasks;
@@ -63,24 +63,37 @@ public sealed class NotificationsFireService(
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            // Получение списка временных зон.
-            ITimeZoneOfCurrentTime[] times = Times();
+            try
+            {
+                // Получение списка временных зон.
+                ITimeZoneOfCurrentTime[] times = Times();
+                if (times.Length == 0)
+                {
+                    _logger.Warning("{Context} no time zones", CONTEXT);
+                    await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                    continue;
+                }
 
-            // Получение списка получателей на основе временных зон.
-            GeneralChatReceiverOfCurrentTimeZone[] receivers = await Receivers(times);
+                // Получение списка получателей на основе временных зон.
+                GeneralChatReceiverOfCurrentTimeZone[] receivers = await Receivers(times);
 
-            // Получение списка тем, куда нужно отправить сообщения.
-            IThemeChatTaskToFire[] themeChatTasksToFire = ThemeChatTasks(receivers);
+                // Получение списка тем, куда нужно отправить сообщения.
+                IThemeChatTaskToFire[] themeChatTasksToFire = ThemeChatTasks(receivers);
 
-            // Получение списка чатов, куда нужно отправить сообщения.
-            IGeneralChatTaskToFire[] generalChatTasksToFire = GeneralChatTasks(receivers);
+                // Получение списка чатов, куда нужно отправить сообщения.
+                IGeneralChatTaskToFire[] generalChatTasksToFire = GeneralChatTasks(receivers);
 
-            // Отправка сообщений.
-            int fired = await HandleTasksToFire(themeChatTasksToFire, generalChatTasksToFire);
+                // Отправка сообщений.
+                int fired = await HandleTasksToFire(themeChatTasksToFire, generalChatTasksToFire);
 
-            _logger.Information("{Context} fired: {Count} tasks", CONTEXT, fired);
+                _logger.Information("{Context} fired: {Count} tasks", CONTEXT, fired);
 
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+            }
+            catch(Exception ex)
+            {
+                _logger.Fatal("{Context} caught unexpected exception: {Message}", CONTEXT, ex.Message);
+            }
         }
     }
 

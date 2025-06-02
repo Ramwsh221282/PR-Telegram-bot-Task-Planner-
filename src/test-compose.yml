@@ -12,26 +12,15 @@
       - "7777:6666"
     volumes:
       - bot_db_data:/var/lib/postgresql/data
-  
+
   eshop.seq:
     image: datalust/seq:latest
-    container_name: seq        
+    container_name: seq
     environment:
       - ACCEPT_EULA=Y
     ports:
       - "8081:80"
       - "5341:5341"
-  
-  bot:
-    build:
-      context: .
-      dockerfile: dockerfile
-    container_name: telegram_bot
-    environment:
-      - BOT_TOKEN=${BOT_TOKEN}
-      - TIME_ZONE_DB_KEY=${TIME_ZONE_DB_KEY}          
-    restart: always
-    
+
 volumes:
   bot_db_data:
-  

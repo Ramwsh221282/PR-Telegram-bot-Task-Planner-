@@ -49,8 +49,8 @@ public sealed class TestRemoveOwnerChatFacade : IClassFixture<DefaultTestsFixtur
         Assert.Null(parentChat.Value.ParentId);
 
         // проверка на существование зарегистрированного чата для уведомлений
-        var notifications = _fixture.GetService<INotificationRepository>();
-        Result<NotificationReceiver> receiver = await notifications.Readable.GetById(chatId);
+        var notifications = _fixture.GetService<INotificationsReadableRepository>();
+        Result<NotificationReceiver> receiver = await notifications.GetById(chatId);
         Assert.True(receiver.IsSuccess);
 
         Assert.Equal(chatId, receiver.Value.Id.Id);
@@ -93,7 +93,7 @@ public sealed class TestRemoveOwnerChatFacade : IClassFixture<DefaultTestsFixtur
         );
         Assert.True(removingOwnerChat.IsSuccess);
 
-        receiver = await notifications.Readable.GetById(chatId);
+        receiver = await notifications.GetById(chatId);
         Assert.True(receiver.IsFailure);
 
         registeredOwner = await externalChatsRepository.GetExternalChatOwnerById(userId);

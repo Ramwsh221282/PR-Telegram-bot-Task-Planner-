@@ -1,48 +1,26 @@
-﻿using Microsoft.EntityFrameworkCore;
-using RocketTaskPlanner.Infrastructure.Sqlite.ApplicationTimeContext;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext;
+﻿using Microsoft.Extensions.DependencyInjection;
+using RocketTaskPlanner.Infrastructure.Database;
 
 namespace RocketTaskPlanner.Tests.TestDependencies;
 
 public static class TestsDatabaseDrop
 {
-    public static async Task DropDatabases()
+    public static async Task DropDatabases(this IServiceScope scope)
     {
-        await DropNotificationsDatabase();
-        await DropApplicationTimeDatabase();
-        DeleteSqliteDbFiles();
+        await scope.DropDatabase();
     }
-
-    private static void DeleteSqliteDbFiles()
+    
+    private static async Task DropDatabase(this IServiceScope scope)
     {
-        string directory = AppDomain.CurrentDomain.BaseDirectory;
-        DirectoryInfo directoryInfo = new(directory);
-        FileInfo[] files = directoryInfo.GetFiles().Where(f => f.Name.EndsWith(".db")).ToArray();
-        foreach (FileInfo file in files)
-            File.Delete(file.FullName);
-    }
-
-    private static async Task DropApplicationTimeDatabase()
-    {
-        ApplicationTimeDbContext context = new();
+        var provider = scope.ServiceProvider;
         try
         {
+            await using var context = provider.GetRequiredService<RocketTaskPlannerDbContext>();
             await context.Database.EnsureDeletedAsync();
-            await context.Database.CloseConnectionAsync();
         }
-        catch { }
-        await context.DisposeAsync();
-    }
-
-    private static async Task DropNotificationsDatabase()
-    {
-        NotificationsDbContext context = new();
-        try
+        catch
         {
-            await context.Database.EnsureDeletedAsync();
-            await context.Database.CloseConnectionAsync();
+            // ignored
         }
-        catch { }
-        await context.DisposeAsync();
     }
 }

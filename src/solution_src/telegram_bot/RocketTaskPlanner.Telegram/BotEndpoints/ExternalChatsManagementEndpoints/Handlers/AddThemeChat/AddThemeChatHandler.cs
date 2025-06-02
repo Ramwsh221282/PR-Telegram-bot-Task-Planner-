@@ -14,7 +14,7 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoin
 /// <param name="facade">Фасадный класс для обработки транзакци добавления пользовательского дочернего чата и темы чата для уведомления</param>
 public sealed class AddThemeChatHandler(
     TelegramBotExecutionContext context,
-    UserThemeRegistrationFacade facade
+    IServiceScopeFactory scopeFactory
 ) : ITelegramBotHandler
 {
     /// <summary>
@@ -22,10 +22,7 @@ public sealed class AddThemeChatHandler(
     /// </summary>
     private readonly TelegramBotExecutionContext _context = context;
 
-    /// <summary>
-    /// <inheritdoc cref="UserThemeRegistrationFacade"/>
-    /// </summary>
-    private readonly UserThemeRegistrationFacade _facade = facade;
+    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
     /// <summary>
     /// <inheritdoc cref="ITelegramBotHandler.Command"/>
@@ -49,7 +46,9 @@ public sealed class AddThemeChatHandler(
         long chatId = cache.Value.ChatId;
         long themeId = cache.Value.ThemeId;
 
-        Result adding = await _facade.RegisterUserTheme(chatId, themeId, userId, chatTitle);
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var facade = scope.ServiceProvider.GetRequiredService<UserThemeRegistrationFacade>();
+        Result adding = await facade.RegisterUserTheme(chatId, themeId, userId, chatTitle);
         if (adding.IsFailure)
         {
             await adding.SendError(client, update);

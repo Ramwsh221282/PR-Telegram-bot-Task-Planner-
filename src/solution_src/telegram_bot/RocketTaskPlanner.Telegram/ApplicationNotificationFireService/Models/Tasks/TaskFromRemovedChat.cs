@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using Dapper;
 using RocketTaskPlanner.Infrastructure.Abstractions;
-using RocketTaskPlanner.Infrastructure.Sqlite;
+using RocketTaskPlanner.Infrastructure.Database;
 
 namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Tasks;
 
@@ -36,8 +36,7 @@ public sealed class TaskFromRemovedChat : ITaskToFire
 
     private async Task TryRemoveOwner(IDbConnectionFactory factory)
     {
-        const string connectionString = SqliteConstants.ExternalChatsConnectionString;
-        using var connection = factory.Create(connectionString);
+        using var connection = factory.Create();
         try
         {
             long ownerId = await GetOwnerIdOfUnsubscribedChat(connection);
@@ -48,8 +47,7 @@ public sealed class TaskFromRemovedChat : ITaskToFire
 
     private async Task<bool> DeleteChatAsNotificationReceiver(IDbConnectionFactory factory)
     {
-        const string connectionString = SqliteConstants.NotificationsConnectionString;
-        var connection = factory.Create(connectionString);
+        var connection = factory.Create();
         try
         {
             const string sql = "DELETE FROM notification_receivers WHERE receiver_id = @id;";
@@ -95,9 +93,8 @@ public sealed class TaskFromRemovedChat : ITaskToFire
         const string sql =
             "DELETE FROM general_chat_subjects WHERE general_chat_subject_id = @subjectId";
         var parameters = new { subjectId };
-        const string connectionString = SqliteConstants.NotificationsConnectionString;
         var command = new CommandDefinition(sql, parameters);
-        var connection = factory.Create(connectionString);
+        var connection = factory.Create();
         try
         {
             await connection.ExecuteAsync(command);
@@ -121,8 +118,7 @@ public sealed class TaskFromRemovedChat : ITaskToFire
         const string sql =
             "DELETE FROM theme_chat_subjects WHERE theme_chat_subject_id = @subjectId";
         var parameters = new { subjectId };
-        const string connectionString = SqliteConstants.NotificationsConnectionString;
-        var connection = factory.Create(connectionString);
+        var connection = factory.Create();
         var command = new CommandDefinition(sql, parameters);
         try
         {

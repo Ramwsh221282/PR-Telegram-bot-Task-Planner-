@@ -1,8 +1,9 @@
 ﻿using CSharpFunctionalExtensions;
 using PRTelegramBot.Attributes;
+using PRTelegramBot.Extensions;
 using PRTelegramBot.Models.Enums;
 using RocketTaskPlanner.Infrastructure.Abstractions;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetNotificationReceiverTimeInformation;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Queries.GetNotificationReceiverTimeInformation;
 using RocketTaskPlanner.Telegram.BotAbstractions;
 using RocketTaskPlanner.Telegram.BotExtensions;
 using Telegram.Bot;
@@ -20,9 +21,13 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.GetChatTime;
 public sealed class GetChatTimeEndpoint(
     IQueryHandler<
         GetNotificationReceiverTimeInformationQuery,
-        GetNotificationReceiverTimeInformationQueryResponse> handler
+        GetNotificationReceiverTimeInformationQueryResponse> handler,
+    Serilog.ILogger logger
 )
 {
+    private const string Context = nameof(GetChatTimeEndpoint);
+    private readonly Serilog.ILogger _logger = logger;
+    
     /// <summary>
     /// <inheritdoc cref="GetNotificationReceiverTimeInformationQueryHandler"/>
     /// </summary>
@@ -36,10 +41,10 @@ public sealed class GetChatTimeEndpoint(
     /// </summary>
     /// <param name="client">Telegram bot клиент для общения с telegram</param>
     /// <param name="update">Последнее событие (в данном случае вызов endpoint)</param>
-    [ReplyMenuHandler(CommandComparison.Contains, StringComparison.OrdinalIgnoreCase, ["/bot_chat_time@", "/bot_chat_time"]
-    )]
+    [ReplyMenuHandler(CommandComparison.Contains, "/bot_chat_time@", "/bot_chat_time")]
     public async Task GetChatTime(ITelegramBotClient client, Update update)
     {
+        _logger.Information("{Context} invoked", Context);
         Result<TelegramBotUser> telegramBotUserResult = update.GetUser();
         if (telegramBotUserResult.IsFailure)
         {
@@ -70,6 +75,9 @@ public sealed class GetChatTimeEndpoint(
             string information = await GetChatTimeHandle(chatId);
             await client.SendMessage(chatId, text: information);
         }
+
+        update.ClearStepUserHandler();
+        update.ClearCacheData();
     }
 
     /// <summary>

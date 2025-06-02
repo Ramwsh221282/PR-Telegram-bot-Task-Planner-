@@ -2,7 +2,6 @@
 using CSharpFunctionalExtensions;
 using Dapper;
 using RocketTaskPlanner.Infrastructure.Abstractions;
-using RocketTaskPlanner.Infrastructure.Sqlite;
 using RocketTaskPlanner.TimeRecognitionModule.TimeCalculation;
 using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Facade;
 using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognitions;
@@ -75,9 +74,7 @@ public sealed class GeneralChatTaskToFireSqlSpeaking : IGeneralChatTaskToFire
             dateCreated = newDateCreated,
             subjectNotify = newDateNotified,
         };
-        using IDbConnection connection = _connectionFactory.Create(
-            SqliteConstants.NotificationsConnectionString
-        );
+        using IDbConnection connection = _connectionFactory.Create();
         await connection.ExecuteAsync(_updateSql, parameters);
     }
 
@@ -104,9 +101,7 @@ public sealed class GeneralChatTaskToFireSqlSpeaking : IGeneralChatTaskToFire
     {
         var parameters = new { subjectId = SubjectId(), chatId = ChatId() };
         CommandDefinition command = new(_deleteSql, parameters);
-        using IDbConnection connection = _connectionFactory.Create(
-            SqliteConstants.NotificationsConnectionString
-        );
+        using IDbConnection connection = _connectionFactory.Create();
         await connection.ExecuteAsync(command);
     }
 }

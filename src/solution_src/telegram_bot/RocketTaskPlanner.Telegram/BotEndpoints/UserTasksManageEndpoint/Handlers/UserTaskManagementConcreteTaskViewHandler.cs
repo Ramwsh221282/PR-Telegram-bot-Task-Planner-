@@ -2,7 +2,7 @@
 using RocketTaskPlanner.Application.NotificationsContext.Features.RemoveChatSubject;
 using RocketTaskPlanner.Application.NotificationsContext.Features.RemoveThemeSubject;
 using RocketTaskPlanner.Application.NotificationsContext.Visitor;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Queries.GetPagedChatSubjects;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Queries.GetPagedChatSubjects;
 using RocketTaskPlanner.Telegram.BotAbstractions;
 using RocketTaskPlanner.Telegram.BotEndpoints.UserTasksManageEndpoint.Cache;
 using RocketTaskPlanner.Telegram.BotEndpoints.UserTasksManageEndpoint.Constants;
@@ -26,15 +26,15 @@ public sealed class UserTaskManagementConcreteTaskViewHandler : ITelegramBotHand
     /// <summary>
     /// <inheritdoc cref="INotificationUseCaseVisitor"/>
     /// </summary>
-    private readonly INotificationUseCaseVisitor _useCases;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     public UserTaskManagementConcreteTaskViewHandler(
         TelegramBotExecutionContext context,
-        INotificationUseCaseVisitor useCases
+        IServiceScopeFactory scopeFactory
     )
     {
         _context = context;
-        _useCases = useCases;
+        _scopeFactory = scopeFactory;
     }
 
     /// <summary>
@@ -98,11 +98,11 @@ public sealed class UserTaskManagementConcreteTaskViewHandler : ITelegramBotHand
         bool isThemeSubject = subject.IsThemeSubject();
 
         await PRTelegramBot.Helpers.Message.Send(client, update, "Удаляю задачу...");
-
+        
         // вызов бизнес логики.
         Result deletion = isThemeSubject
-            ? await _useCases.Visit(new RemoveThemeSubjectUseCase(subjectId))
-            : await _useCases.Visit(new RemoveChatSubjectUseCase(subjectId));
+            ? await RemoveThemeSubject(subjectId)
+            : await RemoveChatSubject(subjectId);
 
         // если бизнес логика выдала ошибка, вернуться в спиоск задач.
         if (deletion.IsFailure)
@@ -120,5 +120,19 @@ public sealed class UserTaskManagementConcreteTaskViewHandler : ITelegramBotHand
 
         // после удаления задачи вернуться в список задач.
         await GoBackToList(client, update, cache.ClearSelectedSubject());
+    }
+
+    private async Task<Result> RemoveThemeSubject(long subjectId)
+    {
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var visitor = scope.ServiceProvider.GetRequiredService<INotificationUseCaseVisitor>();
+        return await visitor.Visit(new RemoveThemeSubjectUseCase(subjectId));
+    }
+
+    private async Task<Result> RemoveChatSubject(long subjectId)
+    {
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var visitor = scope.ServiceProvider.GetRequiredService<INotificationUseCaseVisitor>();
+        return await visitor.Visit(new RemoveChatSubjectUseCase(subjectId));
     }
 }

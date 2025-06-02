@@ -2,7 +2,7 @@
 using CSharpFunctionalExtensions;
 using Dapper;
 using RocketTaskPlanner.Infrastructure.Abstractions;
-using RocketTaskPlanner.Infrastructure.Sqlite;
+using RocketTaskPlanner.Infrastructure.Database;
 using RocketTaskPlanner.TimeRecognitionModule.TimeCalculation;
 using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Facade;
 using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Recognitions;
@@ -73,17 +73,9 @@ public sealed class ThemeChatTaskToFireSqlSpeaking : IThemeChatTaskToFire
     {
         var parameters = new { subjectId = SubjectId(), themeId = ThemeChatId() };
         CommandDefinition command = new(_deleteSql, parameters);
-        using IDbConnection connection = _connectionFactory.Create(
-            SqliteConstants.NotificationsConnectionString
-        );
+        using IDbConnection connection = _connectionFactory.Create();
         await connection.ExecuteAsync(command);
     }
-
-    // private const string _updateSql = """
-    //                                   UPDATE theme_chat_subjects
-    //                                   SET subject_created = @created, subject_notify = @notify
-    //                                   WHERE theme_chat_subject_id = @subjectId AND theme_id = @themeId
-    //                                   """;
 
     private async Task UpdateRecord()
     {
@@ -98,9 +90,7 @@ public sealed class ThemeChatTaskToFireSqlSpeaking : IThemeChatTaskToFire
             created = newDateCreated,
             notify = newDateNotified,
         };
-        using IDbConnection connection = _connectionFactory.Create(
-            SqliteConstants.NotificationsConnectionString
-        );
+        using IDbConnection connection = _connectionFactory.Create();
         await connection.ExecuteAsync(_updateSql, parameters);
     }
 

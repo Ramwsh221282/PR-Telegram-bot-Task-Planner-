@@ -1,4 +1,4 @@
-﻿using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities;
+﻿using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Entities;
 using RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Tasks;
 using RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Tasks.GeneralChatTasks;
 using RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Tasks.ThemeChatTasks;

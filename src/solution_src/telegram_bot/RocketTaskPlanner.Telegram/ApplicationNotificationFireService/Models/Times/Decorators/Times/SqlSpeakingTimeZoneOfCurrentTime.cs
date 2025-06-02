@@ -1,8 +1,7 @@
 ﻿using System.Data;
 using Dapper;
 using RocketTaskPlanner.Infrastructure.Abstractions;
-using RocketTaskPlanner.Infrastructure.Sqlite;
-using RocketTaskPlanner.Infrastructure.Sqlite.NotificationsContext.Entities;
+using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Entities;
 using RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Receivers;
 
 namespace RocketTaskPlanner.Telegram.ApplicationNotificationFireService.Models.Times.Decorators.Times;
@@ -48,9 +47,7 @@ public sealed class SqlSpeakingTimeZoneOfCurrentTime : ITimeZoneOfCurrentTime
 
     private async Task<GeneralChatReceiverOfCurrentTimeZone[]> QueryReceivers()
     {
-        using IDbConnection connection = _connectionFactory.Create(
-            SqliteConstants.NotificationsConnectionString
-        );
+        using IDbConnection connection = _connectionFactory.Create();
         NotificationReceiverEntity[] generalChats = await QueryGeneralChats(connection);
         GeneralChatReceiverOfCurrentTimeZone[] receivers = new GeneralChatReceiverOfCurrentTimeZone[
             generalChats.Length
@@ -58,9 +55,9 @@ public sealed class SqlSpeakingTimeZoneOfCurrentTime : ITimeZoneOfCurrentTime
         for (int index = 0; index < generalChats.Length; index++)
         {
             NotificationReceiverEntity target = generalChats[index];
-            target = await WithGeneralChatSubjects(target, connection);
-            target = await WithThemes(target, connection);
-            receivers[index] = new GeneralChatReceiverOfCurrentTimeZone(target);
+            NotificationReceiverEntity withSubjects = await WithGeneralChatSubjects(target, connection);
+            NotificationReceiverEntity withThemes = await WithThemes(withSubjects, connection);
+            receivers[index] = new GeneralChatReceiverOfCurrentTimeZone(withThemes);
         }
         return receivers;
     }
@@ -146,9 +143,10 @@ public sealed class SqlSpeakingTimeZoneOfCurrentTime : ITimeZoneOfCurrentTime
             tcs.subject_periodic,
             tcs.theme_id
             FROM theme_chat_subjects tcs
-            WHERE tcs.theme_id = @themeId AND tcs.subject_notify <= @zoneDate
+            LEFT JOIN receiver_themes th ON th.theme_id = tcs.theme_id
+            WHERE tcs.theme_id = @themeId AND tcs.subject_notify <= @zoneDate AND th.receiver_id = @mainChatId
             """;
-        var parameters = new { themeId = entity.ThemeId, zoneDate = _time.DateTime() };
+        var parameters = new { themeId = entity.ThemeId, zoneDate = _time.DateTime(), mainChatId = entity.ReceiverId };
         CommandDefinition command = new(sql, parameters);
         IEnumerable<ThemeChatSubjectEntity> subjects =
             await connection.QueryAsync<ThemeChatSubjectEntity>(command);
