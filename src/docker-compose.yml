@@ -30,6 +30,11 @@
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
       - TIME_ZONE_DB_KEY=${TIME_ZONE_DB_KEY}          
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=${DB_HOST}
     restart: always
     
 volumes:
