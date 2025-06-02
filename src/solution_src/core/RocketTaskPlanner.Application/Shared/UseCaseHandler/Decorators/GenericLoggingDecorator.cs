@@ -19,12 +19,16 @@ public sealed class GenericLoggingDecorator<TUseCase, TUseCaseResult>(
         if (result.IsFailure)
         {
             string error = result.Error;
-            _logger.Error("{UseCase} handled. Error: {Error}", useCaseName, error);
+            _logger.Error("Операция: {UseCase} обработана. Ошибка: {Error}", useCaseName, error);
         }
         if (result.IsSuccess)
         {
             string info = GetUseCaseInfo(useCase);
-            _logger.Information("{UseCase} handled. Info: {Info}", useCaseName, info);
+            _logger.Information(
+                "Операция: {UseCase} обработана. Информация: {Info}",
+                useCaseName,
+                info
+            );
         }
         return result;
     }
@@ -32,6 +36,6 @@ public sealed class GenericLoggingDecorator<TUseCase, TUseCaseResult>(
     private string GetUseCaseInfo(TUseCase useCase)
     {
         string? info = useCase.ToString();
-        return string.IsNullOrWhiteSpace(info) ? "No use case information" : info;
+        return string.IsNullOrWhiteSpace(info) ? "Информации нет" : info;
     }
 }

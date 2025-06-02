@@ -22,8 +22,8 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.ExternalChatsManagementEndpoin
 public sealed class BotAddThisChatEndpoint
 {
     private readonly Serilog.ILogger _logger;
-    private const string Context = nameof(BotAddThisChatEndpoint);
-    
+    private const string Context = "Endpoint добавить чат.";
+
     /// <summary>
     /// <inheritdoc cref="TelegramBotExecutionContext"/>
     /// </summary>
@@ -54,7 +54,8 @@ public sealed class BotAddThisChatEndpoint
         IApplicationTimeRepository<TimeZoneDbProvider> timeProviders,
         IServiceScopeFactory scopeFactory,
         IExternalChatsReadableRepository chats,
-        Serilog.ILogger logger)
+        Serilog.ILogger logger
+    )
     {
         _logger = logger;
         TelegramBotExecutionContext context = new();
@@ -86,7 +87,7 @@ public sealed class BotAddThisChatEndpoint
     [ReplyMenuHandler(CommandComparison.Contains, "/add_this_chat@", "/add_this_chat")]
     public async Task OnAddThisChat(ITelegramBotClient client, Update update)
     {
-        _logger.Information("{Context} invoked", Context);
+        _logger.Information("{Context}. Вызван.", Context);
         await _context.InvokeEntryPoint(client, update);
     }
 
@@ -98,7 +99,7 @@ public sealed class BotAddThisChatEndpoint
     [InlineCallbackHandler<AddGeneralChatCitiesEnum>(AddGeneralChatCitiesEnum.Cancellation)]
     public async Task OnCancelCitySelection(ITelegramBotClient botClient, Update update)
     {
-        _logger.Information("{Context} cancelled", Context);
+        _logger.Information("{Context}. Операция отменена пользователем.", Context);
         update.ClearStepUserHandler();
         update.ClearCacheData();
         await PRTelegramBot.Helpers.Message.Send(

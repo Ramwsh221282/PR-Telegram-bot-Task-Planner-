@@ -30,7 +30,7 @@ public sealed class ApplicationTimeZoneMonitoringService(
     /// <summary>
     /// Название текущего класса.
     /// </summary>
-    private const string CONTEXT = nameof(ApplicationTimeZoneMonitoringService);
+    private const string CONTEXT = "Кеш временных зон.";
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -38,23 +38,21 @@ public sealed class ApplicationTimeZoneMonitoringService(
         {
             try
             {
-                _logger.Information("{Context} checking Time Zone Db Provider cache.", CONTEXT);
+                _logger.Information("{Context}. Проверка кеша.", CONTEXT);
 
                 TimeZoneDbProvider? providerInstance = _instance.Instance;
 
                 if (providerInstance == null)
-                    _logger.Information("{Context} cached instance has not been set yet.", CONTEXT);
+                    _logger.Information("{Context} Кеш пустой.", CONTEXT);
                 else
-                    _logger.Information("{Context} cached instance is initialized.", CONTEXT);
-
+                    _logger.Information("{Context} Кеш проинициализирован.", CONTEXT);
+                _logger.Information("{Context} ожидание 15 секунд.");
                 await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                _logger.Fatal("{Context} exception {Exception}", CONTEXT, ex.Message);
+                _logger.Fatal("{Context} исключение {Exception}.", CONTEXT, ex.Message);
             }
         }
-
-        _logger.Information("{Context} shut down called", CONTEXT);
     }
 }

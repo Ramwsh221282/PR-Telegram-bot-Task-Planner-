@@ -11,8 +11,8 @@ namespace RocketTaskPlanner.Application.Facades;
 /// </summary>
 public sealed class UserChatRegistrationFacade
 {
-    private const string Context = nameof(UserChatRegistrationFacade);
-    
+    private const string Context = "Транзакция добавления чата.";
+
     /// <summary>
     /// <inheritdoc cref="IUnitOfWork"/>
     /// </summary>
@@ -51,52 +51,52 @@ public sealed class UserChatRegistrationFacade
     )
     {
         await _unitOfWork.BeginTransaction();
-        _logger.Information("{Context} started", Context);
-        
+        _logger.Information("{Context}. Начата.", Context);
+
         // добавление чата пользователя
-        _logger.Information("{Context} adding user external chat", Context);
+        _logger.Information("{Context}. Добавление чата пользователя.", Context);
         var addingChat = await AddUserExternalChat(ownerId, chatId, chatName);
         if (addingChat.IsFailure)
         {
-            _logger.Error("{Context} adding user external chat failed. Error: {Error}", Context, addingChat.Error);
+            _logger.Error("{Context}. Ошибка: {Error}", Context, addingChat.Error);
             return addingChat;
         }
-        
+
         var saving = await _unitOfWork.SaveChangesAsync();
         if (saving.IsFailure)
         {
             await _unitOfWork.RollBackTransaction();
-            _logger.Error("{Context} adding user external chat failed. Error: {Error}", Context, addingChat.Error);
+            _logger.Error("{Context} Ошибка: {Error}", Context, addingChat.Error);
             return saving;
         }
 
         // добавление чата для уведомлений
-        _logger.Information("{Context} adding user notification chat", Context);
+        _logger.Information("{Context}. Добавление чата для уведомлений.", Context);
         var addingNotificationChat = await AddChatForNotifications(chatId, chatName, timeZone);
         if (addingNotificationChat.IsFailure)
         {
-            _logger.Error("{Context} adding user notification chat failed. Error: {Error}", Context, addingNotificationChat.Error);
+            _logger.Error("{Context}. Ошибка: {Error}", Context, addingNotificationChat.Error);
             return addingNotificationChat;
         }
-        
+
         saving = await _unitOfWork.SaveChangesAsync();
         if (saving.IsFailure)
         {
             await _unitOfWork.RollBackTransaction();
-            _logger.Error("{Context} adding user notification chat failed. Error: {Error}", Context, addingNotificationChat.Error);
+            _logger.Error("{Context}. Ошибка: {Error}", Context, saving.Error);
             return saving;
         }
 
         var committing = await _unitOfWork.CommitTransaction();
         if (committing.IsFailure)
         {
-            _logger.Error("{Context} failed. Error: {Error}", Context, committing.Error);
+            _logger.Error("{Context}. Ошибка: {Error}", Context, committing.Error);
         }
         else
         {
-            _logger.Information("{Context} finished.", Context);
+            _logger.Information("{Context}. Выполнена.", Context);
         }
-        
+
         return committing;
     }
 

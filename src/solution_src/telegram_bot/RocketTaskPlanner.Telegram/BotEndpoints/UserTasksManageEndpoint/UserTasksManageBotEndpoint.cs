@@ -23,8 +23,8 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.UserTasksManageEndpoint;
 [BotHandler]
 public sealed class UserTasksManageBotEndpoint
 {
-    private const string Context = nameof(UserTasksManageBotEndpoint);
-    
+    private const string Context = "Endpoint. список задач пользователя";
+
     /// <summary>
     /// <inheritdoc cref="TelegramBotExecutionContext"/>
     /// </summary>
@@ -53,12 +53,17 @@ public sealed class UserTasksManageBotEndpoint
     )
     {
         _logger = logger;
-        
+
         // инициализация пустого контекста
         var context = new TelegramBotExecutionContext();
 
         // обработчик валидации (что пользователь - обладатель чатов), нужен для авторизации
-        var validation = new UserTaskManagementValidationHandler(context, repository, getChats, getThemes);
+        var validation = new UserTaskManagementValidationHandler(
+            context,
+            repository,
+            getChats,
+            getThemes
+        );
 
         // обработчик для отображения списка задач в меню
         var tasksList = new UserTaskManagementTasksViewHandler(context, getSubjects, pageCount);
@@ -97,7 +102,7 @@ public sealed class UserTasksManageBotEndpoint
     [ReplyMenuHandler(CommandComparison.Contains, "/my_tasks", "/my_tasks@")]
     public async Task ManageTasksHandler(ITelegramBotClient client, Update update)
     {
-        _logger.Information("{Context} called", Context);
+        _logger.Information("{Context} вызван.", Context);
         await _context.InvokeEntryPoint(client, update);
     }
 }

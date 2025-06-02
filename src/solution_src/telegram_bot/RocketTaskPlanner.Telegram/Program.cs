@@ -1,6 +1,7 @@
 using PRTelegramBot.Core;
 using PRTelegramBot.Extensions;
 using RocketTaskPlanner.Infrastructure.Database;
+using RocketTaskPlanner.Infrastructure.SeqConfiguration;
 using RocketTaskPlanner.Presenters.DependencyInjection;
 using RocketTaskPlanner.Telegram.ApplicationNotificationFireService;
 using RocketTaskPlanner.Telegram.ApplicationTimeZonesService;
@@ -10,13 +11,16 @@ using RocketTaskPlanner.Telegram.StartupExtensions.TimeZoneDbSetup;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+SeqConfiguration seq = null!;
 if (builder.Environment.IsDevelopment())
 {
     DatabaseConfiguration.AddFromEnvFile(builder.Services, BotConfigurationVariables.EnvFilePath);
+    seq = SeqConfiguration.FromEnvFile(builder.Services, BotConfigurationVariables.EnvFilePath);
 }
 else
 {
     DatabaseConfiguration.AddFromEnvironmentVariables(builder.Services);
+    seq = SeqConfiguration.FromEnvironmentVariables(builder.Services);
 }
 
 builder.Services.InjectApplicationDependencies(); // инъекция всех зависимостей приложения, не связанных с ботом.

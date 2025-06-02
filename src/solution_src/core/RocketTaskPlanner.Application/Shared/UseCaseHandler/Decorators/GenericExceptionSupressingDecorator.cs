@@ -26,7 +26,7 @@ public sealed class GenericExceptionSupressingDecorator<TUseCase, TUseCaseResult
             string? exTrace = ex.StackTrace;
             string? exSource = ex.Source;
             _logger.Fatal(
-                "{UseCase} fatal error. Exception: {Ex}. Trace: {Trace}. Source: {Source}",
+                "Операция: {UseCase}. Исключение: {Ex}. Стак-трейс: {Trace}. Источник: {Source}",
                 useCaseName,
                 exMessage,
                 exTrace,

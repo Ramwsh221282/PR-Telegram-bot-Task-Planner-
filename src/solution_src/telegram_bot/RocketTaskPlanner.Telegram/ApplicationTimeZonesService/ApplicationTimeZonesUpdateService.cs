@@ -14,7 +14,7 @@ public sealed class ApplicationTimeZonesUpdateService : BackgroundService
     /// <inheritdoc cref="TimeZoneDbProviderCachedInstance"/>
     /// </summary>
     private readonly TimeZoneDbProviderCachedInstance _instance;
-    
+
     private readonly IServiceScopeFactory _scopeFactory;
 
     /// <summary>
@@ -25,7 +25,7 @@ public sealed class ApplicationTimeZonesUpdateService : BackgroundService
     /// <summary>
     /// Название текущего класса
     /// </summary>
-    private const string CONTEXT = nameof(ApplicationTimeZonesUpdateService);
+    private const string CONTEXT = "Background процесс обновления кеша временных зон.";
 
     public ApplicationTimeZonesUpdateService(
         IServiceScopeFactory scopeFactory,
@@ -35,29 +35,27 @@ public sealed class ApplicationTimeZonesUpdateService : BackgroundService
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
-        _logger.Information("{Context} initializng cached instance.", CONTEXT);
-        
+        _logger.Information("{Context}. Инициализация.", CONTEXT);
         var scope = _scopeFactory.CreateAsyncScope();
         var scopeProvider = scope.ServiceProvider;
-        var repository = scopeProvider.GetRequiredService<IApplicationTimeRepository<TimeZoneDbProvider>>();
+        var repository = scopeProvider.GetRequiredService<
+            IApplicationTimeRepository<TimeZoneDbProvider>
+        >();
         Result<TimeZoneDbProvider> instanceFromDb = repository.Get().Result;
 
         if (instanceFromDb.IsFailure)
         {
             _instance = cachedInstance;
             _instance.SetNull();
-            _logger.Information(
-                "{Context} Time Zone Db Provider configuration does not exist. Initialing as none value.",
-                CONTEXT
-            );
+            _logger.Fatal("{Context} Time Zone Db Provider конфигурация не существует.", CONTEXT);
         }
         else
         {
             _instance = cachedInstance;
             _instance.InitializeOrUpdate(instanceFromDb.Value);
-            _logger.Information("{Context} Time Zone Db Provider instance initialized.", CONTEXT);
+            _logger.Information("{Context}. Time Zone Db Provider конфигурация найдена.", CONTEXT);
         }
-        
+
         scope.Dispose();
     }
 
@@ -67,21 +65,19 @@ public sealed class ApplicationTimeZonesUpdateService : BackgroundService
         {
             try
             {
-                _logger.Information("{Context}. Updating time zone db cached instance...", CONTEXT);
+                _logger.Information("{Context}. Обновление кеша...", CONTEXT);
 
                 await UpdateApplicationTimeZones(stoppingToken);
 
-                _logger.Information("{Context}. Time Zone Db Instance has been updated...", CONTEXT);
+                _logger.Information("{Context}. Кеш обновлен.", CONTEXT);
 
                 await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                _logger.Fatal("{Context} exception: {Exception}", CONTEXT, ex.Message);
+                _logger.Fatal("{Context}. Исключение: {Exception}", CONTEXT, ex.Message);
             }
         }
-
-        _logger.Information("{Context} shut down called.", CONTEXT);
     }
 
     private async Task UpdateApplicationTimeZones(CancellationToken cancellationToken)
@@ -94,7 +90,9 @@ public sealed class ApplicationTimeZonesUpdateService : BackgroundService
 
             await using var scope = _scopeFactory.CreateAsyncScope();
             var scopeProvider = scope.ServiceProvider;
-            var repository = scopeProvider.GetRequiredService<IApplicationTimeRepository<TimeZoneDbProvider>>();
+            var repository = scopeProvider.GetRequiredService<
+                IApplicationTimeRepository<TimeZoneDbProvider>
+            >();
             await repository.Save(provider, cancellationToken);
         }
     }

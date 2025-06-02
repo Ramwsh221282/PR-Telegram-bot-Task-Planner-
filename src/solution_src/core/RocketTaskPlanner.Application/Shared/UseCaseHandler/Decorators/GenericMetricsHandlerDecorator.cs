@@ -25,7 +25,11 @@ public sealed class GenericMetricsHandlerDecorator<TUseCase, TUseCaseResult>(
         double seconds = stopwatch.Elapsed.TotalSeconds;
         string useCaseName = typeof(TUseCase).Name;
 
-        _logger.Information("{UseCase} processing finished in: {Seconds}", useCaseName, seconds);
+        _logger.Information(
+            "Операция: {UseCase} выполнение закончилось за: {Seconds} секунд.",
+            useCaseName,
+            seconds
+        );
 
         return result;
     }

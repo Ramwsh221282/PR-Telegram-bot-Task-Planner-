@@ -11,8 +11,8 @@ namespace RocketTaskPlanner.Application.Facades;
 /// </summary>
 public sealed class RemoveThemeChatFacade
 {
-    private const string Context = nameof(RemoveThemeChatFacade);
-    
+    private const string Context = "Транзакция удаления темы.";
+
     /// <summary>
     /// <inheritdoc cref="IExternalChatUseCasesVisitor"/>
     /// </summary>
@@ -46,52 +46,56 @@ public sealed class RemoveThemeChatFacade
     public async Task<Result> RemoveThemeChat(long userId, long chatId, long themeId)
     {
         await _unitOfWork.BeginTransaction();
-        _logger.Information("{Context} started", Context);
-        
+        _logger.Information("{Context}. Начато.", Context);
+
         // удаление чата у пользователя
-        _logger.Information("{Context} removing user chat", Context);
+        _logger.Information("{Context}. Удаление чата пользователя.", Context);
         var removingUserChat = await RemoveUserChildChat(userId, chatId, themeId);
         if (removingUserChat.IsFailure)
         {
-            _logger.Information("{Context} removing user chat failed. Error: {Error}", Context, removingUserChat.Error);
+            _logger.Information("{Context}. Ошибка: {Error}", Context, removingUserChat.Error);
             return removingUserChat;
         }
-        
+
         var saving = await _unitOfWork.SaveChangesAsync();
         if (saving.IsFailure)
         {
             await _unitOfWork.RollBackTransaction();
-            _logger.Information("{Context} removing user chat failed. Error: {Error}", Context, removingUserChat.Error);
+            _logger.Information("{Context}. Ошибка: {Error}", Context, saving.Error);
             return saving;
         }
-        
+
         // удаление темы чата для уведомлений
-        _logger.Information("{Context} removing user notification theme chat", Context);
+        _logger.Information("{Context}. удаление чата для уведомлений.", Context);
         var removingNotificationsTheme = await RemoveNotificationThemeChat(chatId, themeId);
         if (removingNotificationsTheme.IsFailure)
         {
-            _logger.Information("{Context} removing user notification theme chat failed. Error: {Error}", Context, removingNotificationsTheme.Error);
+            _logger.Information(
+                "{Context}. Ошибка: {Error}",
+                Context,
+                removingNotificationsTheme.Error
+            );
             return removingNotificationsTheme;
         }
-        
+
         saving = await _unitOfWork.SaveChangesAsync();
         if (saving.IsFailure)
         {
             await _unitOfWork.RollBackTransaction();
-            _logger.Information("{Context} removing user notification theme chat failed. Error: {Error}", Context, removingNotificationsTheme.Error);
+            _logger.Information("{Context}. Ошибка: {Error}", Context, saving.Error);
             return saving;
         }
 
         var committing = await _unitOfWork.CommitTransaction();
         if (committing.IsFailure)
         {
-            _logger.Error("{Context} failed. Error: {Error}", Context, committing.Error);
+            _logger.Error("{Context}. Ошибка: {Error}", Context, committing.Error);
         }
         else
         {
-            _logger.Information("{Context} finished.", Context);
+            _logger.Information("{Context}. Выполнено.", Context);
         }
-        
+
         return committing;
     }
 

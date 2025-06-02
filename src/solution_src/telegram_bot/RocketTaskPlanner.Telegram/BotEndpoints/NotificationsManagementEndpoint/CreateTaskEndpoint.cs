@@ -21,9 +21,9 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.NotificationsManagementEndpoin
 [BotHandler]
 public sealed class CreateTaskEndpoint
 {
-    private const string Context = nameof(CreateTaskEndpoint);
+    private const string Context = "Endpoint создать задачу.";
     private readonly Serilog.ILogger _logger;
-    
+
     /// <summary>
     /// <inheritdoc cref="CreateTaskHandler"/>
     /// </summary>
@@ -79,7 +79,7 @@ public sealed class CreateTaskEndpoint
     [ReplyMenuHandler(CommandComparison.Contains, "/tc")]
     public async Task CreateTask(ITelegramBotClient client, Update update)
     {
-        _logger.Information("{Context} invoked", Context);
+        _logger.Information("{Context}. Вызван.", Context);
         var user = update.GetUser();
         if (user.IsFailure)
             return;
@@ -103,14 +103,18 @@ public sealed class CreateTaskEndpoint
     /// <param name="client">Telegram Bot клиент для общения с Telegram</param>
     /// <param name="chatId">ID чата</param>
     /// <param name="themeId">ID темы</param>
-    private static async Task SendUserDoesntOwnChat(ITelegramBotClient client, long chatId, Result<int> themeId)
+    private static async Task SendUserDoesntOwnChat(
+        ITelegramBotClient client,
+        long chatId,
+        Result<int> themeId
+    )
     {
         const string replyMessage = "Команда доступна тому, кто добавлял чат.";
 
         Task reply = themeId.IsSuccess
             ? client.SendMessage(chatId: chatId, text: replyMessage, messageThreadId: themeId.Value)
             : client.SendMessage(chatId: chatId, text: replyMessage);
-        
+
         await reply;
     }
 }

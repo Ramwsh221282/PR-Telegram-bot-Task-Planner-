@@ -12,8 +12,8 @@ namespace RocketTaskPlanner.Application.Facades;
 /// </summary>
 public sealed class RemoveOwnerChatFacade
 {
-    private const string Context = nameof(RemoveOwnerChatFacade);
-    
+    private const string Context = "Транзакция удаления чата.";
+
     /// <summary>
     /// <inheritdoc cref="IUnitOfWork"/>
     /// </summary>
@@ -47,14 +47,14 @@ public sealed class RemoveOwnerChatFacade
     public async Task<Result> RemoveOwnerChat(long userId, long chatId, bool isLastChat)
     {
         await _unitOfWork.BeginTransaction();
-        _logger.Information("{Context} started.", Context);
+        _logger.Information("{Context}. Начата.", Context);
 
         // удаление чата
-        _logger.Information("{Context} removing user chat", Context);
+        _logger.Information("{Context}. Удаление чата.", Context);
         var removingChat = await RemoveUserChat(userId, chatId);
         if (removingChat.IsFailure)
         {
-            _logger.Error("{Context} removing user chat failed. Error: {error}", Context, removingChat.Error);
+            _logger.Error("{Context}. Ошибка: {error}", Context, removingChat.Error);
             return removingChat;
         }
 
@@ -62,57 +62,57 @@ public sealed class RemoveOwnerChatFacade
         if (saving.IsFailure)
         {
             await _unitOfWork.RollBackTransaction();
-            _logger.Error("{Context} removing user chat failed. Error: {error}", Context, removingChat.Error);
+            _logger.Error("{Context}. Ошибка: {error}", Context, removingChat.Error);
             return removingChat;
         }
 
         // удаление чата для уведомлений
-        _logger.Information("{Context} removing user notification chat.", Context);
+        _logger.Information("{Context}. Удаление чата для уведомлений.", Context);
         var removingNotificationChat = await RemoveNotificationChat(chatId);
         if (removingNotificationChat.IsFailure)
         {
-            _logger.Error("{Context} removing user notification chat failed. Error: {Error}", Context, removingNotificationChat.Error);
+            _logger.Error("{Context}. Ошибка: {Error}", Context, removingNotificationChat.Error);
             return removingNotificationChat;
         }
-        
+
         saving = await _unitOfWork.SaveChangesAsync();
         if (saving.IsFailure)
         {
             await _unitOfWork.RollBackTransaction();
-            _logger.Error("{Context} removing user notification chat failed. Error: {Error}", Context, removingNotificationChat.Error);
+            _logger.Error("{Context}. Ошибка: {Error}", Context, removingNotificationChat.Error);
             return removingChat;
         }
 
         // если это последний чат пользователя - удаляется пользователь
         if (isLastChat)
         {
-            _logger.Information("{Context} removing user because has no chats.", Context);
+            _logger.Information("{Context}. Удаление пользователя потому что нет чатов.", Context);
             var removeUser = await RemoveUserIfHasNoChatsLeft(userId);
             if (removeUser.IsFailure)
             {
-                _logger.Error("{Context} removing user because has no chats failed. Error: {Error}", Context, removeUser.Error);
+                _logger.Error("{Context}. Ошибка: {Error}", Context, removeUser.Error);
                 return removeUser;
             }
-            
+
             saving = await _unitOfWork.SaveChangesAsync();
             if (saving.IsFailure)
             {
                 await _unitOfWork.RollBackTransaction();
-                _logger.Error("{Context} removing user because has no chats failed. Error: {Error}", Context, removeUser.Error);
+                _logger.Error("{Context}. Ошибка: {Error}", Context, removeUser.Error);
                 return removingChat;
             }
         }
-        
+
         var committing = await _unitOfWork.CommitTransaction();
         if (committing.IsFailure)
         {
-            _logger.Error("{Context} failed. Error: {Error}", Context, committing.Error);
+            _logger.Error("{Context}. Ошибка: {Error}", Context, committing.Error);
         }
         else
         {
-            _logger.Information("{Context} finished.", Context);
+            _logger.Information("{Context}. Выполнена.", Context);
         }
-        
+
         return committing;
     }
 

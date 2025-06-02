@@ -17,9 +17,9 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.RemoveChatEndpoint;
 [BotHandler]
 public sealed class RemoveChatBotEndpoint
 {
-    private const string Context = nameof(RemoveChatBotEndpoint);
+    private const string Context = "Endpoint. Удалить чат.";
     private readonly Serilog.ILogger _logger;
-    
+
     /// <summary>
     /// <inheritdoc cref="IExternalChatsReadableRepository"/>
     /// </summary>
@@ -46,7 +46,7 @@ public sealed class RemoveChatBotEndpoint
     [ReplyMenuHandler(CommandComparison.Contains, "/remove_this_chat@", "/remove_this_chat")]
     public async Task Handle(ITelegramBotClient client, Update update)
     {
-        _logger.Information("{Context} invoked", Context);
+        _logger.Information("{Context}. Вызван.", Context);
         Result<TelegramBotUser> user = update.GetUser();
         if (user.IsFailure)
             return;

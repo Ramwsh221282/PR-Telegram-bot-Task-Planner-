@@ -11,8 +11,8 @@ namespace RocketTaskPlanner.Application.Facades;
 /// </summary>
 public sealed class UserThemeRegistrationFacade
 {
-    private const string Context = nameof(UserChatRegistrationFacade);
-    
+    private const string Context = "Транзакция добавления темы.";
+
     /// <summary>
     /// <inheritdoc cref="IExternalChatUseCasesVisitor"/>
     /// </summary>
@@ -51,9 +51,10 @@ public sealed class UserThemeRegistrationFacade
     )
     {
         await _unitOfWork.BeginTransaction();
-        
+        _logger.Information("{Context}. Начато.", Context);
+
         // добавить дочерний чат пользователю
-        _logger.Information("{Context} adding child chat for parent.", Context);
+        _logger.Information("{Context}. Добавить дочерний чат пользователю.", Context);
         var addingChildChat = await AddChildChatForParent(
             parentChatId,
             themeChatId,
@@ -62,44 +63,45 @@ public sealed class UserThemeRegistrationFacade
         );
         if (addingChildChat.IsFailure)
         {
-            _logger.Error("{Context} adding child chat for parent failed. Error: {Error}", Context, addingChildChat.Error);
+            _logger.Error("{Context}. Ошибка: {Error}", Context, addingChildChat.Error);
             return addingChildChat;
         }
-        
+
         var saving = await _unitOfWork.SaveChangesAsync();
         if (saving.IsFailure)
         {
             await _unitOfWork.RollBackTransaction();
-            _logger.Error("{Context} adding child chat for parent failed. Error: {Error}", Context, addingChildChat.Error);
+            _logger.Error("{Context}. Ошибка. Error: {Error}", Context, saving.Error);
             return saving;
         }
 
-        _logger.Information("{Context} adding theme chat", Context);
+        // добавление темы для уведомлений.
+        _logger.Information("{Context}. Добавление темы для уведомлений.", Context);
         var addingThemeChat = await AddThemeAsNotificationReceiver(parentChatId, themeChatId);
         if (addingThemeChat.IsFailure)
         {
-            _logger.Error("{Context} adding theme chat failed. Error: {Error}", Context, addingThemeChat.Error);
+            _logger.Error("{Context}. Ошибка: {Error}", Context, addingThemeChat.Error);
             return addingThemeChat;
         }
-        
+
         saving = await _unitOfWork.SaveChangesAsync();
         if (saving.IsFailure)
         {
             await _unitOfWork.RollBackTransaction();
-            _logger.Error("{Context} adding theme chat failed. Error: {Error}", Context, addingThemeChat.Error);
+            _logger.Error("{Context}. Ошибка: {Error}", Context, saving.Error);
             return saving;
         }
 
         var committing = await _unitOfWork.CommitTransaction();
         if (committing.IsFailure)
         {
-            _logger.Error("{Context} failed. Error: {Error}", Context, committing.Error);
+            _logger.Error("{Context}. Ошибка: {Error}", Context, committing.Error);
         }
         else
         {
-            _logger.Information("{Context} finished", Context);
+            _logger.Information("{Context}. Выполнено.", Context);
         }
-        
+
         return committing;
     }
 

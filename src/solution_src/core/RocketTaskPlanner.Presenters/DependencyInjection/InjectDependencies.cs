@@ -24,6 +24,7 @@ using RocketTaskPlanner.Infrastructure.Database.ExternalChatsManagementContext.R
 using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Entities.EntityMappings;
 using RocketTaskPlanner.Infrastructure.Database.NotificationsContext.Repositories;
 using RocketTaskPlanner.Infrastructure.Database.UnitOfWorks;
+using RocketTaskPlanner.Infrastructure.SeqConfiguration;
 using RocketTaskPlanner.Infrastructure.TimeZoneDb;
 using RocketTaskPlanner.TimeRecognitionModule.TimeCalculation;
 using RocketTaskPlanner.TimeRecognitionModule.TimeRecognition.Facade;
@@ -38,7 +39,6 @@ public static class InjectDependencies
     {
         services.InjectSqlite();
         services.InjectTimeZoneDb();
-        services.InjectLogger();
         services.InjectValidators();
         services.InjectUseCases();
         services.InjectQueries();
@@ -51,13 +51,13 @@ public static class InjectDependencies
     }
 
     // инъекция логгера
-    private static void InjectLogger(this IServiceCollection services)
+    public static void InjectLogger(this IServiceCollection services, SeqConfiguration seq)
     {
         services.AddSingleton<ILogger>(
             new LoggerConfiguration()
                 .WriteTo.Console()
                 .WriteTo.Debug()
-                .WriteTo.Seq("http://localhost:8081")
+                .WriteTo.Seq(seq.HostName)
                 .CreateLogger()
         );
     }
@@ -75,11 +75,14 @@ public static class InjectDependencies
     {
         services.AddScoped<TimeZoneDbCachedRepository>();
         services.AddScoped<IApplicationTimeRepository<TimeZoneDbProvider>, TimeZoneDbRepository>();
-        services.Decorate<IApplicationTimeRepository<TimeZoneDbProvider>, TimeZoneDbCachedRepository>();
-        
+        services.Decorate<
+            IApplicationTimeRepository<TimeZoneDbProvider>,
+            TimeZoneDbCachedRepository
+        >();
+
         services.AddScoped<INotificationsWritableRepository, NotificationsWritableRepository>();
         services.AddScoped<IExternalChatsWritableRepository, ExternalChatsWritableRepository>();
-        
+
         services.AddTransient<IExternalChatsReadableRepository, ExternalChatsReadableRepository>();
         services.AddTransient<INotificationsReadableRepository, NotificationsReadableRepository>();
     }
@@ -93,7 +96,10 @@ public static class InjectDependencies
     {
         services.AddSingleton<IApplicationTimeProviderIdFactory, TimeZoneDbTokenFactory>();
         services.AddSingleton<IApplicationTimeProviderFactory, TimeZoneDbInstanceFactory>();
-        services.AddScoped<IUseCaseHandler<SaveTimeZoneDbApiKeyUseCase, TimeZoneDbProvider>, SaveTimeZoneDbApiKeyUseCaseHandler<TimeZoneDbProvider>>();
+        services.AddScoped<
+            IUseCaseHandler<SaveTimeZoneDbApiKeyUseCase, TimeZoneDbProvider>,
+            SaveTimeZoneDbApiKeyUseCaseHandler<TimeZoneDbProvider>
+        >();
     }
 
     // инъекция валидации
@@ -122,7 +128,10 @@ public static class InjectDependencies
         );
 
         services.Decorate(typeof(IUseCaseHandler<,>), typeof(GenericValidationDecorator<,>));
-        services.Decorate(typeof(IUseCaseHandler<,>), typeof(GenericExceptionSupressingDecorator<,>));
+        services.Decorate(
+            typeof(IUseCaseHandler<,>),
+            typeof(GenericExceptionSupressingDecorator<,>)
+        );
         services.Decorate(typeof(IUseCaseHandler<,>), typeof(GenericLoggingDecorator<,>));
         services.Decorate(typeof(IUseCaseHandler<,>), typeof(GenericMetricsHandlerDecorator<,>));
     }

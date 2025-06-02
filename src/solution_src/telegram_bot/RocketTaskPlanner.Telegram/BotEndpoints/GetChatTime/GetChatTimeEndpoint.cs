@@ -21,13 +21,14 @@ namespace RocketTaskPlanner.Telegram.BotEndpoints.GetChatTime;
 public sealed class GetChatTimeEndpoint(
     IQueryHandler<
         GetNotificationReceiverTimeInformationQuery,
-        GetNotificationReceiverTimeInformationQueryResponse> handler,
+        GetNotificationReceiverTimeInformationQueryResponse
+    > handler,
     Serilog.ILogger logger
 )
 {
-    private const string Context = nameof(GetChatTimeEndpoint);
+    private const string Context = "Endpoint получить время чата.";
     private readonly Serilog.ILogger _logger = logger;
-    
+
     /// <summary>
     /// <inheritdoc cref="GetNotificationReceiverTimeInformationQueryHandler"/>
     /// </summary>
@@ -44,7 +45,7 @@ public sealed class GetChatTimeEndpoint(
     [ReplyMenuHandler(CommandComparison.Contains, "/bot_chat_time@", "/bot_chat_time")]
     public async Task GetChatTime(ITelegramBotClient client, Update update)
     {
-        _logger.Information("{Context} invoked", Context);
+        _logger.Information("{Context}. Вызван.", Context);
         Result<TelegramBotUser> telegramBotUserResult = update.GetUser();
         if (telegramBotUserResult.IsFailure)
         {

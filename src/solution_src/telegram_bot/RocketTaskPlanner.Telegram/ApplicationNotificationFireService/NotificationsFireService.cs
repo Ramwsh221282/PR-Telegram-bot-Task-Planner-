@@ -57,7 +57,7 @@ public sealed class NotificationsFireService(
     /// <summary>
     /// Название текущего класса
     /// </summary>
-    private const string CONTEXT = nameof(NotificationsFireService);
+    private const string CONTEXT = "Background процесс отправки задач.";
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -69,7 +69,7 @@ public sealed class NotificationsFireService(
                 ITimeZoneOfCurrentTime[] times = Times();
                 if (times.Length == 0)
                 {
-                    _logger.Warning("{Context} no time zones", CONTEXT);
+                    _logger.Warning("{Context}. Временных зон нет.", CONTEXT);
                     await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
                     continue;
                 }
@@ -86,13 +86,13 @@ public sealed class NotificationsFireService(
                 // Отправка сообщений.
                 int fired = await HandleTasksToFire(themeChatTasksToFire, generalChatTasksToFire);
 
-                _logger.Information("{Context} fired: {Count} tasks", CONTEXT, fired);
+                _logger.Information("{Context}. Отправлено: {Count} задач.", CONTEXT, fired);
 
                 await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                _logger.Fatal("{Context} caught unexpected exception: {Message}", CONTEXT, ex.Message);
+                _logger.Fatal("{Context} Исключение: {Message}", CONTEXT, ex.Message);
             }
         }
     }
