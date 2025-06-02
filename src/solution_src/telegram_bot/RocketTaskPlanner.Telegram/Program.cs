@@ -23,6 +23,7 @@ else
     seq = SeqConfiguration.FromEnvironmentVariables(builder.Services);
 }
 
+builder.Services.InjectLogger(seq);
 builder.Services.InjectApplicationDependencies(); // инъекция всех зависимостей приложения, не связанных с ботом.
 builder.Services.AddScopedBotHandlers();
 builder.InjectTelegramBot(); // инъекция зависимостей бота.
