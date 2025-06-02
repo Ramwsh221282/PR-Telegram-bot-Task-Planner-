@@ -12,6 +12,8 @@ namespace RocketTaskPlanner.Application.Facades;
 /// </summary>
 public sealed class FirstUserChatRegistrationFacade
 {
+    private const string Context = nameof(FirstUserChatRegistrationFacade);
+    
     /// <summary>
     /// Unit of work для управления транзакцией
     /// </summary>
@@ -27,15 +29,19 @@ public sealed class FirstUserChatRegistrationFacade
     /// </summary>
     private readonly INotificationUseCaseVisitor _notificationChatUseCases;
 
+    private readonly Serilog.ILogger _logger;
+
     public FirstUserChatRegistrationFacade(
         IUnitOfWork unitOfWork,
         IExternalChatUseCasesVisitor externalChatUseCases,
-        INotificationUseCaseVisitor notificationChatUseCases
+        INotificationUseCaseVisitor notificationChatUseCases,
+        Serilog.ILogger logger
     )
     {
         _unitOfWork = unitOfWork;
         _externalChatUseCases = externalChatUseCases;
         _notificationChatUseCases = notificationChatUseCases;
+        _logger = logger;
     }
 
     /// <summary>
@@ -57,31 +63,71 @@ public sealed class FirstUserChatRegistrationFacade
         string zoneName
     )
     {
-        using (_unitOfWork)
+        await _unitOfWork.BeginTransaction();
+        
+        // регистрация пользователя
+        _logger.Information("{Context} registering user.", Context);
+        var user = await RegisterUser(userId, userName);
+        if (user.IsFailure)
         {
-            // регистрация пользователя
-            Result user = await RegisterUser(userId, userName);
-            if (user.IsFailure)
-                return user;
-
-            // добавление чата пользователя
-            Result mainChat = await RegisterUserChat(userId, chatId, chatName);
-            if (mainChat.IsFailure)
-                return mainChat;
-
-            // добавление чата для уведомлений
-            Result notificationsChat = await RegisterNotificationChat(chatId, chatName, zoneName);
-            if (notificationsChat.IsFailure)
-                return notificationsChat;
-
-            // выполнение команд и сохранение изменений
-            await _unitOfWork.Process();
-            Result saving = _unitOfWork.TryCommit();
-            if (saving.IsFailure)
-                return saving;
+            _logger.Error("{Context} registering user error: {Error}", Context, user.Error);
+            return user;
         }
 
-        return Result.Success();
+        var saving = await _unitOfWork.SaveChangesAsync();
+        if (saving.IsFailure)
+        {
+            await _unitOfWork.RollBackTransaction();
+            _logger.Error("{Context} registering user error: {Error}", Context, user.Error);
+            return user;
+        }
+        
+        // добавление чата пользователя
+        _logger.Information("{Context} Registering user chat.", Context);
+        var mainChat = await RegisterUserChat(userId, chatId, chatName);
+        if (mainChat.IsFailure)
+        {
+            _logger.Error("{Context} Registering user chat error: {Error}", Context, mainChat.Error);
+            return mainChat;
+        }
+        
+        saving = await _unitOfWork.SaveChangesAsync();
+        if (saving.IsFailure)
+        {
+            await _unitOfWork.RollBackTransaction();
+            _logger.Error("{Context} Registering user chat error: {Error}", Context, mainChat.Error);
+            return mainChat;
+        }
+        
+        
+        // добавление чата для уведомлений
+        _logger.Information("{Context} Registering user notification chat.", Context);
+        var notificationsChat = await RegisterNotificationChat(chatId, chatName, zoneName);
+        if (notificationsChat.IsFailure)
+        {
+            _logger.Error("{Context} registering user notification chat error: {Error}", Context, notificationsChat.Error);
+            return notificationsChat;
+        }
+        
+        saving = await _unitOfWork.SaveChangesAsync();
+        if (saving.IsFailure)
+        {
+            await _unitOfWork.RollBackTransaction();
+            _logger.Error("{Context} registering user notification chat error: {Error}", Context, notificationsChat.Error);
+            return mainChat;
+        }
+
+        var committing = await _unitOfWork.CommitTransaction();
+        if (committing.IsFailure)
+        {
+            _logger.Fatal("{Context} failed. Error: {Error}", Context, committing.Error);
+        }
+        else
+        {
+            _logger.Information("{Context} finished.", Context);
+        }
+        
+        return committing;
     }
 
     // регистрация пользователя

@@ -30,7 +30,7 @@ public sealed class NotificationReceiver
     /// <summary>
     /// Временная зона основного чата
     /// </summary>
-    public required NotificationReceiverTimeZone TimeZone { get; init; }
+    public required NotificationReceiverTimeZone TimeZone { get; set; }
     public IReadOnlyList<GeneralChatReceiverSubject> Subjects => _subjects;
     public IReadOnlyList<ReceiverTheme> Themes => _themes;
 

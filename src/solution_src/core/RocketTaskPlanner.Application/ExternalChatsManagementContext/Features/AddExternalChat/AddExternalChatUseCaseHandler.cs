@@ -1,5 +1,4 @@
 ﻿using RocketTaskPlanner.Application.ExternalChatsManagementContext.Repository;
-using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler;
 using RocketTaskPlanner.Domain.ExternalChatsManagementContext.Entities;
 using RocketTaskPlanner.Domain.ExternalChatsManagementContext.ValueObjects;
@@ -12,24 +11,10 @@ namespace RocketTaskPlanner.Application.ExternalChatsManagementContext.Features.
 public sealed class AddExternalChatUseCaseHandler
     : IUseCaseHandler<AddExternalChatUseCase, ExternalChat>
 {
-    /// <summary>
-    /// <inheritdoc cref="IExternalChatsReadableRepository"/>
-    /// </summary>
-    private readonly IExternalChatsRepository _repository;
+    private readonly IExternalChatsWritableRepository _repository;
 
-    /// <summary>
-    /// <inheritdoc cref="IUnitOfWork"/>
-    /// </summary>
-    private readonly IUnitOfWork _unitOfWork;
-
-    public AddExternalChatUseCaseHandler(
-        IExternalChatsRepository repository,
-        IUnitOfWork unitOfWork
-    )
-    {
+    public AddExternalChatUseCaseHandler(IExternalChatsWritableRepository repository) =>
         _repository = repository;
-        _unitOfWork = unitOfWork;
-    }
 
     public async Task<Result<ExternalChat>> Handle(
         AddExternalChatUseCase useCase,
@@ -37,12 +22,13 @@ public sealed class AddExternalChatUseCaseHandler
     )
     {
         ExternalChatMemberId ownerId = ExternalChatMemberId.Dedicated(useCase.OwnerId);
+        var owner = await _repository.GetById(ownerId.Value, ct);
+        if (owner.IsFailure) return Result.Failure<ExternalChat>(owner.Error);
+        
         ExternalChatId chatId = ExternalChatId.Dedicated(useCase.ParentChatId);
         ExternalChatName chatName = ExternalChatName.Create(useCase.ChatName).Value;
-        ExternalChat chat = new(ownerId, chatId, chatName);
-
-        // сохранение данных чата пользователя в хранилище
-        _repository.Writable.AddChat(chat, _unitOfWork, ct);
-        return await Task.FromResult(chat);
+        var chatResult = owner.Value.AddExternalChat(chatId, chatName);
+        
+        return chatResult.IsFailure ? Result.Failure<ExternalChat>(chatResult.Error) : chatResult.Value;
     }
 }

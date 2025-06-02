@@ -7,5 +7,5 @@ namespace RocketTaskPlanner.Infrastructure.Abstractions;
 /// </summary>
 public interface IDbConnectionFactory
 {
-    IDbConnection Create(string connectionString);
+    IDbConnection Create();
 }

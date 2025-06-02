@@ -12,6 +12,8 @@ namespace RocketTaskPlanner.Application.Facades;
 /// </summary>
 public sealed class RemoveOwnerChatFacade
 {
+    private const string Context = nameof(RemoveOwnerChatFacade);
+    
     /// <summary>
     /// <inheritdoc cref="IUnitOfWork"/>
     /// </summary>
@@ -27,47 +29,91 @@ public sealed class RemoveOwnerChatFacade
     /// </summary>
     private readonly INotificationUseCaseVisitor _notificationChats;
 
+    private readonly Serilog.ILogger _logger;
+
     public RemoveOwnerChatFacade(
         IExternalChatUseCasesVisitor userChats,
         INotificationUseCaseVisitor notificationChats,
-        IUnitOfWork unitOfWork
+        IUnitOfWork unitOfWork,
+        Serilog.ILogger logger
     )
     {
         _userChats = userChats;
         _notificationChats = notificationChats;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<Result> RemoveOwnerChat(long userId, long chatId, bool isLastChat)
     {
-        using (_unitOfWork)
+        await _unitOfWork.BeginTransaction();
+        _logger.Information("{Context} started.", Context);
+
+        // удаление чата
+        _logger.Information("{Context} removing user chat", Context);
+        var removingChat = await RemoveUserChat(userId, chatId);
+        if (removingChat.IsFailure)
         {
-            // удаление чата
-            var removingChat = await RemoveUserChat(userId, chatId);
-            if (removingChat.IsFailure)
-                return removingChat;
-
-            // удаление чата для уведомлений
-            var removingNotificationChat = await RemoveNotificationChat(chatId);
-            if (removingNotificationChat.IsFailure)
-                return removingNotificationChat;
-
-            // если это последний чат пользователя - удаляется пользователь
-            if (isLastChat)
-            {
-                var removeUser = await RemoveUserIfHasNoChatsLeft(userId);
-                if (removeUser.IsFailure)
-                    return removeUser;
-            }
-
-            // выполнения команд и сохранение изменений
-            await _unitOfWork.Process();
-            Result commit = _unitOfWork.TryCommit();
-            if (commit.IsFailure)
-                return commit;
+            _logger.Error("{Context} removing user chat failed. Error: {error}", Context, removingChat.Error);
+            return removingChat;
         }
 
-        return Result.Success();
+        var saving = await _unitOfWork.SaveChangesAsync();
+        if (saving.IsFailure)
+        {
+            await _unitOfWork.RollBackTransaction();
+            _logger.Error("{Context} removing user chat failed. Error: {error}", Context, removingChat.Error);
+            return removingChat;
+        }
+
+        // удаление чата для уведомлений
+        _logger.Information("{Context} removing user notification chat.", Context);
+        var removingNotificationChat = await RemoveNotificationChat(chatId);
+        if (removingNotificationChat.IsFailure)
+        {
+            _logger.Error("{Context} removing user notification chat failed. Error: {Error}", Context, removingNotificationChat.Error);
+            return removingNotificationChat;
+        }
+        
+        saving = await _unitOfWork.SaveChangesAsync();
+        if (saving.IsFailure)
+        {
+            await _unitOfWork.RollBackTransaction();
+            _logger.Error("{Context} removing user notification chat failed. Error: {Error}", Context, removingNotificationChat.Error);
+            return removingChat;
+        }
+
+        // если это последний чат пользователя - удаляется пользователь
+        if (isLastChat)
+        {
+            _logger.Information("{Context} removing user because has no chats.", Context);
+            var removeUser = await RemoveUserIfHasNoChatsLeft(userId);
+            if (removeUser.IsFailure)
+            {
+                _logger.Error("{Context} removing user because has no chats failed. Error: {Error}", Context, removeUser.Error);
+                return removeUser;
+            }
+            
+            saving = await _unitOfWork.SaveChangesAsync();
+            if (saving.IsFailure)
+            {
+                await _unitOfWork.RollBackTransaction();
+                _logger.Error("{Context} removing user because has no chats failed. Error: {Error}", Context, removeUser.Error);
+                return removingChat;
+            }
+        }
+        
+        var committing = await _unitOfWork.CommitTransaction();
+        if (committing.IsFailure)
+        {
+            _logger.Error("{Context} failed. Error: {Error}", Context, committing.Error);
+        }
+        else
+        {
+            _logger.Information("{Context} finished.", Context);
+        }
+        
+        return committing;
     }
 
     // удалить пользователя, если у него был последний чат

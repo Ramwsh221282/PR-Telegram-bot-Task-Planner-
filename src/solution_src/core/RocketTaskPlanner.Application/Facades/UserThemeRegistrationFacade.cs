@@ -11,6 +11,8 @@ namespace RocketTaskPlanner.Application.Facades;
 /// </summary>
 public sealed class UserThemeRegistrationFacade
 {
+    private const string Context = nameof(UserChatRegistrationFacade);
+    
     /// <summary>
     /// <inheritdoc cref="IExternalChatUseCasesVisitor"/>
     /// </summary>
@@ -26,12 +28,16 @@ public sealed class UserThemeRegistrationFacade
     /// </summary>
     private readonly IUnitOfWork _unitOfWork;
 
+    private readonly Serilog.ILogger _logger;
+
     public UserThemeRegistrationFacade(
         IExternalChatUseCasesVisitor externalChatsVisitor,
         INotificationUseCaseVisitor notificationChatsVisitor,
-        IUnitOfWork unitOfWork
+        IUnitOfWork unitOfWork,
+        Serilog.ILogger logger
     )
     {
+        _logger = logger;
         _externalChatsVisitor = externalChatsVisitor;
         _notificationChatsVisitor = notificationChatsVisitor;
         _unitOfWork = unitOfWork;
@@ -44,28 +50,57 @@ public sealed class UserThemeRegistrationFacade
         string parentChatName
     )
     {
-        using (_unitOfWork)
+        await _unitOfWork.BeginTransaction();
+        
+        // добавить дочерний чат пользователю
+        _logger.Information("{Context} adding child chat for parent.", Context);
+        var addingChildChat = await AddChildChatForParent(
+            parentChatId,
+            themeChatId,
+            ownerId,
+            parentChatName
+        );
+        if (addingChildChat.IsFailure)
         {
-            var addingChildChat = await AddChildChatForParent(
-                parentChatId,
-                themeChatId,
-                ownerId,
-                parentChatName
-            );
-            if (addingChildChat.IsFailure)
-                return addingChildChat;
-
-            var addingThemeChat = await AddThemeAsNotificationReceiver(parentChatId, themeChatId);
-            if (addingThemeChat.IsFailure)
-                return addingThemeChat;
-
-            await _unitOfWork.Process();
-            Result savingChanges = _unitOfWork.TryCommit();
-            if (savingChanges.IsFailure)
-                return savingChanges;
+            _logger.Error("{Context} adding child chat for parent failed. Error: {Error}", Context, addingChildChat.Error);
+            return addingChildChat;
+        }
+        
+        var saving = await _unitOfWork.SaveChangesAsync();
+        if (saving.IsFailure)
+        {
+            await _unitOfWork.RollBackTransaction();
+            _logger.Error("{Context} adding child chat for parent failed. Error: {Error}", Context, addingChildChat.Error);
+            return saving;
         }
 
-        return Result.Success();
+        _logger.Information("{Context} adding theme chat", Context);
+        var addingThemeChat = await AddThemeAsNotificationReceiver(parentChatId, themeChatId);
+        if (addingThemeChat.IsFailure)
+        {
+            _logger.Error("{Context} adding theme chat failed. Error: {Error}", Context, addingThemeChat.Error);
+            return addingThemeChat;
+        }
+        
+        saving = await _unitOfWork.SaveChangesAsync();
+        if (saving.IsFailure)
+        {
+            await _unitOfWork.RollBackTransaction();
+            _logger.Error("{Context} adding theme chat failed. Error: {Error}", Context, addingThemeChat.Error);
+            return saving;
+        }
+
+        var committing = await _unitOfWork.CommitTransaction();
+        if (committing.IsFailure)
+        {
+            _logger.Error("{Context} failed. Error: {Error}", Context, committing.Error);
+        }
+        else
+        {
+            _logger.Information("{Context} finished", Context);
+        }
+        
+        return committing;
     }
 
     // добавить дочерний чат

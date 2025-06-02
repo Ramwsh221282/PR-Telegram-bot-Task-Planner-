@@ -1,5 +1,4 @@
 using RocketTaskPlanner.Application.NotificationsContext.Repository;
-using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler;
 using RocketTaskPlanner.Domain.NotificationsContext;
 using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
@@ -16,19 +15,11 @@ public sealed class RegisterChatUseCaseHandler
     /// <inheritdoc cref="INotificationsWritableRepository"/>
     /// </summary>
     private readonly INotificationsWritableRepository _writableRepository;
+    
 
-    /// <summary>
-    /// <inheritdoc cref="IUnitOfWork"/>
-    /// </summary>
-    private readonly IUnitOfWork _unitOfWork;
-
-    public RegisterChatUseCaseHandler(
-        INotificationsWritableRepository writableRepository,
-        IUnitOfWork unitOfWork
-    )
+    public RegisterChatUseCaseHandler(INotificationsWritableRepository writableRepository)
     {
         _writableRepository = writableRepository;
-        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<RegisterChatUseCaseResponse>> Handle(
@@ -36,11 +27,9 @@ public sealed class RegisterChatUseCaseHandler
         CancellationToken ct = default
     )
     {
-        NotificationReceiverId id = NotificationReceiverId.Create(useCase.ChatId).Value;
-        NotificationReceiverName name = NotificationReceiverName.Create(useCase.ChatName).Value;
-        NotificationReceiverTimeZone time = NotificationReceiverTimeZone
-            .Create(useCase.ZoneName)
-            .Value;
+        var id = NotificationReceiverId.Create(useCase.ChatId).Value;
+        var name = NotificationReceiverName.Create(useCase.ChatName).Value;
+        var time = NotificationReceiverTimeZone.Create(useCase.ZoneName).Value;
 
         NotificationReceiver receiver = new()
         {
@@ -49,8 +38,7 @@ public sealed class RegisterChatUseCaseHandler
             TimeZone = time,
         };
 
-        Result saving = await _writableRepository.Add(receiver, _unitOfWork, ct);
-
+        var saving = await _writableRepository.Add(receiver, ct);
         return saving.IsFailure
             ? Result.Failure<RegisterChatUseCaseResponse>(saving.Error)
             : new RegisterChatUseCaseResponse(id.Id, name.Name);

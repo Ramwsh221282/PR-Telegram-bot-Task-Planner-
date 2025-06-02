@@ -1,5 +1,4 @@
 ﻿using RocketTaskPlanner.Application.ExternalChatsManagementContext.Repository;
-using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler;
 using RocketTaskPlanner.Domain.ExternalChatsManagementContext;
 
@@ -14,35 +13,21 @@ public sealed class RemoveExternalChatOwnerUseCaseHandler
     /// <summary>
     /// <inheritdoc cref="IExternalChatsReadableRepository"/>
     /// </summary>
-    private readonly IExternalChatsRepository _repository;
-
-    /// <summary>
-    /// <inheritdoc cref="IUnitOfWork"/>
-    /// </summary>
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IExternalChatsWritableRepository _repository;
 
     public RemoveExternalChatOwnerUseCaseHandler(
-        IExternalChatsRepository repository,
-        IUnitOfWork unitOfWork
-    )
-    {
-        _repository = repository;
-        _unitOfWork = unitOfWork;
-    }
+        IExternalChatsWritableRepository repository
+    ) => _repository = repository;
 
     public async Task<Result<ExternalChatOwner>> Handle(
         RemoveExternalChatOwnerUseCase useCase,
         CancellationToken ct = default
     )
     {
-        Result<ExternalChatOwner> owner = await _repository.Readable.GetExternalChatOwnerById(
-            useCase.OwnerId,
-            ct
-        );
-        if (owner.IsFailure)
-            return Result.Failure<ExternalChatOwner>(owner.Error);
+        var owner = await _repository.GetById(useCase.OwnerId, ct);
+        if (owner.IsFailure) return Result.Failure<ExternalChatOwner>(owner.Error);
 
-        _repository.Writable.RemoveChatOwner(owner.Value, _unitOfWork, ct);
+        _repository.RemoveChatOwner(owner.Value);
         return owner;
     }
 }

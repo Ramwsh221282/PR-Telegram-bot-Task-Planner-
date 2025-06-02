@@ -1,5 +1,4 @@
-﻿using RocketTaskPlanner.Application.Shared.UnitOfWorks;
-using RocketTaskPlanner.Domain.NotificationsContext;
+﻿using RocketTaskPlanner.Domain.NotificationsContext;
 using RocketTaskPlanner.Domain.NotificationsContext.ValueObjects;
 
 namespace RocketTaskPlanner.Application.NotificationsContext.Repository;
@@ -7,7 +6,7 @@ namespace RocketTaskPlanner.Application.NotificationsContext.Repository;
 /// <summary>
 /// Контракт взаимодействия с БД для работы с уведомлениями и чатами уведомлений. (только чтение).
 /// </summary>
-public interface INotificationsReadableRepository : IRepository
+public interface INotificationsReadableRepository
 {
     /// <summary>
     /// Получить <inheritdoc cref="NotificationReceiver"/> по ID

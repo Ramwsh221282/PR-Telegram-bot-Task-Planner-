@@ -11,6 +11,8 @@ namespace RocketTaskPlanner.Application.Facades;
 /// </summary>
 public sealed class UserChatRegistrationFacade
 {
+    private const string Context = nameof(UserChatRegistrationFacade);
+    
     /// <summary>
     /// <inheritdoc cref="IUnitOfWork"/>
     /// </summary>
@@ -26,15 +28,19 @@ public sealed class UserChatRegistrationFacade
     /// </summary>
     private readonly INotificationUseCaseVisitor _notificationChatsVisitor;
 
+    private readonly Serilog.ILogger _logger;
+
     public UserChatRegistrationFacade(
         IExternalChatUseCasesVisitor externalChatsVisitor,
         INotificationUseCaseVisitor notificationChatsVisitor,
-        IUnitOfWork unitOfWork
+        IUnitOfWork unitOfWork,
+        Serilog.ILogger logger
     )
     {
         _unitOfWork = unitOfWork;
         _externalChatsVisitor = externalChatsVisitor;
         _notificationChatsVisitor = notificationChatsVisitor;
+        _logger = logger;
     }
 
     public async Task<Result> AddUserExternalChat(
@@ -44,29 +50,54 @@ public sealed class UserChatRegistrationFacade
         string timeZone
     )
     {
-        using (_unitOfWork)
+        await _unitOfWork.BeginTransaction();
+        _logger.Information("{Context} started", Context);
+        
+        // добавление чата пользователя
+        _logger.Information("{Context} adding user external chat", Context);
+        var addingChat = await AddUserExternalChat(ownerId, chatId, chatName);
+        if (addingChat.IsFailure)
         {
-            // добавление чата пользователя
-            var addingChat = await AddUserExternalChat(ownerId, chatId, chatName);
-            if (addingChat.IsFailure)
-                return addingChat;
-
-            // добавление чата для уведомлений
-            var addingNotificationChat = await AddChatForNotifications(chatId, chatName, timeZone);
-            if (addingNotificationChat.IsFailure)
-                return addingNotificationChat;
-
-            // выполнение команд
-            await _unitOfWork.Process();
-
-            // попытка сохранить результаты выполнения команд
-            var commit = _unitOfWork.TryCommit();
-
-            if (commit.IsFailure)
-                return commit;
+            _logger.Error("{Context} adding user external chat failed. Error: {Error}", Context, addingChat.Error);
+            return addingChat;
+        }
+        
+        var saving = await _unitOfWork.SaveChangesAsync();
+        if (saving.IsFailure)
+        {
+            await _unitOfWork.RollBackTransaction();
+            _logger.Error("{Context} adding user external chat failed. Error: {Error}", Context, addingChat.Error);
+            return saving;
         }
 
-        return Result.Success();
+        // добавление чата для уведомлений
+        _logger.Information("{Context} adding user notification chat", Context);
+        var addingNotificationChat = await AddChatForNotifications(chatId, chatName, timeZone);
+        if (addingNotificationChat.IsFailure)
+        {
+            _logger.Error("{Context} adding user notification chat failed. Error: {Error}", Context, addingNotificationChat.Error);
+            return addingNotificationChat;
+        }
+        
+        saving = await _unitOfWork.SaveChangesAsync();
+        if (saving.IsFailure)
+        {
+            await _unitOfWork.RollBackTransaction();
+            _logger.Error("{Context} adding user notification chat failed. Error: {Error}", Context, addingNotificationChat.Error);
+            return saving;
+        }
+
+        var committing = await _unitOfWork.CommitTransaction();
+        if (committing.IsFailure)
+        {
+            _logger.Error("{Context} failed. Error: {Error}", Context, committing.Error);
+        }
+        else
+        {
+            _logger.Information("{Context} finished.", Context);
+        }
+        
+        return committing;
     }
 
     // добавить чат пользователю

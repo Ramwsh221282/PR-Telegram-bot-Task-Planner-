@@ -1,5 +1,4 @@
 ﻿using RocketTaskPlanner.Application.ExternalChatsManagementContext.Repository;
-using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler;
 using RocketTaskPlanner.Domain.ExternalChatsManagementContext;
 using RocketTaskPlanner.Domain.ExternalChatsManagementContext.ValueObjects;
@@ -15,20 +14,11 @@ public sealed class AddExternalChatOwnerUseCaseHandler
     /// <summary>
     /// <inheritdoc cref="IExternalChatsReadableRepository"/>
     /// </summary>
-    private readonly IExternalChatsRepository _repository;
+    private readonly IExternalChatsWritableRepository _repository;
 
-    /// <summary>
-    /// <inheritdoc cref="IUnitOfWork"/>
-    /// </summary>
-    private readonly IUnitOfWork _unitOfWork;
-
-    public AddExternalChatOwnerUseCaseHandler(
-        IExternalChatsRepository repository,
-        IUnitOfWork unitOfWork
-    )
+    public AddExternalChatOwnerUseCaseHandler(IExternalChatsWritableRepository repository)
     {
         _repository = repository;
-        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<ExternalChatOwner>> Handle(
@@ -36,22 +26,12 @@ public sealed class AddExternalChatOwnerUseCaseHandler
         CancellationToken ct = default
     )
     {
-        long id = useCase.Id;
         string name = useCase.Name;
-
-        // проверка на существование пользователя
-        var existing = await _repository.Readable.GetExternalChatOwnerById(id, ct);
-        if (existing.IsSuccess)
-            return Result.Failure<ExternalChatOwner>(
-                $"Обладатель внешнего чата с id: {useCase.Id} уже присутствует."
-            );
-
         var memberId = ExternalChatMemberId.Dedicated(useCase.Id);
         var memberName = ExternalChatMemberName.Create(name).Value;
         ExternalChatOwner owner = new(memberId, memberName);
-
-        // сохранение данных зарегистрированного пользователя в хранилище
-        _repository.Writable.AddChatOwner(owner, _unitOfWork, ct);
-        return owner;
+        var ownerResult = await _repository.AddChatOwner(owner, ct);
+        
+        return ownerResult.IsFailure ? Result.Failure<ExternalChatOwner>(ownerResult.Error) : owner;
     }
 }

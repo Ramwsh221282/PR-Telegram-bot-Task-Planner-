@@ -1,4 +1,5 @@
 ﻿using RocketTaskPlanner.Application.NotificationsContext.Repository;
+using RocketTaskPlanner.Application.Shared.UnitOfWorks;
 using RocketTaskPlanner.Application.Shared.UseCaseHandler;
 using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverSubjects;
 using RocketTaskPlanner.Domain.NotificationsContext.Entities.ReceiverSubjects.ValueObjects;
@@ -12,13 +13,14 @@ namespace RocketTaskPlanner.Application.NotificationsContext.Features.CreateTask
 public sealed class CreateTaskForChatUseCaseHandler
     : IUseCaseHandler<CreateTaskForChatUseCase, CreateTaskForChatUseCaseResponse>
 {
-    /// <summary>
-    /// <inheritdoc cref="INotificationRepository"/>
-    /// </summary>
-    private readonly INotificationRepository _repository;
+    private readonly INotificationsWritableRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CreateTaskForChatUseCaseHandler(INotificationRepository repository) =>
+    public CreateTaskForChatUseCaseHandler(INotificationsWritableRepository repository, IUnitOfWork unitOfWork)
+    {
         _repository = repository;
+        _unitOfWork = unitOfWork;
+    }
 
     public async Task<Result<CreateTaskForChatUseCaseResponse>> Handle(
         CreateTaskForChatUseCase useCase,
@@ -30,10 +32,11 @@ public sealed class CreateTaskForChatUseCaseHandler
                 "Дата вызова меньше даты создания."
             );
 
-        var receiver = await _repository.Readable.GetById(useCase.ChatId, ct);
-        if (receiver.IsFailure)
-            return Result.Failure<CreateTaskForChatUseCaseResponse>(receiver.Error);
+        var receiver = await _repository.GetById(useCase.ChatId, ct);
+        if (receiver.IsFailure) return Result.Failure<CreateTaskForChatUseCaseResponse>(receiver.Error);
 
+
+        await _unitOfWork.BeginTransaction(ct);
         var id = ReceiverSubjectId.Create(useCase.SubjectId).Value;
         var created = new ReceiverSubjectDateCreated(useCase.DateCreated);
         var notify = new ReceiverSubjectDateNotify(useCase.DateNotify);
@@ -41,11 +44,19 @@ public sealed class CreateTaskForChatUseCaseHandler
         var message = ReceiverSubjectMessage.Create(useCase.Message).Value;
         var periodInfo = new ReceiverSubjectPeriodInfo(useCase.isPeriodic);
         var subject = receiver.Value.AddSubject(id, time, periodInfo, message);
-        Result inserting = await _repository.Writable.AddSubject(subject, ct);
-
-        return inserting.IsFailure
-            ? Result.Failure<CreateTaskForChatUseCaseResponse>(receiver.Error)
-            : CreateResponse(subject);
+        
+        var savingChanges = await _unitOfWork.SaveChangesAsync(ct);
+        if (savingChanges.IsFailure)
+        {
+            await _unitOfWork.RollBackTransaction(ct);
+            return Result.Failure<CreateTaskForChatUseCaseResponse>(savingChanges.Error);
+        }
+        
+        var committing = await _unitOfWork.CommitTransaction(ct);
+        
+        return committing.IsFailure
+            ? Result.Failure<CreateTaskForChatUseCaseResponse>(committing.Error)
+            : CreateResponse(subject); 
     }
 
     private static CreateTaskForChatUseCaseResponse CreateResponse(
