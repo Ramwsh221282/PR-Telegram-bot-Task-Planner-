@@ -46,13 +46,13 @@ docker compose -f docker-compose.yml -d --build
 
 ###### Используемые технологии:
 
-C#. .NET 9. Background Worker. (язык и фреймворк)
-Docker (инфраструктура).
-Postgre SQL (БД).
-Seq (логирование) https://serilog.net/
-Serilog Seq (логирование) https://docs.datalust.co/docs/using-serilog
-Entity Framework Core (ORM библиотека для работы с БД) https://learn.microsoft.com/ru-ru/ef/core/
-Dapper (библиотека для работы с SQL) https://www.learndapper.com/
-CSharpFunctionalExtensions (библиотека для работы с Result) https://github.com/vkhorikov/CSharpFunctionalExtensions
-SharpVector (библиотека для работы с распознаванием времени в тексте) https://github.com/Build5Nines/SharpVector
-PR Telegram Bot (библиотека для работы с ботом) https://prethink.gitbook.io/prtelegrambot
+- **C#**. .NET 9. Background Worker. (язык и фреймворк)
+- **Docker** (инфраструктура).
+- **Postgre SQL** (БД).
+- **Seq** (логирование) - [Official Site](https://serilog.net/)
+- **Serilog Seq** (логирование) - [Документация](https://docs.datalust.co/docs/using-serilog)
+- **Entity Framework Core** (ORM библиотека для работы с БД) - [Документация](https://learn.microsoft.com/ru-ru/ef/core/)
+- **Dapper** (библиотека для работы с SQL) - [Learn Dapper](https://www.learndapper.com/)
+- **CSharpFunctionalExtensions** (библиотека для работы с Result) - [GitHub](https://github.com/vkhorikov/CSharpFunctionalExtensions)
+- **SharpVector** (библиотека для работы с распознаванием времени в тексте) - [GitHub](https://github.com/Build5Nines/SharpVector)
+- **PR Telegram Bot** (библиотека для работы с ботом) - [Документация](https://prethink.gitbook.io/prtelegrambot)
