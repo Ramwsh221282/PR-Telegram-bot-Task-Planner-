@@ -35,7 +35,7 @@ public sealed class TimeZoneDbTimeAdapter(IApplicationTimeProvider provider)
         { @"Asia/Ust-Nera", "Усть-Нера" },
         { @"Asia/Vladivostok", "Владивосток" },
         { @"Asia/Yakutsk", "Якутск" },
-        { @"Asia/Yekaterinburg", "Екатиренбург" },
+        { @"Asia/Yekaterinburg", "Екатеринбург" },
         { @"Europe/Astrakhan", "Астрахань" },
         { @"Europe/Kaliningrad", "Калининград" },
         { @"Europe/Kirov", "Киров" },
